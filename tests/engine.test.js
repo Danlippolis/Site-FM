@@ -6,7 +6,8 @@ const E = require('../src/engine/engine.js');
 const data = {
   formations: require('../data/formations.json'),
   roles: require('../data/roles.json'),
-  instructions: require('../data/team-instructions.json')
+  instructions: require('../data/team-instructions.json'),
+  playerInstructions: require('../data/player-instructions.json')
 };
 const preset = (id) => data.formations.presets.find((p) => p.id === id).players;
 const byslot = (res, slot) => res.players.find((p) => p.slot === slot);
@@ -153,4 +154,64 @@ test('colisão com aspecto de campo: distância medida em metros (68×105)', () 
   const pts = [{ x: 40, y: 50 }, { x: 44, y: 50 }];
   E.resolveCollisions(pts, 6, 5, [0.68, 1.05]);
   assert.ok(Math.abs((pts[1].x - pts[0].x) * 0.68 - 6) < 0.01);
+});
+
+// ---------- instruções individuais ----------
+
+const withPI = (presetId, slot, instructions) =>
+  preset(presetId).map((x) => (x.slot === slot ? { ...x, instructions } : { ...x }));
+
+test('PI "Avançar mais" sobe o jogador só nas fases com bola', () => {
+  const base = E.computeAll(preset('4-4-2'), data, {});
+  const pi = E.computeAll(withPI('4-4-2', 'MCL', ['get_further_forward']), data, {});
+  assert.equal(byslot(pi.ataque, 'MCL').y - byslot(base.ataque, 'MCL').y, 6);
+  assert.equal(byslot(pi.saindo, 'MCL').y - byslot(base.saindo, 'MCL').y, 3);
+  assert.equal(byslot(pi.defendendo, 'MCL').y, byslot(base.defendendo, 'MCL').y);
+});
+
+test('PI "Fechar mais" é espelhada: esquerda vai para a direita e vice-versa', () => {
+  const p = preset('4-4-2').map((x) =>
+    x.slot === 'DL' || x.slot === 'DR' ? { ...x, instructions: ['sit_narrower'] } : { ...x });
+  const base = E.computePhase(preset('4-4-2'), 'ataque', data, {});
+  const res = E.computePhase(p, 'ataque', data, {});
+  assert.equal(byslot(res, 'DL').x - byslot(base, 'DL').x, 7);
+  assert.equal(byslot(res, 'DR').x - byslot(base, 'DR').x, -7);
+});
+
+test('PI "para dentro" nunca cruza o meio do campo', () => {
+  const pts = withPI('3-5-2-wb', 'MCL', []);
+  // força um caso extremo: inside enorme via dados de teste
+  const pis = JSON.parse(JSON.stringify(data.playerInstructions));
+  pis.instructions.test_inside = { label: 't', en: 't', group: 'com_bola', phases: { ataque: { inside: 99 } } };
+  pts.find((x) => x.slot === 'WBL').instructions = ['test_inside'];
+  const res = E.computePhase(pts, 'ataque', { ...data, playerInstructions: pis }, {});
+  assert.ok(byslot(res, 'WBL').x <= 50 + 6, String(byslot(res, 'WBL').x));
+});
+
+test('PI indisponível ou conflitante é ignorada e gera aviso', () => {
+  const p = withPI('4-4-2', 'GK', ['get_further_forward']);
+  p.find((x) => x.slot === 'MCL').instructions = ['get_further_forward', 'hold_position'];
+  const v = E.validate(p, data);
+  assert.equal(v.ok, true);
+  assert.equal(v.warnings.length, 2);
+  const res = E.computePhase(p, 'ataque', data, {});
+  assert.deepEqual(byslot(res, 'GK').instructions, []);
+  assert.deepEqual(byslot(res, 'MCL').instructions, ['get_further_forward']);
+});
+
+test('PI já embutida na função fica indisponível (Atacante Interior + Cortar para dentro)', () => {
+  const pis = data.playerInstructions.instructions;
+  const info = E.slotInfo(data.formations, 'AML');
+  assert.equal(E.piAvailability(pis.cut_inside, { role: 'inside_forward' }, info).ok, false);
+  assert.equal(E.piAvailability(pis.cut_inside, { role: 'winger' }, info).ok, true);
+});
+
+test('modo edição continua inverso exato com PIs laterais ativas', () => {
+  const p = withPI('4-2-3-1-dm-wide', 'AMR', ['run_wide', 'get_further_forward']);
+  const res = E.computePhase(p, 'ataque', data, { widthInPossession: 1 });
+  const amr = byslot(res, 'AMR');
+  const ov = E.overrideFromPosition(amr, 75, 70);
+  const roles = E.applyOverride(data.roles, amr.role, amr.duty, 'ataque', ov);
+  const amr2 = byslot(E.computePhase(p, 'ataque', { ...data, roles }, { widthInPossession: 1 }), 'AMR');
+  assert.ok(Math.abs(amr2.x - 75) < 0.3 && Math.abs(amr2.y - 70) < 0.3, `${amr2.x},${amr2.y}`);
 });

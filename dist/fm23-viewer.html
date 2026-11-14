@@ -68,7 +68,7 @@ button, select, input { font: inherit; color: inherit; }
   width: 34px; height: 34px; cursor: pointer; flex: none;
 }
 
-.layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 16px; padding: 16px; align-items: start; }
+.layout { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 16px; padding: 16px; align-items: start; }
 .layout.collapsed { grid-template-columns: minmax(0, 1fr); }
 .layout.collapsed .panel { display: none; }
 
@@ -118,13 +118,27 @@ select {
 
 /* lista de jogadores */
 .player-list { display: flex; flex-direction: column; gap: 6px; }
-.prow { display: grid; grid-template-columns: 22px 44px minmax(0, 1fr) 96px; gap: 6px; align-items: center; }
+.prow { display: grid; grid-template-columns: 22px 40px minmax(0, 1fr) 80px 38px; gap: 5px; align-items: center; }
 .prow .num {
   width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
   font-size: 11px; font-weight: 700; color: #fff;
 }
 .prow .num[data-band="GK"] { color: #1b1b1b; }
 .prow .slotname { font-size: 12px; font-weight: 600; color: var(--muted); }
+.pi-btn {
+  border: 1px solid var(--border); background: var(--panel-2); border-radius: 7px; min-height: 30px;
+  font-size: 11px; font-weight: 700; color: var(--muted); cursor: pointer; padding: 0 2px; white-space: nowrap;
+}
+.pi-btn.has { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.pi-btn.open { outline: 2px solid var(--accent); outline-offset: 1px; }
+.pi-box { margin: 0 0 6px 27px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); }
+.pi-box .check { font-size: 12.5px; margin: 4px 0; }
+.pi-box .check.disabled { color: var(--muted); opacity: .7; cursor: not-allowed; }
+.pi-box .pi-text { flex: 1; min-width: 0; }
+.pi-box .check small { display: block; color: var(--muted); font-size: 11.5px; }
+.pi-group { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 6px 0 2px; }
+.pi-group:first-child { margin-top: 0; }
+.btn.small { min-height: 28px; padding: 3px 10px; font-size: 12px; margin-top: 6px; }
 .prow select { font-size: 12.5px; padding: 4px 6px; min-height: 30px; width: 100%; }
 
 .ti-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
@@ -166,6 +180,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
 .pitch .pl[data-band="GK"] .ab { fill: #1b1b1b; }
 .pitch .nb { fill: #0f1512; stroke: #fff; stroke-width: .18; }
 .pitch .no { fill: #fff; font-size: 1.25px; font-weight: 700; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.pitch .pi-dot { fill: #fff; stroke: #0f1512; stroke-width: .2; }
 .pitch .pl.hl .pc { stroke: #ffeb3b; stroke-width: .55; }
 
 .anim-view { max-width: 560px; margin: 0 auto; }
@@ -202,7 +217,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
   .brand p { display: none; }
 }
 @media (max-width: 400px) {
-  .prow { grid-template-columns: 22px 38px minmax(0, 1fr) 84px; gap: 4px; }
+  .prow { grid-template-columns: 22px 36px minmax(0, 1fr) 76px 36px; gap: 4px; }
   .tab { padding: 6px 7px; font-size: 12px; }
   .main-bar .btn { padding: 6px 9px; }
 }
@@ -283,6 +298,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
   <script type="application/json" id="data-formations">{"laneX":{"L":8,"CL":35,"C":50,"CR":65,"R":92},"stLaneX":{"CL":40,"C":50,"CR":60},"bandY":{"GK":4,"D":22,"DM":34,"M":48,"AM":64,"ST":78},"slots":{"GK":{"band":"GK","lane":"C"},"DL":{"band":"D","lane":"L"},"DCL":{"band":"D","lane":"CL"},"DC":{"band":"D","lane":"C"},"DCR":{"band":"D","lane":"CR"},"DR":{"band":"D","lane":"R"},"WBL":{"band":"DM","lane":"L"},"DMCL":{"band":"DM","lane":"CL"},"DMC":{"band":"DM","lane":"C"},"DMCR":{"band":"DM","lane":"CR"},"WBR":{"band":"DM","lane":"R"},"ML":{"band":"M","lane":"L"},"MCL":{"band":"M","lane":"CL"},"MC":{"band":"M","lane":"C"},"MCR":{"band":"M","lane":"CR"},"MR":{"band":"M","lane":"R"},"AML":{"band":"AM","lane":"L"},"AMCL":{"band":"AM","lane":"CL"},"AMC":{"band":"AM","lane":"C"},"AMCR":{"band":"AM","lane":"CR"},"AMR":{"band":"AM","lane":"R"},"STCL":{"band":"ST","lane":"CL"},"STC":{"band":"ST","lane":"C"},"STCR":{"band":"ST","lane":"CR"}},"phases":{"defendendo":{"label":"Defendendo","y":{"GK":4,"D":25,"DM":33,"M":42,"AM":50,"ST":56},"width":0.75},"saindo":{"label":"Saindo com a bola","y":{"GK":4,"D":15,"DM":28,"M":42,"AM":56,"ST":70},"width":1.05,"cbSplit":{"2":[32,68],"3":[25,50,75]},"ball":{"x":54,"y":6}},"ataque":{"label":"No ataque","y":{"GK":10,"D":45,"DM":55,"M":66,"AM":78,"ST":88},"width":1,"ball":{"x":50,"y":80}}},"defaultRoles":{"GK":["goalkeeper","D"],"DL":["full_back","S"],"DR":["full_back","S"],"DCL":["central_defender","D"],"DC":["central_defender","D"],"DCR":["central_defender","D"],"WBL":["wing_back","S"],"WBR":["wing_back","S"],"DMCL":["defensive_midfielder","S"],"DMC":["defensive_midfielder","D"],"DMCR":["defensive_midfielder","S"],"ML":["wide_midfielder","S"],"MR":["wide_midfielder","S"],"MCL":["central_midfielder","S"],"MC":["central_midfielder","S"],"MCR":["central_midfielder","S"],"AML":["winger","A"],"AMR":["winger","A"],"AMCL":["attacking_midfielder","S"],"AMC":["attacking_midfielder","S"],"AMCR":["attacking_midfielder","S"],"STCL":["advanced_forward","A"],"STC":["advanced_forward","A"],"STCR":["advanced_forward","A"]},"presets":[{"id":"4-4-2","label":"4-4-2","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DL","role":"full_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"central_defender","duty":"D"},{"slot":"DR","role":"full_back","duty":"S"},{"slot":"ML","role":"wide_midfielder","duty":"S"},{"slot":"MCL","role":"central_midfielder","duty":"D"},{"slot":"MCR","role":"box_to_box","duty":"S"},{"slot":"MR","role":"winger","duty":"A"},{"slot":"STCL","role":"deep_lying_forward","duty":"S"},{"slot":"STCR","role":"advanced_forward","duty":"A"}]},{"id":"4-2-3-1-wide","label":"4-2-3-1 Wide (MC + AM aberto)","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DL","role":"full_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"ball_playing_defender","duty":"D"},{"slot":"DR","role":"full_back","duty":"S"},{"slot":"MCL","role":"deep_lying_playmaker","duty":"S"},{"slot":"MCR","role":"box_to_box","duty":"S"},{"slot":"AML","role":"inside_forward","duty":"A"},{"slot":"AMC","role":"attacking_midfielder","duty":"A"},{"slot":"AMR","role":"winger","duty":"A"},{"slot":"STC","role":"advanced_forward","duty":"A"}]},{"id":"4-2-3-1-dm-wide","label":"4-2-3-1 DM Wide","players":[{"slot":"GK","role":"sweeper_keeper","duty":"S"},{"slot":"DL","role":"inverted_wing_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"ball_playing_defender","duty":"D"},{"slot":"DR","role":"full_back","duty":"A"},{"slot":"DMCL","role":"defensive_midfielder","duty":"S"},{"slot":"DMCR","role":"deep_lying_playmaker","duty":"S"},{"slot":"AML","role":"inside_forward","duty":"A"},{"slot":"AMC","role":"advanced_playmaker","duty":"A"},{"slot":"AMR","role":"winger","duty":"A"},{"slot":"STC","role":"advanced_forward","duty":"A"}]},{"id":"4-3-3-dm-wide","label":"4-3-3 DM Wide","players":[{"slot":"GK","role":"sweeper_keeper","duty":"S"},{"slot":"DL","role":"full_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"ball_playing_defender","duty":"D"},{"slot":"DR","role":"wing_back","duty":"A"},{"slot":"DMC","role":"half_back","duty":"D"},{"slot":"MCL","role":"mezzala","duty":"A"},{"slot":"MCR","role":"carrilero","duty":"S"},{"slot":"AML","role":"inside_forward","duty":"A"},{"slot":"AMR","role":"winger","duty":"A"},{"slot":"STC","role":"advanced_forward","duty":"A"}]},{"id":"4-1-4-1-dm-wide","label":"4-1-4-1 DM Wide","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DL","role":"full_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"central_defender","duty":"D"},{"slot":"DR","role":"full_back","duty":"S"},{"slot":"DMC","role":"anchor","duty":"D"},{"slot":"ML","role":"winger","duty":"A"},{"slot":"MCL","role":"box_to_box","duty":"S"},{"slot":"MCR","role":"advanced_playmaker","duty":"S"},{"slot":"MR","role":"winger","duty":"S"},{"slot":"STC","role":"pressing_forward","duty":"S"}]},{"id":"4-4-1-1","label":"4-4-1-1","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DL","role":"full_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"central_defender","duty":"D"},{"slot":"DR","role":"full_back","duty":"S"},{"slot":"ML","role":"wide_midfielder","duty":"S"},{"slot":"MCL","role":"ball_winning_midfielder","duty":"D"},{"slot":"MCR","role":"central_midfielder","duty":"S"},{"slot":"MR","role":"wide_midfielder","duty":"S"},{"slot":"AMC","role":"shadow_striker","duty":"A"},{"slot":"STC","role":"target_forward","duty":"S"}]},{"id":"3-5-2-wb","label":"3-5-2 com alas (WBL/WBR)","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DCL","role":"wide_centre_back","duty":"S"},{"slot":"DC","role":"central_defender","duty":"D"},{"slot":"DCR","role":"ball_playing_defender","duty":"D"},{"slot":"WBL","role":"wing_back","duty":"S"},{"slot":"DMC","role":"defensive_midfielder","duty":"D"},{"slot":"MCL","role":"central_midfielder","duty":"S"},{"slot":"MCR","role":"mezzala","duty":"A"},{"slot":"WBR","role":"wing_back","duty":"A"},{"slot":"STCL","role":"deep_lying_forward","duty":"S"},{"slot":"STCR","role":"advanced_forward","duty":"A"}]},{"id":"3-4-3","label":"3-4-3","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DC","role":"central_defender","duty":"D"},{"slot":"DCR","role":"central_defender","duty":"D"},{"slot":"ML","role":"wide_midfielder","duty":"S"},{"slot":"MCL","role":"central_midfielder","duty":"D"},{"slot":"MCR","role":"box_to_box","duty":"S"},{"slot":"MR","role":"wide_midfielder","duty":"S"},{"slot":"AML","role":"inside_forward","duty":"A"},{"slot":"AMR","role":"inside_forward","duty":"A"},{"slot":"STC","role":"advanced_forward","duty":"A"}]},{"id":"5-2-1-2-wb","label":"5-2-1-2 WB","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"WBL","role":"wing_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DC","role":"central_defender","duty":"Co"},{"slot":"DCR","role":"central_defender","duty":"D"},{"slot":"WBR","role":"wing_back","duty":"S"},{"slot":"MCL","role":"deep_lying_playmaker","duty":"S"},{"slot":"MCR","role":"box_to_box","duty":"S"},{"slot":"AMC","role":"attacking_midfielder","duty":"A"},{"slot":"STCL","role":"advanced_forward","duty":"A"},{"slot":"STCR","role":"deep_lying_forward","duty":"S"}]},{"id":"4-3-1-2-diamond","label":"4-3-1-2 losango","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DL","role":"wing_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"ball_playing_defender","duty":"D"},{"slot":"DR","role":"wing_back","duty":"S"},{"slot":"DMC","role":"defensive_midfielder","duty":"D"},{"slot":"MCL","role":"carrilero","duty":"S"},{"slot":"MCR","role":"mezzala","duty":"S"},{"slot":"AMC","role":"advanced_playmaker","duty":"A"},{"slot":"STCL","role":"advanced_forward","duty":"A"},{"slot":"STCR","role":"deep_lying_forward","duty":"S"}]}],"defaultPreset":"4-2-3-1-dm-wide"}</script>
   <script type="application/json" id="data-roles">{"goalkeeper":{"label":"Goleiro","en":"Goalkeeper","abbr":"GK","slots":["GK"],"duties":{"D":{}}},"sweeper_keeper":{"label":"Goleiro Líbero","en":"Sweeper Keeper","abbr":"SK","slots":["GK"],"duties":{"D":{},"S":{"saindo":{"y":8},"ataque":{"y":15}},"A":{"saindo":{"y":12},"ataque":{"y":20}}}},"central_defender":{"label":"Zagueiro Central","en":"Central Defender","abbr":"CD","slots":["DCL","DC","DCR"],"duties":{"D":{},"St":{},"Co":{}}},"ball_playing_defender":{"label":"Zagueiro com Bola","en":"Ball-Playing Defender","abbr":"BPD","slots":["DCL","DC","DCR"],"duties":{"D":{},"St":{},"Co":{}}},"no_nonsense_cb":{"label":"Zagueiro Simples","en":"No-Nonsense Centre-Back","abbr":"NCB","slots":["DCL","DC","DCR"],"duties":{"D":{},"Co":{}}},"wide_centre_back":{"label":"Zagueiro Aberto","en":"Wide Centre-Back","abbr":"WCB","slots":["DCL","DCR"],"requiresBack3":true,"duties":{"D":{},"S":{},"A":{"ataque":{"x":20,"y":60}}}},"libero":{"label":"Líbero","en":"Libero","abbr":"LIB","slots":["DCL","DC","DCR"],"uncertain":true,"duties":{"S":{},"A":{}}},"full_back":{"label":"Lateral","en":"Full-Back","abbr":"FB","slots":["DL","DR"],"duties":{"D":{"saindo":{"y":22},"ataque":{"y":45}},"S":{"saindo":{"y":28},"ataque":{"y":62}},"A":{"saindo":{"y":32},"ataque":{"y":72}},"Au":{}}},"wing_back":{"label":"Ala","en":"Wing-Back","abbr":"WB","slots":["DL","DR","WBL","WBR"],"duties":{"D":{},"S":{"saindo":{"y":32},"ataque":{"y":72}},"A":{"saindo":{"y":38},"ataque":{"x":5,"y":85}},"Au":{}}},"complete_wing_back":{"label":"Ala Completo","en":"Complete Wing-Back","abbr":"CWB","slots":["DL","DR","WBL","WBR"],"duties":{"S":{},"A":{"saindo":{"y":38},"ataque":{"x":5,"y":85}}}},"inverted_wing_back":{"label":"Ala Invertido","en":"Inverted Wing-Back","abbr":"IWB","slots":["DL","DR","WBL","WBR"],"duties":{"D":{"saindo":{"effects":["fullback_hold"]}},"S":{"saindo":{"x":35,"y":32,"effects":["fullback_hold"]},"ataque":{"x":38,"y":55}},"A":{"saindo":{"x":35,"y":36,"effects":["fullback_hold"]},"ataque":{"x":35,"y":70}},"Au":{"saindo":{"effects":["fullback_hold"]}}}},"no_nonsense_fb":{"label":"Lateral Simples","en":"No-Nonsense Full-Back","abbr":"NFB","slots":["DL","DR"],"duties":{"D":{}}},"defensive_midfielder":{"label":"Volante","en":"Defensive Midfielder","abbr":"DM","slots":["DMCL","DMC","DMCR"],"duties":{"D":{},"S":{}}},"deep_lying_playmaker":{"label":"Construtor Recuado","en":"Deep-Lying Playmaker","abbr":"DLP","slots":["DMCL","DMC","DMCR","MCL","MC","MCR"],"duties":{"D":{"saindo":{"if":"dlp_drop","onlyBands":["DM"],"x":50,"y":15,"effects":["split_cbs_wide"]}},"S":{}}},"anchor":{"label":"Âncora","en":"Anchor","abbr":"A","slots":["DMCL","DMC","DMCR"],"duties":{"D":{"defendendo":{"dy":-4},"saindo":{"y":26},"ataque":{"y":48}}}},"half_back":{"label":"Meia-Defensivo Recuado","en":"Half-Back","abbr":"HB","slots":["DMCL","DMC","DMCR"],"duties":{"D":{"defendendo":{"dy":-3},"saindo":{"x":50,"y":15,"effects":["split_cbs_wide"]},"ataque":{"x":50,"y":42}}}},"ball_winning_midfielder":{"label":"Recuperador","en":"Ball-Winning Midfielder","abbr":"BWM","slots":["DMCL","DMC","DMCR","MCL","MC","MCR"],"duties":{"D":{},"S":{}}},"regista":{"label":"Regista","en":"Regista","abbr":"REG","slots":["DMCL","DMC","DMCR"],"duties":{"S":{"saindo":{"y":30},"ataque":{"y":58}}}},"roaming_playmaker":{"label":"Construtor Móvel","en":"Roaming Playmaker","abbr":"RPM","slots":["DMCL","DMC","DMCR","MCL","MC","MCR"],"duties":{"S":{}}},"segundo_volante":{"label":"Segundo Volante","en":"Segundo Volante","abbr":"VOL","slots":["DMCL","DMC","DMCR"],"duties":{"S":{},"A":{"ataque":{"y":76}}}},"central_midfielder":{"label":"Médio Centro","en":"Central Midfielder","abbr":"CM","slots":["MCL","MC","MCR"],"duties":{"D":{},"S":{},"A":{},"Au":{}}},"box_to_box":{"label":"Box-to-Box","en":"Box-to-Box Midfielder","abbr":"BBM","slots":["MCL","MC","MCR"],"duties":{"S":{"ataque":{"y":72}}}},"advanced_playmaker":{"label":"Construtor Avançado","en":"Advanced Playmaker","abbr":"AP","slots":["MCL","MC","MCR","AMCL","AMC","AMCR","AML","AMR"],"duties":{"S":{},"A":{}}},"mezzala":{"label":"Mezzala","en":"Mezzala","abbr":"MEZ","slots":["MCL","MC","MCR"],"duties":{"S":{},"A":{"saindo":{"x":28},"ataque":{"x":30,"y":80}}}},"carrilero":{"label":"Carrilero","en":"Carrilero","abbr":"CAR","slots":["MCL","MC","MCR"],"duties":{"S":{"saindo":{"x":38},"ataque":{"x":35,"y":64}}}},"wide_midfielder":{"label":"Médio Ala","en":"Wide Midfielder","abbr":"WM","slots":["ML","MR"],"duties":{"D":{},"S":{},"A":{},"Au":{}}},"winger":{"label":"Extremo","en":"Winger","abbr":"W","slots":["ML","MR","AML","AMR"],"duties":{"S":{},"A":{"saindo":{"x":6},"ataque":{"x":5,"y":86}}}},"wide_playmaker":{"label":"Construtor Aberto","en":"Wide Playmaker","abbr":"WP","slots":["ML","MR"],"duties":{"S":{"saindo":{"x":25},"ataque":{"x":30,"y":68}},"A":{}}},"defensive_winger":{"label":"Extremo Defensivo","en":"Defensive Winger","abbr":"DW","slots":["ML","MR"],"duties":{"D":{"defendendo":{"y":30},"ataque":{"y":70}},"S":{}}},"inverted_winger":{"label":"Extremo Invertido","en":"Inverted Winger","abbr":"IW","slots":["ML","MR","AML","AMR"],"duties":{"S":{"ataque":{"x":28,"y":78}},"A":{}}},"attacking_midfielder":{"label":"Meia Ofensivo","en":"Attacking Midfielder","abbr":"AM","slots":["AMCL","AMC","AMCR"],"duties":{"S":{},"A":{}}},"shadow_striker":{"label":"Segundo Atacante","en":"Shadow Striker","abbr":"SS","slots":["AMCL","AMC","AMCR"],"duties":{"A":{"ataque":{"y":86}}}},"enganche":{"label":"Enganche","en":"Enganche","abbr":"EG","slots":["AMCL","AMC","AMCR"],"duties":{"S":{"defendendo":{"dy":4},"ataque":{"y":72}}}},"trequartista":{"label":"Trequartista","en":"Trequartista","abbr":"T","slots":["AMCL","AMC","AMCR","AML","AMR","STCL","STC","STCR"],"duties":{"A":{}}},"inside_forward":{"label":"Atacante Interior","en":"Inside Forward","abbr":"IF","slots":["AML","AMR"],"duties":{"S":{},"A":{"ataque":{"x":32,"y":88}}}},"raumdeuter":{"label":"Raumdeuter","en":"Raumdeuter","abbr":"RMD","slots":["AML","AMR"],"duties":{"A":{"ataque":{"x":30,"y":90}}}},"wide_target_forward":{"label":"Pivô Aberto","en":"Wide Target Forward","abbr":"WTF","slots":["AML","AMR"],"duties":{"S":{},"A":{}}},"advanced_forward":{"label":"Avançado","en":"Advanced Forward","abbr":"AF","slots":["STCL","STC","STCR"],"duties":{"A":{"defendendo":{"dy":6},"saindo":{"y":76},"ataque":{"y":92}}}},"complete_forward":{"label":"Atacante Completo","en":"Complete Forward","abbr":"CF","slots":["STCL","STC","STCR"],"duties":{"S":{},"A":{}}},"deep_lying_forward":{"label":"Atacante Recuado","en":"Deep-Lying Forward","abbr":"DLF","slots":["STCL","STC","STCR"],"duties":{"S":{"saindo":{"y":62},"ataque":{"y":78}},"A":{}}},"false_nine":{"label":"Falso 9","en":"False Nine","abbr":"F9","slots":["STCL","STC","STCR"],"duties":{"S":{"saindo":{"y":58},"ataque":{"y":72}}}},"poacher":{"label":"Matador","en":"Poacher","abbr":"P","slots":["STCL","STC","STCR"],"duties":{"A":{"defendendo":{"dy":6},"ataque":{"y":93}}}},"pressing_forward":{"label":"Atacante de Pressão","en":"Pressing Forward","abbr":"PF","slots":["STCL","STC","STCR"],"duties":{"D":{"defendendo":{"dy":4},"ataque":{"y":82}},"S":{},"A":{}}},"target_forward":{"label":"Pivô","en":"Target Forward","abbr":"TF","slots":["STCL","STC","STCR"],"duties":{"S":{},"A":{"ataque":{"y":90}}}}}</script>
   <script type="application/json" id="data-instructions">{"mentality":{"label":"Mentalidade","en":"Mentality","default":3,"options":[{"label":"Muito Defensiva","en":"Very Defensive","dy":-8},{"label":"Defensiva","en":"Defensive","dy":-5},{"label":"Cautelosa","en":"Cautious","dy":-2},{"label":"Equilibrada","en":"Balanced","dy":0},{"label":"Positiva","en":"Positive","dy":2},{"label":"Ofensiva","en":"Attacking","dy":5},{"label":"Muito Ofensiva","en":"Very Attacking","dy":8}]},"defensiveLine":{"label":"Linha defensiva","en":"Defensive Line","default":2,"options":[{"label":"Muito mais baixa","en":"Much Deeper","y":15},{"label":"Mais baixa","en":"Deeper","y":20},{"label":"Padrão","en":"Standard","y":25},{"label":"Mais alta","en":"Higher","y":30},{"label":"Muito mais alta","en":"Much Higher","y":35}]},"lineOfEngagement":{"label":"Linha de pressão","en":"Line of Engagement","default":1,"options":[{"label":"Mais baixa","en":"Lower","dy":-8},{"label":"Padrão","en":"Standard","dy":0},{"label":"Mais alta","en":"Higher","dy":8}]},"widthInPossession":{"label":"Largura com bola","en":"Attacking Width","default":2,"options":[{"label":"Bem estreita","en":"Much Narrower","factor":0.8},{"label":"Estreita","en":"Narrower","factor":0.9},{"label":"Padrão","en":"Standard","factor":1},{"label":"Larga","en":"Wider","factor":1.08},{"label":"Bem larga","en":"Much Wider","factor":1.15}]},"flags":{"dlp_drop":{"label":"Construtor Recuado (D) no meio-defensivo recua entre os DCs","default":false}},"engine":{"collisionMinDist":6,"collisionIterations":5,"collisionAspect":[0.68,1.05],"clamp":[2,98],"insideDefault":8}}</script>
+  <script type="application/json" id="data-player-instructions">{"groups":{"com_bola":"Com a bola","sem_bola":"Sem a bola"},"instructions":{"get_further_forward":{"label":"Avançar mais","en":"Get Further Forward","group":"com_bola","excludes":["hold_position"],"notBands":["GK"],"phases":{"saindo":{"dy":3},"ataque":{"dy":6}}},"hold_position":{"label":"Manter posição","en":"Hold Position","group":"com_bola","excludes":["get_further_forward"],"notBands":["GK"],"phases":{"saindo":{"dy":-2},"ataque":{"dy":-8}}},"stay_wider":{"label":"Abrir mais","en":"Stay Wider","group":"com_bola","excludes":["sit_narrower"],"notBands":["GK"],"sides":["L","R"],"excludeRoles":["winger"],"phases":{"saindo":{"outside":4},"ataque":{"outside":6}}},"sit_narrower":{"label":"Fechar mais (jogar por dentro)","en":"Sit Narrower","group":"com_bola","excludes":["stay_wider"],"notBands":["GK"],"sides":["L","R"],"excludeRoles":["inverted_wing_back"],"phases":{"saindo":{"inside":4},"ataque":{"inside":7}}},"cut_inside":{"label":"Cortar para dentro com a bola","en":"Cut Inside With Ball","group":"com_bola","excludes":["run_wide"],"lanes":["L","R"],"notBands":["GK"],"excludeRoles":["inside_forward","inverted_winger"],"phases":{"ataque":{"inside":5}}},"run_wide":{"label":"Correr pela lateral com a bola","en":"Run Wide With Ball","group":"com_bola","excludes":["cut_inside"],"lanes":["L","R"],"notBands":["GK"],"excludeRoles":["winger"],"phases":{"ataque":{"outside":4}}},"move_into_channels":{"label":"Mover-se para os corredores","en":"Move Into Channels","group":"com_bola","bands":["AM","ST"],"lanes":["CL","CR"],"phases":{"saindo":{"outside":4},"ataque":{"outside":8}}},"cross_from_byline":{"label":"Cruzar da linha de fundo","en":"Cross From Byline","group":"com_bola","excludes":["cross_from_deep"],"lanes":["L","R"],"notBands":["GK"],"phases":{"ataque":{"dy":3}}},"cross_from_deep":{"label":"Cruzar de trás","en":"Cross From Deep","group":"com_bola","excludes":["cross_from_byline"],"lanes":["L","R"],"notBands":["GK"],"phases":{"ataque":{"dy":-5}}},"close_down_more":{"label":"Pressionar mais","en":"Close Down More","group":"sem_bola","excludes":["close_down_less"],"notBands":["GK"],"phases":{"defendendo":{"dy":3}}},"close_down_less":{"label":"Pressionar menos","en":"Close Down Less","group":"sem_bola","excludes":["close_down_more"],"notBands":["GK"],"phases":{"defendendo":{"dy":-3}}}}}</script>
   <script>
 /*
  * FM23 Positioning Viewer — motor de posicionamento (funções puras).
@@ -384,6 +400,11 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
       if (role && role.requiresBack3 && cbCount !== 3) {
         warnings.push(p.slot + ': ' + role.label + ' só faz sentido numa linha de 3 zagueiros.');
       }
+      if (!formations.slots[p.slot] || !p.instructions || !p.instructions.length) return;
+      var pis = (data.playerInstructions || {}).instructions || {};
+      var r = resolvePlayerInstructions(p, slotInfo(formations, p.slot), pis);
+      r.unknown.forEach(function (k) { warnings.push(p.slot + ': instrução individual desconhecida "' + k + '".'); });
+      r.ignored.forEach(function (i) { warnings.push(p.slot + ': "' + pis[i.key].label + '" ignorada — ' + i.reason + '.'); });
     });
     return { ok: errors.length === 0, errors: errors, warnings: warnings };
   }
@@ -420,6 +441,37 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     if (rule.if && !flags[rule.if]) return null;
     if (rule.onlyBands && rule.onlyBands.indexOf(p.band) < 0) return null;
     return rule;
+  }
+
+  // ---------- instruções individuais (PIs) ----------
+
+  var BAND_NAMES = { GK: 'goleiro', D: 'defesa', DM: 'meio-defensivo', M: 'meio', AM: 'meia ofensivo', ST: 'ataque' };
+
+  /** A instrução `def` está disponível para o jogador `p` no slot descrito por `info`? */
+  function piAvailability(def, p, info) {
+    if (def.notBands && def.notBands.indexOf(info.band) >= 0) return { ok: false, reason: 'não disponível para ' + BAND_NAMES[info.band] };
+    if (def.bands && def.bands.indexOf(info.band) < 0) return { ok: false, reason: 'só para ' + def.bands.map(function (b) { return BAND_NAMES[b]; }).join('/') };
+    if (def.lanes && def.lanes.indexOf(info.lane) < 0) return { ok: false, reason: 'não disponível neste corredor' };
+    if (def.sides && def.sides.indexOf(info.side) < 0) return { ok: false, reason: 'só para jogadores com lado definido (não central)' };
+    if (def.excludeRoles && def.excludeRoles.indexOf(p.role) >= 0) return { ok: false, reason: 'já embutida na função' };
+    return { ok: true };
+  }
+
+  /** Separa as PIs do jogador em aplicadas, ignoradas (indisponíveis/conflitantes) e desconhecidas. */
+  function resolvePlayerInstructions(p, info, pis) {
+    var applied = [], ignored = [], unknown = [];
+    (p.instructions || []).forEach(function (k) {
+      var def = pis[k];
+      if (!def) { unknown.push(k); return; }
+      var av = piAvailability(def, p, info);
+      if (!av.ok) { ignored.push({ key: k, reason: av.reason }); return; }
+      var clash = applied.filter(function (a) {
+        return (def.excludes || []).indexOf(a) >= 0 || (pis[a].excludes || []).indexOf(k) >= 0;
+      })[0];
+      if (clash) { ignored.push({ key: k, reason: 'conflita com "' + pis[clash].label + '"' }); return; }
+      applied.push(k);
+    });
+    return { applied: applied, ignored: ignored, unknown: unknown };
   }
 
   // ---------- efeitos especiais ----------
@@ -504,6 +556,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     var ti = resolveInstructions(instructions, tiState);
     var withBall = phase !== 'defendendo';
     var nums = numberPlayers(players, formations);
+    var pis = (data.playerInstructions || {}).instructions || {};
 
     // 1. posição base + transformação de fase
     var list = players.map(function (p, i) {
@@ -515,7 +568,8 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
         isCB: isCentreBack(formations, p.slot),
         bx: 50 + (info.x - 50) * ph.width,
         by: ph.y[info.band],
-        dx: 0, dy: 0, inside: 0, rule: null
+        dx: 0, dy: 0, inside: 0, outside: 0, latShift: 0, rule: null,
+        instructions: resolvePlayerInstructions(p, info, pis).applied
       };
     });
 
@@ -536,7 +590,20 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
       if (rule.dx && p.side !== 'C') p.dx = mirror ? -rule.dx : rule.dx;
       if (rule.dy) p.dy = rule.dy;
       if (rule.inside && p.side !== 'C') p.inside = rule.inside === true ? (eng.insideDefault || 8) : rule.inside;
+      if (rule.outside && p.side !== 'C') p.outside = rule.outside;
       (rule.effects || []).forEach(function (e) { pending.push({ name: e, source: p }); });
+    });
+
+    // 2b. instruções individuais: somam deltas por fase (dx espelhado; inside/outside relativos ao centro)
+    list.forEach(function (p) {
+      p.instructions.forEach(function (k) {
+        var eff = pis[k].phases && pis[k].phases[phase];
+        if (!eff) return;
+        if (eff.dx && p.side !== 'C') p.dx += p.side === 'R' ? -eff.dx : eff.dx;
+        if (eff.dy) p.dy += eff.dy;
+        if (eff.inside && p.side !== 'C') p.inside += eff.inside;
+        if (eff.outside && p.side !== 'C') p.outside += eff.outside;
+      });
     });
 
     // 3. efeitos sobre outros jogadores
@@ -556,7 +623,16 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
 
       var x = 50 + (p.bx - 50) * p.tiW + p.dx;
       var y = p.by + p.tiDy + p.dy;
-      if (p.inside) x += (x < 50 ? 1 : -1) * Math.min(p.inside, Math.abs(x - 50));
+      if (p.side !== 'C' && (p.inside || p.outside)) {
+        var toCentre = p.side === 'L' ? 1 : -1;
+        var shift = -p.outside * toCentre;
+        var after = x + shift;
+        // "para dentro" nunca cruza o meio do campo
+        var room = Math.max(0, toCentre * (50 - after));
+        shift += toCentre * Math.min(p.inside, room);
+        x += shift;
+        p.latShift = shift;
+      }
       p.x = x; p.y = y;
     });
 
@@ -583,7 +659,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
   function overrideFromPosition(cp, fx, fy) {
     var out = { y: Math.round((fy - cp.tiDy - cp.dy) * 10) / 10 };
     if (cp.side !== 'C') {
-      var x = 50 + (fx - cp.dx - 50) / (cp.tiW || 1);
+      var x = 50 + (fx - cp.dx - (cp.latShift || 0) - 50) / (cp.tiW || 1);
       if (cp.side === 'R') x = 100 - x;
       out.x = Math.round(x * 10) / 10;
     }
@@ -603,6 +679,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     PHASES: PHASES, BAND_ORDER: BAND_ORDER, LANE_ORDER: LANE_ORDER, DUTIES: DUTIES, EFFECTS: EFFECTS,
     slotInfo: slotInfo, slotOrder: slotOrder, numberPlayers: numberPlayers, rolesForSlot: rolesForSlot,
     validate: validate, resolveInstructions: resolveInstructions,
+    piAvailability: piAvailability, resolvePlayerInstructions: resolvePlayerInstructions,
     computePhase: computePhase, computeAll: computeAll,
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,
     overrideFromPosition: overrideFromPosition, applyOverride: applyOverride
@@ -632,7 +709,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
 
   var data = null, baseRoles = null, lastComputed = null;
   var state = null;
-  var ui = { ghost: false, edit: false, tab: 'defendendo', collapsed: false, selectedSlot: null };
+  var ui = { ghost: false, edit: false, tab: 'defendendo', collapsed: false, selectedSlot: null, piOpen: null };
   var anim = { on: false, step: 0, timer: null };
   var drag = null;
 
@@ -695,15 +772,15 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
 
   function loadData() {
     function inline(id) { var s = document.getElementById(id); return s ? JSON.parse(s.textContent) : null; }
-    var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions');
-    if (f && r && t) return Promise.resolve({ formations: f, roles: r, instructions: t });
-    var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json'];
+    var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions'), pi = inline('data-player-instructions');
+    if (f && r && t && pi) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi });
+    var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json', 'data/player-instructions.json'];
     return Promise.all(urls.map(function (u) {
       return fetch(u, { cache: 'no-cache' }).then(function (res) {
         if (!res.ok) throw new Error(u + ': HTTP ' + res.status);
         return res.json();
       });
-    })).then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2] }; });
+    })).then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3] }; });
   }
 
   function isRolesObj(o) {
@@ -741,8 +818,24 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     return !!(r && r.slots.indexOf(slot) >= 0 && r.duties[duty]);
   }
 
-  /** Garante função/tarefa válidas para o slot (após mover jogador ou importar regras). */
+  function piDefs() { return (data.playerInstructions && data.playerInstructions.instructions) || {}; }
+
+  /** Remove instruções individuais que não valem para o slot/função atuais. */
+  function prunePIs(p) {
+    if (!p.instructions || !data.formations.slots[p.slot]) return p;
+    var info = E.slotInfo(data.formations, p.slot);
+    var kept = E.resolvePlayerInstructions(p, info, piDefs()).applied;
+    if (kept.length) p.instructions = kept; else delete p.instructions;
+    return p;
+  }
+
+  /** Garante função/tarefa válidas para o slot (após mover jogador ou importar regras) e PIs compatíveis. */
   function fixPlayer(p) {
+    fixRole(p);
+    return prunePIs(p);
+  }
+
+  function fixRole(p) {
     if (validRoleFor(p.slot, p.role, p.duty)) return p;
     var r = data.roles[p.role];
     if (r && r.slots.indexOf(p.slot) >= 0) { p.duty = Object.keys(r.duties)[0]; return p; }
@@ -802,6 +895,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
       legend.appendChild(s);
     });
     legend.appendChild(el('span', null, '○ bola'));
+    legend.appendChild(el('span', null, '• ponto branco = jogador com instruções individuais'));
     legend.appendChild(el('span', null, 'Linhas tracejadas = terços do campo'));
 
     $('optGhost').checked = ui.ghost;
@@ -834,7 +928,11 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
         if (!v.ok) { toast('Tática inválida: ' + v.errors[0], 6000); return; }
         state = {
           presetId: obj.presetId || state.presetId,
-          players: obj.players.map(function (p) { return { slot: p.slot, role: p.role, duty: p.duty }; }),
+          players: obj.players.map(function (p) {
+            var q = { slot: p.slot, role: p.role, duty: p.duty };
+            if (Array.isArray(p.instructions) && p.instructions.length) q.instructions = p.instructions.filter(function (k) { return typeof k === 'string'; });
+            return q;
+          }),
           ti: Object.assign(defaultTI(), obj.ti || {})
         };
         renderAll(); syncTIForm();
@@ -947,8 +1045,10 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
 
   function playerTitle(cp) {
     var r = data.roles[cp.role], d = E.DUTIES[cp.duty] || { label: cp.duty, en: cp.duty };
-    return cp.num + ' · ' + cp.slot + ' — ' + (r ? r.label + ' (' + r.en + ')' : cp.role) + ' · ' + d.label + ' (' + d.en + ')';
+    return cp.num + ' · ' + cp.slot + ' — ' + (r ? r.label + ' (' + r.en + ')' : cp.role) + ' · ' + d.label + ' (' + d.en + ')' +
+      (cp.instructions.length ? ' · Instruções: ' + piLabels(cp.instructions) : '');
   }
+  function piLabels(keys) { return keys.map(function (k) { return piDefs()[k] ? piDefs()[k].label : k; }).join(', '); }
 
   function renderPitch(svg, result, opts) {
     var players = svg.querySelector('.players');
@@ -985,6 +1085,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
         svgEl('text', { class: 'ab' }, g);
         svgEl('circle', { cx: 2.35, cy: -2.35, r: 1.05, class: 'nb' }, g);
         svgEl('text', { x: 2.35, y: -2.3, class: 'no' }, g);
+        svgEl('circle', { cx: -2.35, cy: 2.35, r: 0.75, class: 'pi-dot' }, g);
         svgEl('title', {}, g);
         g.addEventListener('pointerenter', onPlayerHover);
         g.addEventListener('pointerleave', onPlayerLeave);
@@ -1001,6 +1102,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
       t.textContent = label;
       t.setAttribute('font-size', abbrFont(label.length));
       g.querySelector('.no').textContent = cp.num;
+      g.querySelector('.pi-dot').style.display = cp.instructions.length ? '' : 'none';
       g.querySelector('title').textContent = playerTitle(cp) + ' · x ' + fmt(cp.x) + ', y ' + fmt(cp.y);
     });
     players.querySelectorAll('g.pl').forEach(function (g) {
@@ -1029,6 +1131,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
       var keys = Object.keys(cp.rule).filter(function (k) { return k !== 'if' && k !== 'onlyBands'; });
       txt += ' · regra: ' + keys.map(function (k) { return k + ' ' + (Array.isArray(cp.rule[k]) ? cp.rule[k].join('+') : cp.rule[k]); }).join(', ');
     }
+    if (cp.instructions.length) txt += ' · instruções: ' + piLabels(cp.instructions);
     info.appendChild(document.createTextNode(txt));
   }
   function onPlayerLeave(e) { e.currentTarget.classList.remove('hl'); }
@@ -1173,6 +1276,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
       rs.addEventListener('change', function () {
         p.role = rs.value;
         if (!data.roles[p.role].duties[p.duty]) p.duty = Object.keys(data.roles[p.role].duties)[0];
+        prunePIs(p);
         renderAll();
       });
       row.appendChild(rs);
@@ -1184,8 +1288,62 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
       ds.value = p.duty;
       ds.addEventListener('change', function () { p.duty = ds.value; renderAll(); });
       row.appendChild(ds);
+
+      var n = (p.instructions || []).length, open = ui.piOpen === p.slot;
+      var pb = el('button', {
+        class: 'pi-btn' + (n ? ' has' : '') + (open ? ' open' : ''), type: 'button',
+        'aria-expanded': String(open), 'aria-label': 'Instruções individuais ' + p.slot,
+        title: n ? 'Instruções: ' + piLabels(p.instructions) : 'Adicionar instruções individuais'
+      }, n ? 'PI ' + n : 'PI');
+      pb.addEventListener('click', function () { ui.piOpen = open ? null : p.slot; renderPlayerList(); });
+      row.appendChild(pb);
       list.appendChild(row);
+      if (open) list.appendChild(renderPIBox(p));
     });
+  }
+
+  function renderPIBox(p) {
+    var defs = piDefs(), groups = (data.playerInstructions && data.playerInstructions.groups) || {};
+    var info = E.slotInfo(data.formations, p.slot);
+    var box = el('div', { class: 'pi-box' });
+    var current = p.instructions || [];
+    Object.keys(groups).forEach(function (gk) {
+      var keys = Object.keys(defs).filter(function (k) { return defs[k].group === gk; });
+      if (!keys.length) return;
+      box.appendChild(el('div', { class: 'pi-group' }, groups[gk]));
+      keys.forEach(function (k) {
+        var def = defs[k], av = E.piAvailability(def, p, info);
+        var lab = el('label', { class: 'check' + (av.ok ? '' : ' disabled'), title: av.ok ? def.en : av.reason });
+        var cb = el('input', { type: 'checkbox' });
+        cb.checked = current.indexOf(k) >= 0;
+        cb.disabled = !av.ok;
+        cb.addEventListener('change', function () { togglePI(p, k, cb.checked); });
+        lab.appendChild(cb);
+        var txt = el('span', { class: 'pi-text' }, def.label + ' (' + def.en + ')');
+        if (!av.ok) txt.appendChild(el('small', null, av.reason));
+        lab.appendChild(txt);
+        box.appendChild(lab);
+      });
+    });
+    if (current.length) {
+      var clr = el('button', { class: 'btn small', type: 'button' }, 'Limpar instruções');
+      clr.addEventListener('click', function () { delete p.instructions; renderAll(); });
+      box.appendChild(clr);
+    }
+    return box;
+  }
+
+  /** Liga/desliga uma PI; ao ligar, desliga as mutuamente exclusivas (como no jogo). */
+  function togglePI(p, key, on) {
+    var defs = piDefs(), list = (p.instructions || []).filter(function (k) { return k !== key; });
+    if (on) {
+      list = list.filter(function (k) {
+        return (defs[key].excludes || []).indexOf(k) < 0 && ((defs[k] || {}).excludes || []).indexOf(key) < 0;
+      });
+      list.push(key);
+    }
+    if (list.length) p.instructions = list; else delete p.instructions;
+    renderAll();
   }
 
   function renderValidation(v, extra) {

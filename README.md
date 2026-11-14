@@ -25,6 +25,7 @@ src/ui/styles.css
 data/formations.json     grade de slots, transformações por fase, atalhos de formação
 data/roles.json          funções, slots válidos, tarefas e regras por fase
 data/team-instructions.json  mentalidade, linha defensiva, linha de pressão, largura, parâmetros do motor
+data/player-instructions.json  instruções individuais (PIs): disponibilidade, exclusões e efeito por fase
 scripts/build.js         gera dist/fm23-viewer.html (tudo embutido)
 tests/engine.test.js     11 jogadores, validação, clamp, espelhamento, efeitos, colisão, inversa do modo edição
 ```
@@ -34,6 +35,26 @@ tests/engine.test.js     11 jogadores, validação, clamp, espelhamento, efeitos
 - Edite `data/roles.json` (regras por função+tarefa+fase: `x`, `y` absolutos ou `dx`, `dy`; `effects`; `if` p/ flag; `onlyBands`). `x` é sempre escrito para o lado esquerdo e espelhado à direita.
 - Ou, no site, ative **Modo editar regra**, arraste um jogador e depois **Exportar roles.json**. As edições ficam no `localStorage` até você exportar/resetar.
 - Novos efeitos: `FMEngine.registerEffect('nome', function (players, phase, source) { ... })`.
+
+## Instruções individuais (PIs)
+
+Botão **PI** ao lado de cada jogador abre as instruções disponíveis para aquele slot/função. Marcar uma instrução desmarca a oposta (ex.: Avançar mais × Manter posição), como no jogo. Jogadores com PIs ganham um ponto branco no campo e as instruções aparecem no tooltip.
+
+| Instrução | Efeito inicial |
+|---|---|
+| Avançar mais (Get Further Forward) | saindo dy +3, ataque dy +6 |
+| Manter posição (Hold Position) | saindo dy −2, ataque dy −8 |
+| Abrir mais (Stay Wider) | para fora 4 / 6 (saindo / ataque) |
+| Fechar mais (Sit Narrower) | para dentro 4 / 7 |
+| Cortar para dentro com a bola (Cut Inside With Ball) | ataque: para dentro 5 |
+| Correr pela lateral com a bola (Run Wide With Ball) | ataque: para fora 4 |
+| Mover-se para os corredores (Move Into Channels) | para fora 4 / 8 (só AM/ST em CL/CR) |
+| Cruzar da linha de fundo / Cruzar de trás | ataque dy +3 / −5 |
+| Pressionar mais / menos (Close Down More/Less) | defendendo dy +3 / −3 |
+
+Formato em `data/player-instructions.json`: `phases.<fase>` aceita `dx`, `dy`, `inside` (rumo ao centro, nunca cruza o meio) e `outside`. Disponibilidade por `bands`, `notBands`, `lanes`, `sides`, `excludeRoles`; exclusão mútua por `excludes`. As PIs entram como deltas depois da regra da função, então o modo editar regra continua gravando só a parte da função.
+
+**A confirmar no jogo:** os valores são estimativas minhas; a disponibilidade por função é aproximada (ex.: no FM algumas PIs ficam travadas por função); os nomes em português são traduções minhas, não necessariamente os da localização oficial. "Sair da posição" (Roam) ficou de fora por não ter efeito posicional determinístico; traits continuam fora do escopo.
 
 ## Decisões que diferem/complementam a spec
 
@@ -54,4 +75,4 @@ tests/engine.test.js     11 jogadores, validação, clamp, espelhamento, efeitos
 
 ## Fora do escopo (v1)
 
-Traits/instruções individuais, lado da bola, adversário, transições, bola parada, leitura de arquivos do jogo.
+Traits, lado da bola, adversário, transições, bola parada, leitura de arquivos do jogo.

@@ -20,7 +20,7 @@
 
   var data = null, baseRoles = null, lastComputed = null;
   var state = null;
-  var ui = { ghost: false, edit: false, tab: 'defendendo', collapsed: false, selectedSlot: null };
+  var ui = { ghost: false, edit: false, tab: 'defendendo', collapsed: false, selectedSlot: null, piOpen: null };
   var anim = { on: false, step: 0, timer: null };
   var drag = null;
 
@@ -83,15 +83,15 @@
 
   function loadData() {
     function inline(id) { var s = document.getElementById(id); return s ? JSON.parse(s.textContent) : null; }
-    var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions');
-    if (f && r && t) return Promise.resolve({ formations: f, roles: r, instructions: t });
-    var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json'];
+    var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions'), pi = inline('data-player-instructions');
+    if (f && r && t && pi) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi });
+    var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json', 'data/player-instructions.json'];
     return Promise.all(urls.map(function (u) {
       return fetch(u, { cache: 'no-cache' }).then(function (res) {
         if (!res.ok) throw new Error(u + ': HTTP ' + res.status);
         return res.json();
       });
-    })).then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2] }; });
+    })).then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3] }; });
   }
 
   function isRolesObj(o) {
@@ -129,8 +129,24 @@
     return !!(r && r.slots.indexOf(slot) >= 0 && r.duties[duty]);
   }
 
-  /** Garante função/tarefa válidas para o slot (após mover jogador ou importar regras). */
+  function piDefs() { return (data.playerInstructions && data.playerInstructions.instructions) || {}; }
+
+  /** Remove instruções individuais que não valem para o slot/função atuais. */
+  function prunePIs(p) {
+    if (!p.instructions || !data.formations.slots[p.slot]) return p;
+    var info = E.slotInfo(data.formations, p.slot);
+    var kept = E.resolvePlayerInstructions(p, info, piDefs()).applied;
+    if (kept.length) p.instructions = kept; else delete p.instructions;
+    return p;
+  }
+
+  /** Garante função/tarefa válidas para o slot (após mover jogador ou importar regras) e PIs compatíveis. */
   function fixPlayer(p) {
+    fixRole(p);
+    return prunePIs(p);
+  }
+
+  function fixRole(p) {
     if (validRoleFor(p.slot, p.role, p.duty)) return p;
     var r = data.roles[p.role];
     if (r && r.slots.indexOf(p.slot) >= 0) { p.duty = Object.keys(r.duties)[0]; return p; }
@@ -190,6 +206,7 @@
       legend.appendChild(s);
     });
     legend.appendChild(el('span', null, '○ bola'));
+    legend.appendChild(el('span', null, '• ponto branco = jogador com instruções individuais'));
     legend.appendChild(el('span', null, 'Linhas tracejadas = terços do campo'));
 
     $('optGhost').checked = ui.ghost;
@@ -222,7 +239,11 @@
         if (!v.ok) { toast('Tática inválida: ' + v.errors[0], 6000); return; }
         state = {
           presetId: obj.presetId || state.presetId,
-          players: obj.players.map(function (p) { return { slot: p.slot, role: p.role, duty: p.duty }; }),
+          players: obj.players.map(function (p) {
+            var q = { slot: p.slot, role: p.role, duty: p.duty };
+            if (Array.isArray(p.instructions) && p.instructions.length) q.instructions = p.instructions.filter(function (k) { return typeof k === 'string'; });
+            return q;
+          }),
           ti: Object.assign(defaultTI(), obj.ti || {})
         };
         renderAll(); syncTIForm();
@@ -335,8 +356,10 @@
 
   function playerTitle(cp) {
     var r = data.roles[cp.role], d = E.DUTIES[cp.duty] || { label: cp.duty, en: cp.duty };
-    return cp.num + ' · ' + cp.slot + ' — ' + (r ? r.label + ' (' + r.en + ')' : cp.role) + ' · ' + d.label + ' (' + d.en + ')';
+    return cp.num + ' · ' + cp.slot + ' — ' + (r ? r.label + ' (' + r.en + ')' : cp.role) + ' · ' + d.label + ' (' + d.en + ')' +
+      (cp.instructions.length ? ' · Instruções: ' + piLabels(cp.instructions) : '');
   }
+  function piLabels(keys) { return keys.map(function (k) { return piDefs()[k] ? piDefs()[k].label : k; }).join(', '); }
 
   function renderPitch(svg, result, opts) {
     var players = svg.querySelector('.players');
@@ -373,6 +396,7 @@
         svgEl('text', { class: 'ab' }, g);
         svgEl('circle', { cx: 2.35, cy: -2.35, r: 1.05, class: 'nb' }, g);
         svgEl('text', { x: 2.35, y: -2.3, class: 'no' }, g);
+        svgEl('circle', { cx: -2.35, cy: 2.35, r: 0.75, class: 'pi-dot' }, g);
         svgEl('title', {}, g);
         g.addEventListener('pointerenter', onPlayerHover);
         g.addEventListener('pointerleave', onPlayerLeave);
@@ -389,6 +413,7 @@
       t.textContent = label;
       t.setAttribute('font-size', abbrFont(label.length));
       g.querySelector('.no').textContent = cp.num;
+      g.querySelector('.pi-dot').style.display = cp.instructions.length ? '' : 'none';
       g.querySelector('title').textContent = playerTitle(cp) + ' · x ' + fmt(cp.x) + ', y ' + fmt(cp.y);
     });
     players.querySelectorAll('g.pl').forEach(function (g) {
@@ -417,6 +442,7 @@
       var keys = Object.keys(cp.rule).filter(function (k) { return k !== 'if' && k !== 'onlyBands'; });
       txt += ' · regra: ' + keys.map(function (k) { return k + ' ' + (Array.isArray(cp.rule[k]) ? cp.rule[k].join('+') : cp.rule[k]); }).join(', ');
     }
+    if (cp.instructions.length) txt += ' · instruções: ' + piLabels(cp.instructions);
     info.appendChild(document.createTextNode(txt));
   }
   function onPlayerLeave(e) { e.currentTarget.classList.remove('hl'); }
@@ -561,6 +587,7 @@
       rs.addEventListener('change', function () {
         p.role = rs.value;
         if (!data.roles[p.role].duties[p.duty]) p.duty = Object.keys(data.roles[p.role].duties)[0];
+        prunePIs(p);
         renderAll();
       });
       row.appendChild(rs);
@@ -572,8 +599,62 @@
       ds.value = p.duty;
       ds.addEventListener('change', function () { p.duty = ds.value; renderAll(); });
       row.appendChild(ds);
+
+      var n = (p.instructions || []).length, open = ui.piOpen === p.slot;
+      var pb = el('button', {
+        class: 'pi-btn' + (n ? ' has' : '') + (open ? ' open' : ''), type: 'button',
+        'aria-expanded': String(open), 'aria-label': 'Instruções individuais ' + p.slot,
+        title: n ? 'Instruções: ' + piLabels(p.instructions) : 'Adicionar instruções individuais'
+      }, n ? 'PI ' + n : 'PI');
+      pb.addEventListener('click', function () { ui.piOpen = open ? null : p.slot; renderPlayerList(); });
+      row.appendChild(pb);
       list.appendChild(row);
+      if (open) list.appendChild(renderPIBox(p));
     });
+  }
+
+  function renderPIBox(p) {
+    var defs = piDefs(), groups = (data.playerInstructions && data.playerInstructions.groups) || {};
+    var info = E.slotInfo(data.formations, p.slot);
+    var box = el('div', { class: 'pi-box' });
+    var current = p.instructions || [];
+    Object.keys(groups).forEach(function (gk) {
+      var keys = Object.keys(defs).filter(function (k) { return defs[k].group === gk; });
+      if (!keys.length) return;
+      box.appendChild(el('div', { class: 'pi-group' }, groups[gk]));
+      keys.forEach(function (k) {
+        var def = defs[k], av = E.piAvailability(def, p, info);
+        var lab = el('label', { class: 'check' + (av.ok ? '' : ' disabled'), title: av.ok ? def.en : av.reason });
+        var cb = el('input', { type: 'checkbox' });
+        cb.checked = current.indexOf(k) >= 0;
+        cb.disabled = !av.ok;
+        cb.addEventListener('change', function () { togglePI(p, k, cb.checked); });
+        lab.appendChild(cb);
+        var txt = el('span', { class: 'pi-text' }, def.label + ' (' + def.en + ')');
+        if (!av.ok) txt.appendChild(el('small', null, av.reason));
+        lab.appendChild(txt);
+        box.appendChild(lab);
+      });
+    });
+    if (current.length) {
+      var clr = el('button', { class: 'btn small', type: 'button' }, 'Limpar instruções');
+      clr.addEventListener('click', function () { delete p.instructions; renderAll(); });
+      box.appendChild(clr);
+    }
+    return box;
+  }
+
+  /** Liga/desliga uma PI; ao ligar, desliga as mutuamente exclusivas (como no jogo). */
+  function togglePI(p, key, on) {
+    var defs = piDefs(), list = (p.instructions || []).filter(function (k) { return k !== key; });
+    if (on) {
+      list = list.filter(function (k) {
+        return (defs[key].excludes || []).indexOf(k) < 0 && ((defs[k] || {}).excludes || []).indexOf(key) < 0;
+      });
+      list.push(key);
+    }
+    if (list.length) p.instructions = list; else delete p.instructions;
+    renderAll();
   }
 
   function renderValidation(v, extra) {

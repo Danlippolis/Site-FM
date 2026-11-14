@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FM23 Positioning Viewer</title>
+  <meta name="description" content="Posição aproximada dos 11 jogadores em 3 fases (defendendo, saindo com a bola, no ataque) a partir da formação, funções e instruções de equipe do FM23.">
+  <link rel="stylesheet" href="src/ui/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="icon-btn" id="togglePanel" aria-label="Mostrar/ocultar painel" title="Mostrar/ocultar painel">☰</button>
+    <div class="brand">
+      <h1>FM23 Positioning Viewer</h1>
+      <p>Modelo heurístico por regras — representa o comportamento típico de cada função, não o motor do jogo.</p>
+    </div>
+  </header>
+
+  <div class="layout" id="layout">
+    <aside class="panel" id="panel">
+      <section class="card">
+        <h2>Formação</h2>
+        <div class="row">
+          <select id="preset" aria-label="Formação pré-definida"></select>
+          <button id="applyPreset" class="btn primary">Aplicar</button>
+        </div>
+        <div id="slotGrid" class="slot-grid" aria-label="Editor de formação"></div>
+        <p class="hint">Clique num jogador e depois num slot vazio para movê-lo.</p>
+        <div id="validation" class="validation" aria-live="polite"></div>
+      </section>
+
+      <section class="card">
+        <h2>Funções e tarefas</h2>
+        <div id="playerList" class="player-list"></div>
+      </section>
+
+      <section class="card">
+        <h2>Instruções de equipe</h2>
+        <div id="tiForm" class="ti-form"></div>
+      </section>
+
+      <section class="card">
+        <h2>Visualização</h2>
+        <label class="check"><input type="checkbox" id="optGhost"> Mostrar posição base (fantasma) e seta</label>
+        <label class="check"><input type="checkbox" id="optEdit"> Modo editar regra (arrastar jogador grava override)</label>
+      </section>
+
+      <section class="card">
+        <h2>Arquivos</h2>
+        <div class="btn-grid">
+          <button class="btn" id="exportTactic">Exportar tática</button>
+          <button class="btn" id="importTactic">Importar tática</button>
+          <button class="btn" id="exportRoles">Exportar roles.json</button>
+          <button class="btn" id="importRoles">Importar roles.json</button>
+          <button class="btn danger" id="resetTactic">Resetar tática</button>
+          <button class="btn danger" id="resetRoles">Resetar regras</button>
+        </div>
+        <p class="hint" id="rolesStatus"></p>
+        <input type="file" id="fileTactic" accept="application/json,.json" hidden>
+        <input type="file" id="fileRoles" accept="application/json,.json" hidden>
+      </section>
+    </aside>
+
+    <main class="main">
+      <div class="main-bar">
+        <div class="tabs" role="tablist" id="tabs"></div>
+        <button class="btn primary" id="animate">▶ Animar</button>
+      </div>
+      <div class="fields" id="fields"></div>
+      <div class="anim-view" id="animView" hidden>
+        <div class="anim-head">
+          <div class="anim-steps" id="animSteps"></div>
+        </div>
+        <div class="field-card"><svg class="pitch anim" id="animSvg" role="img" aria-label="Animação entre as fases"></svg></div>
+      </div>
+      <p class="legend" id="legend"></p>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- INLINE_DATA -->
+  <script src="src/engine/engine.js"></script>
+  <script src="src/ui/app.js"></script>
+</body>
+</html>

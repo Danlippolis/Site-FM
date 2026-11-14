@@ -1,0 +1,1293 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FM23 Positioning Viewer</title>
+  <meta name="description" content="Posição aproximada dos 11 jogadores em 3 fases (defendendo, saindo com a bola, no ataque) a partir da formação, funções e instruções de equipe do FM23.">
+  <style>
+:root {
+  --bg: #f3f4f1;
+  --panel: #ffffff;
+  --panel-2: #f7f8f6;
+  --text: #1b221f;
+  --muted: #5b6661;
+  --border: #dadfd9;
+  --accent: #1d7a4c;
+  --accent-ink: #ffffff;
+  --accent-soft: #e2f1e8;
+  --danger: #b3261e;
+  --warn: #8a5a00;
+  --warn-bg: #fff4d6;
+  --err-bg: #fde8e6;
+  --pitch-a: #2e7a45;
+  --pitch-b: #2a703f;
+  --pitch-line: rgba(255, 255, 255, 0.82);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 2px 8px rgba(0, 0, 0, .05);
+  --b-GK: #e7b416; --b-D: #2563eb; --b-DM: #0e7490; --b-M: #7c3aed; --b-AM: #ea580c; --b-ST: #dc2626;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101513; --panel: #181e1b; --panel-2: #1e2622; --text: #e5ebe7; --muted: #99a59f;
+    --border: #2b3430; --accent: #3db57a; --accent-ink: #06210f; --accent-soft: #1b3326;
+    --danger: #ff8a80; --warn: #ffd27a; --warn-bg: #3a2f12; --err-bg: #3d1d1a;
+    --pitch-a: #22603a; --pitch-b: #1f5834; --pitch-line: rgba(255, 255, 255, 0.7);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101513; --panel: #181e1b; --panel-2: #1e2622; --text: #e5ebe7; --muted: #99a59f;
+  --border: #2b3430; --accent: #3db57a; --accent-ink: #06210f; --accent-soft: #1b3326;
+  --danger: #ff8a80; --warn: #ffd27a; --warn-bg: #3a2f12; --err-bg: #3d1d1a;
+  --pitch-a: #22603a; --pitch-b: #1f5834; --pitch-line: rgba(255, 255, 255, 0.7);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+button, select, input { font: inherit; color: inherit; }
+
+.topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--panel);
+  position: sticky; top: 0; z-index: 5;
+}
+.brand h1 { font-size: 17px; margin: 0; letter-spacing: -0.01em; }
+.brand p { margin: 0; color: var(--muted); font-size: 12.5px; }
+.icon-btn {
+  border: 1px solid var(--border); background: var(--panel-2); border-radius: 8px;
+  width: 34px; height: 34px; cursor: pointer; flex: none;
+}
+
+.layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 16px; padding: 16px; align-items: start; }
+.layout.collapsed { grid-template-columns: minmax(0, 1fr); }
+.layout.collapsed .panel { display: none; }
+
+.panel { display: flex; flex-direction: column; gap: 12px; position: sticky; top: 72px; max-height: calc(100vh - 88px); overflow: auto; padding-right: 2px; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; box-shadow: var(--shadow); }
+.card h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; }
+.row { display: flex; gap: 8px; }
+.row select { flex: 1; min-width: 0; }
+.hint { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
+
+select {
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 8px; min-height: 34px; max-width: 100%;
+}
+.btn {
+  border: 1px solid var(--border); background: var(--panel-2); border-radius: 8px;
+  padding: 6px 12px; min-height: 34px; cursor: pointer; white-space: nowrap;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.btn.danger { color: var(--danger); }
+.btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.btn-grid .btn { white-space: normal; font-size: 13px; }
+
+.check { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; cursor: pointer; }
+.check input { margin-top: 3px; }
+
+/* editor de formação */
+.slot-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 10px; }
+.slot {
+  border: 1px dashed var(--border); border-radius: 6px; min-height: 34px; padding: 2px;
+  font-size: 10.5px; line-height: 1.1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: transparent; color: var(--muted); cursor: pointer;
+}
+.slot.empty-cell { visibility: hidden; }
+.slot.filled { border-style: solid; color: #fff; font-weight: 700; }
+.slot.filled small { font-weight: 500; opacity: .85; font-size: 9.5px; }
+.slot.selected { outline: 3px solid var(--text); outline-offset: 1px; }
+.slot.target:not(.filled) { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.slot[data-band="GK"].filled { color: #1b1b1b; }
+
+.validation:empty { display: none; }
+.validation { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.validation .msg { font-size: 12px; padding: 6px 8px; border-radius: 6px; }
+.validation .err { background: var(--err-bg); color: var(--danger); }
+.validation .warn { background: var(--warn-bg); color: var(--warn); }
+
+/* lista de jogadores */
+.player-list { display: flex; flex-direction: column; gap: 6px; }
+.prow { display: grid; grid-template-columns: 22px 44px minmax(0, 1fr) 96px; gap: 6px; align-items: center; }
+.prow .num {
+  width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+}
+.prow .num[data-band="GK"] { color: #1b1b1b; }
+.prow .slotname { font-size: 12px; font-weight: 600; color: var(--muted); }
+.prow select { font-size: 12.5px; padding: 4px 6px; min-height: 30px; width: 100%; }
+
+.ti-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.ti-form label { display: grid; gap: 3px; font-size: 12.5px; color: var(--muted); }
+.ti-form select { color: var(--text); }
+.ti-form label.check { display: flex; color: var(--text); }
+
+/* área principal */
+.main { min-width: 0; }
+.main-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.tabs { display: none; gap: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 3px; }
+.tab { border: 0; background: transparent; padding: 6px 10px; border-radius: 7px; cursor: pointer; font-size: 13px; }
+.tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+
+.fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.field-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px; box-shadow: var(--shadow); min-width: 0; }
+.field-card h3 { margin: 0 0 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.field-card h3 span { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+.info { min-height: 34px; margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.info b { color: var(--text); }
+
+svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch-action: none; user-select: none; }
+.pitch .stripe-a { fill: var(--pitch-a); }
+.pitch .stripe-b { fill: var(--pitch-b); }
+.pitch .ln { fill: none; stroke: var(--pitch-line); stroke-width: .32; }
+.pitch .third { stroke: rgba(255, 255, 255, .22); stroke-width: .25; stroke-dasharray: 1 1; }
+.pitch .spot { fill: var(--pitch-line); }
+.pitch .ball { fill: #fff; stroke: #111; stroke-width: .25; }
+.pitch .ghost { fill: none; stroke: rgba(255, 255, 255, .7); stroke-width: .25; stroke-dasharray: .7 .5; }
+.pitch .arrow { stroke: rgba(255, 255, 255, .75); stroke-width: .3; fill: none; }
+.pitch .arrowhead { fill: rgba(255, 255, 255, .85); }
+.pitch g.pl { transition: transform .45s ease; cursor: default; }
+.pitch.anim g.pl { transition: transform 1.1s cubic-bezier(.45, 0, .2, 1); }
+.pitch.editing g.pl { cursor: grab; }
+.pitch g.pl.dragging { transition: none; cursor: grabbing; }
+.pitch g.pl.dragging .pc { stroke: #ffeb3b; stroke-width: .5; }
+.pitch .pc { stroke: #fff; stroke-width: .32; }
+.pitch .ab { fill: #fff; font-weight: 800; text-anchor: middle; dominant-baseline: central; letter-spacing: -.03em; pointer-events: none; }
+.pitch .pl[data-band="GK"] .ab { fill: #1b1b1b; }
+.pitch .nb { fill: #0f1512; stroke: #fff; stroke-width: .18; }
+.pitch .no { fill: #fff; font-size: 1.25px; font-weight: 700; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.pitch .pl.hl .pc { stroke: #ffeb3b; stroke-width: .55; }
+
+.anim-view { max-width: 560px; margin: 0 auto; }
+.anim-head { display: flex; justify-content: center; margin-bottom: 10px; }
+.anim-steps { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.anim-steps span { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); font-size: 12.5px; color: var(--muted); background: var(--panel); }
+.anim-steps span.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+
+.legend { color: var(--muted); font-size: 12px; margin: 12px 2px 0; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: var(--bg); padding: 9px 14px; border-radius: 10px; font-size: 13px;
+  opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; max-width: calc(100vw - 32px); z-index: 20;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.fatal { max-width: 640px; margin: 40px auto; padding: 16px; background: var(--err-bg); color: var(--danger); border-radius: 12px; }
+.fatal code { background: rgba(0,0,0,.06); padding: 1px 5px; border-radius: 4px; }
+
+/* Abaixo de 1280px os 3 campos lado a lado ficam pequenos demais: vira abas. */
+@media (max-width: 1279px) {
+  .tabs { display: flex; }
+  .fields { grid-template-columns: minmax(0, 1fr); max-width: 560px; }
+  .fields .field-card:not(.active) { display: none; }
+  .layout.collapsed .fields { margin: 0 auto; }
+}
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); padding: 12px 16px; }
+  .panel { position: static; max-height: none; overflow: visible; order: 2; }
+  .main { order: 1; }
+  .fields { max-width: none; }
+  .brand p { display: none; }
+}
+@media (max-width: 400px) {
+  .prow { grid-template-columns: 22px 38px minmax(0, 1fr) 84px; gap: 4px; }
+  .tab { padding: 6px 7px; font-size: 12px; }
+  .main-bar .btn { padding: 6px 9px; }
+}
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <button class="icon-btn" id="togglePanel" aria-label="Mostrar/ocultar painel" title="Mostrar/ocultar painel">☰</button>
+    <div class="brand">
+      <h1>FM23 Positioning Viewer</h1>
+      <p>Modelo heurístico por regras — representa o comportamento típico de cada função, não o motor do jogo.</p>
+    </div>
+  </header>
+
+  <div class="layout" id="layout">
+    <aside class="panel" id="panel">
+      <section class="card">
+        <h2>Formação</h2>
+        <div class="row">
+          <select id="preset" aria-label="Formação pré-definida"></select>
+          <button id="applyPreset" class="btn primary">Aplicar</button>
+        </div>
+        <div id="slotGrid" class="slot-grid" aria-label="Editor de formação"></div>
+        <p class="hint">Clique num jogador e depois num slot vazio para movê-lo.</p>
+        <div id="validation" class="validation" aria-live="polite"></div>
+      </section>
+
+      <section class="card">
+        <h2>Funções e tarefas</h2>
+        <div id="playerList" class="player-list"></div>
+      </section>
+
+      <section class="card">
+        <h2>Instruções de equipe</h2>
+        <div id="tiForm" class="ti-form"></div>
+      </section>
+
+      <section class="card">
+        <h2>Visualização</h2>
+        <label class="check"><input type="checkbox" id="optGhost"> Mostrar posição base (fantasma) e seta</label>
+        <label class="check"><input type="checkbox" id="optEdit"> Modo editar regra (arrastar jogador grava override)</label>
+      </section>
+
+      <section class="card">
+        <h2>Arquivos</h2>
+        <div class="btn-grid">
+          <button class="btn" id="exportTactic">Exportar tática</button>
+          <button class="btn" id="importTactic">Importar tática</button>
+          <button class="btn" id="exportRoles">Exportar roles.json</button>
+          <button class="btn" id="importRoles">Importar roles.json</button>
+          <button class="btn danger" id="resetTactic">Resetar tática</button>
+          <button class="btn danger" id="resetRoles">Resetar regras</button>
+        </div>
+        <p class="hint" id="rolesStatus"></p>
+        <input type="file" id="fileTactic" accept="application/json,.json" hidden>
+        <input type="file" id="fileRoles" accept="application/json,.json" hidden>
+      </section>
+    </aside>
+
+    <main class="main">
+      <div class="main-bar">
+        <div class="tabs" role="tablist" id="tabs"></div>
+        <button class="btn primary" id="animate">▶ Animar</button>
+      </div>
+      <div class="fields" id="fields"></div>
+      <div class="anim-view" id="animView" hidden>
+        <div class="anim-head">
+          <div class="anim-steps" id="animSteps"></div>
+        </div>
+        <div class="field-card"><svg class="pitch anim" id="animSvg" role="img" aria-label="Animação entre as fases"></svg></div>
+      </div>
+      <p class="legend" id="legend"></p>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="application/json" id="data-formations">{"laneX":{"L":8,"CL":35,"C":50,"CR":65,"R":92},"stLaneX":{"CL":40,"C":50,"CR":60},"bandY":{"GK":4,"D":22,"DM":34,"M":48,"AM":64,"ST":78},"slots":{"GK":{"band":"GK","lane":"C"},"DL":{"band":"D","lane":"L"},"DCL":{"band":"D","lane":"CL"},"DC":{"band":"D","lane":"C"},"DCR":{"band":"D","lane":"CR"},"DR":{"band":"D","lane":"R"},"WBL":{"band":"DM","lane":"L"},"DMCL":{"band":"DM","lane":"CL"},"DMC":{"band":"DM","lane":"C"},"DMCR":{"band":"DM","lane":"CR"},"WBR":{"band":"DM","lane":"R"},"ML":{"band":"M","lane":"L"},"MCL":{"band":"M","lane":"CL"},"MC":{"band":"M","lane":"C"},"MCR":{"band":"M","lane":"CR"},"MR":{"band":"M","lane":"R"},"AML":{"band":"AM","lane":"L"},"AMCL":{"band":"AM","lane":"CL"},"AMC":{"band":"AM","lane":"C"},"AMCR":{"band":"AM","lane":"CR"},"AMR":{"band":"AM","lane":"R"},"STCL":{"band":"ST","lane":"CL"},"STC":{"band":"ST","lane":"C"},"STCR":{"band":"ST","lane":"CR"}},"phases":{"defendendo":{"label":"Defendendo","y":{"GK":4,"D":25,"DM":33,"M":42,"AM":50,"ST":56},"width":0.75},"saindo":{"label":"Saindo com a bola","y":{"GK":4,"D":15,"DM":28,"M":42,"AM":56,"ST":70},"width":1.05,"cbSplit":{"2":[32,68],"3":[25,50,75]},"ball":{"x":54,"y":6}},"ataque":{"label":"No ataque","y":{"GK":10,"D":45,"DM":55,"M":66,"AM":78,"ST":88},"width":1,"ball":{"x":50,"y":80}}},"defaultRoles":{"GK":["goalkeeper","D"],"DL":["full_back","S"],"DR":["full_back","S"],"DCL":["central_defender","D"],"DC":["central_defender","D"],"DCR":["central_defender","D"],"WBL":["wing_back","S"],"WBR":["wing_back","S"],"DMCL":["defensive_midfielder","S"],"DMC":["defensive_midfielder","D"],"DMCR":["defensive_midfielder","S"],"ML":["wide_midfielder","S"],"MR":["wide_midfielder","S"],"MCL":["central_midfielder","S"],"MC":["central_midfielder","S"],"MCR":["central_midfielder","S"],"AML":["winger","A"],"AMR":["winger","A"],"AMCL":["attacking_midfielder","S"],"AMC":["attacking_midfielder","S"],"AMCR":["attacking_midfielder","S"],"STCL":["advanced_forward","A"],"STC":["advanced_forward","A"],"STCR":["advanced_forward","A"]},"presets":[{"id":"4-4-2","label":"4-4-2","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DL","role":"full_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"central_defender","duty":"D"},{"slot":"DR","role":"full_back","duty":"S"},{"slot":"ML","role":"wide_midfielder","duty":"S"},{"slot":"MCL","role":"central_midfielder","duty":"D"},{"slot":"MCR","role":"box_to_box","duty":"S"},{"slot":"MR","role":"winger","duty":"A"},{"slot":"STCL","role":"deep_lying_forward","duty":"S"},{"slot":"STCR","role":"advanced_forward","duty":"A"}]},{"id":"4-2-3-1-wide","label":"4-2-3-1 Wide (MC + AM aberto)","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DL","role":"full_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"ball_playing_defender","duty":"D"},{"slot":"DR","role":"full_back","duty":"S"},{"slot":"MCL","role":"deep_lying_playmaker","duty":"S"},{"slot":"MCR","role":"box_to_box","duty":"S"},{"slot":"AML","role":"inside_forward","duty":"A"},{"slot":"AMC","role":"attacking_midfielder","duty":"A"},{"slot":"AMR","role":"winger","duty":"A"},{"slot":"STC","role":"advanced_forward","duty":"A"}]},{"id":"4-2-3-1-dm-wide","label":"4-2-3-1 DM Wide","players":[{"slot":"GK","role":"sweeper_keeper","duty":"S"},{"slot":"DL","role":"inverted_wing_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"ball_playing_defender","duty":"D"},{"slot":"DR","role":"full_back","duty":"A"},{"slot":"DMCL","role":"defensive_midfielder","duty":"S"},{"slot":"DMCR","role":"deep_lying_playmaker","duty":"S"},{"slot":"AML","role":"inside_forward","duty":"A"},{"slot":"AMC","role":"advanced_playmaker","duty":"A"},{"slot":"AMR","role":"winger","duty":"A"},{"slot":"STC","role":"advanced_forward","duty":"A"}]},{"id":"4-3-3-dm-wide","label":"4-3-3 DM Wide","players":[{"slot":"GK","role":"sweeper_keeper","duty":"S"},{"slot":"DL","role":"full_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"ball_playing_defender","duty":"D"},{"slot":"DR","role":"wing_back","duty":"A"},{"slot":"DMC","role":"half_back","duty":"D"},{"slot":"MCL","role":"mezzala","duty":"A"},{"slot":"MCR","role":"carrilero","duty":"S"},{"slot":"AML","role":"inside_forward","duty":"A"},{"slot":"AMR","role":"winger","duty":"A"},{"slot":"STC","role":"advanced_forward","duty":"A"}]},{"id":"4-1-4-1-dm-wide","label":"4-1-4-1 DM Wide","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DL","role":"full_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"central_defender","duty":"D"},{"slot":"DR","role":"full_back","duty":"S"},{"slot":"DMC","role":"anchor","duty":"D"},{"slot":"ML","role":"winger","duty":"A"},{"slot":"MCL","role":"box_to_box","duty":"S"},{"slot":"MCR","role":"advanced_playmaker","duty":"S"},{"slot":"MR","role":"winger","duty":"S"},{"slot":"STC","role":"pressing_forward","duty":"S"}]},{"id":"4-4-1-1","label":"4-4-1-1","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DL","role":"full_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"central_defender","duty":"D"},{"slot":"DR","role":"full_back","duty":"S"},{"slot":"ML","role":"wide_midfielder","duty":"S"},{"slot":"MCL","role":"ball_winning_midfielder","duty":"D"},{"slot":"MCR","role":"central_midfielder","duty":"S"},{"slot":"MR","role":"wide_midfielder","duty":"S"},{"slot":"AMC","role":"shadow_striker","duty":"A"},{"slot":"STC","role":"target_forward","duty":"S"}]},{"id":"3-5-2-wb","label":"3-5-2 com alas (WBL/WBR)","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DCL","role":"wide_centre_back","duty":"S"},{"slot":"DC","role":"central_defender","duty":"D"},{"slot":"DCR","role":"ball_playing_defender","duty":"D"},{"slot":"WBL","role":"wing_back","duty":"S"},{"slot":"DMC","role":"defensive_midfielder","duty":"D"},{"slot":"MCL","role":"central_midfielder","duty":"S"},{"slot":"MCR","role":"mezzala","duty":"A"},{"slot":"WBR","role":"wing_back","duty":"A"},{"slot":"STCL","role":"deep_lying_forward","duty":"S"},{"slot":"STCR","role":"advanced_forward","duty":"A"}]},{"id":"3-4-3","label":"3-4-3","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DC","role":"central_defender","duty":"D"},{"slot":"DCR","role":"central_defender","duty":"D"},{"slot":"ML","role":"wide_midfielder","duty":"S"},{"slot":"MCL","role":"central_midfielder","duty":"D"},{"slot":"MCR","role":"box_to_box","duty":"S"},{"slot":"MR","role":"wide_midfielder","duty":"S"},{"slot":"AML","role":"inside_forward","duty":"A"},{"slot":"AMR","role":"inside_forward","duty":"A"},{"slot":"STC","role":"advanced_forward","duty":"A"}]},{"id":"5-2-1-2-wb","label":"5-2-1-2 WB","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"WBL","role":"wing_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DC","role":"central_defender","duty":"Co"},{"slot":"DCR","role":"central_defender","duty":"D"},{"slot":"WBR","role":"wing_back","duty":"S"},{"slot":"MCL","role":"deep_lying_playmaker","duty":"S"},{"slot":"MCR","role":"box_to_box","duty":"S"},{"slot":"AMC","role":"attacking_midfielder","duty":"A"},{"slot":"STCL","role":"advanced_forward","duty":"A"},{"slot":"STCR","role":"deep_lying_forward","duty":"S"}]},{"id":"4-3-1-2-diamond","label":"4-3-1-2 losango","players":[{"slot":"GK","role":"goalkeeper","duty":"D"},{"slot":"DL","role":"wing_back","duty":"S"},{"slot":"DCL","role":"central_defender","duty":"D"},{"slot":"DCR","role":"ball_playing_defender","duty":"D"},{"slot":"DR","role":"wing_back","duty":"S"},{"slot":"DMC","role":"defensive_midfielder","duty":"D"},{"slot":"MCL","role":"carrilero","duty":"S"},{"slot":"MCR","role":"mezzala","duty":"S"},{"slot":"AMC","role":"advanced_playmaker","duty":"A"},{"slot":"STCL","role":"advanced_forward","duty":"A"},{"slot":"STCR","role":"deep_lying_forward","duty":"S"}]}],"defaultPreset":"4-2-3-1-dm-wide"}</script>
+  <script type="application/json" id="data-roles">{"goalkeeper":{"label":"Goleiro","en":"Goalkeeper","abbr":"GK","slots":["GK"],"duties":{"D":{}}},"sweeper_keeper":{"label":"Goleiro Líbero","en":"Sweeper Keeper","abbr":"SK","slots":["GK"],"duties":{"D":{},"S":{"saindo":{"y":8},"ataque":{"y":15}},"A":{"saindo":{"y":12},"ataque":{"y":20}}}},"central_defender":{"label":"Zagueiro Central","en":"Central Defender","abbr":"CD","slots":["DCL","DC","DCR"],"duties":{"D":{},"St":{},"Co":{}}},"ball_playing_defender":{"label":"Zagueiro com Bola","en":"Ball-Playing Defender","abbr":"BPD","slots":["DCL","DC","DCR"],"duties":{"D":{},"St":{},"Co":{}}},"no_nonsense_cb":{"label":"Zagueiro Simples","en":"No-Nonsense Centre-Back","abbr":"NCB","slots":["DCL","DC","DCR"],"duties":{"D":{},"Co":{}}},"wide_centre_back":{"label":"Zagueiro Aberto","en":"Wide Centre-Back","abbr":"WCB","slots":["DCL","DCR"],"requiresBack3":true,"duties":{"D":{},"S":{},"A":{"ataque":{"x":20,"y":60}}}},"libero":{"label":"Líbero","en":"Libero","abbr":"LIB","slots":["DCL","DC","DCR"],"uncertain":true,"duties":{"S":{},"A":{}}},"full_back":{"label":"Lateral","en":"Full-Back","abbr":"FB","slots":["DL","DR"],"duties":{"D":{"saindo":{"y":22},"ataque":{"y":45}},"S":{"saindo":{"y":28},"ataque":{"y":62}},"A":{"saindo":{"y":32},"ataque":{"y":72}},"Au":{}}},"wing_back":{"label":"Ala","en":"Wing-Back","abbr":"WB","slots":["DL","DR","WBL","WBR"],"duties":{"D":{},"S":{"saindo":{"y":32},"ataque":{"y":72}},"A":{"saindo":{"y":38},"ataque":{"x":5,"y":85}},"Au":{}}},"complete_wing_back":{"label":"Ala Completo","en":"Complete Wing-Back","abbr":"CWB","slots":["DL","DR","WBL","WBR"],"duties":{"S":{},"A":{"saindo":{"y":38},"ataque":{"x":5,"y":85}}}},"inverted_wing_back":{"label":"Ala Invertido","en":"Inverted Wing-Back","abbr":"IWB","slots":["DL","DR","WBL","WBR"],"duties":{"D":{"saindo":{"effects":["fullback_hold"]}},"S":{"saindo":{"x":35,"y":32,"effects":["fullback_hold"]},"ataque":{"x":38,"y":55}},"A":{"saindo":{"x":35,"y":36,"effects":["fullback_hold"]},"ataque":{"x":35,"y":70}},"Au":{"saindo":{"effects":["fullback_hold"]}}}},"no_nonsense_fb":{"label":"Lateral Simples","en":"No-Nonsense Full-Back","abbr":"NFB","slots":["DL","DR"],"duties":{"D":{}}},"defensive_midfielder":{"label":"Volante","en":"Defensive Midfielder","abbr":"DM","slots":["DMCL","DMC","DMCR"],"duties":{"D":{},"S":{}}},"deep_lying_playmaker":{"label":"Construtor Recuado","en":"Deep-Lying Playmaker","abbr":"DLP","slots":["DMCL","DMC","DMCR","MCL","MC","MCR"],"duties":{"D":{"saindo":{"if":"dlp_drop","onlyBands":["DM"],"x":50,"y":15,"effects":["split_cbs_wide"]}},"S":{}}},"anchor":{"label":"Âncora","en":"Anchor","abbr":"A","slots":["DMCL","DMC","DMCR"],"duties":{"D":{"defendendo":{"dy":-4},"saindo":{"y":26},"ataque":{"y":48}}}},"half_back":{"label":"Meia-Defensivo Recuado","en":"Half-Back","abbr":"HB","slots":["DMCL","DMC","DMCR"],"duties":{"D":{"defendendo":{"dy":-3},"saindo":{"x":50,"y":15,"effects":["split_cbs_wide"]},"ataque":{"x":50,"y":42}}}},"ball_winning_midfielder":{"label":"Recuperador","en":"Ball-Winning Midfielder","abbr":"BWM","slots":["DMCL","DMC","DMCR","MCL","MC","MCR"],"duties":{"D":{},"S":{}}},"regista":{"label":"Regista","en":"Regista","abbr":"REG","slots":["DMCL","DMC","DMCR"],"duties":{"S":{"saindo":{"y":30},"ataque":{"y":58}}}},"roaming_playmaker":{"label":"Construtor Móvel","en":"Roaming Playmaker","abbr":"RPM","slots":["DMCL","DMC","DMCR","MCL","MC","MCR"],"duties":{"S":{}}},"segundo_volante":{"label":"Segundo Volante","en":"Segundo Volante","abbr":"VOL","slots":["DMCL","DMC","DMCR"],"duties":{"S":{},"A":{"ataque":{"y":76}}}},"central_midfielder":{"label":"Médio Centro","en":"Central Midfielder","abbr":"CM","slots":["MCL","MC","MCR"],"duties":{"D":{},"S":{},"A":{},"Au":{}}},"box_to_box":{"label":"Box-to-Box","en":"Box-to-Box Midfielder","abbr":"BBM","slots":["MCL","MC","MCR"],"duties":{"S":{"ataque":{"y":72}}}},"advanced_playmaker":{"label":"Construtor Avançado","en":"Advanced Playmaker","abbr":"AP","slots":["MCL","MC","MCR","AMCL","AMC","AMCR","AML","AMR"],"duties":{"S":{},"A":{}}},"mezzala":{"label":"Mezzala","en":"Mezzala","abbr":"MEZ","slots":["MCL","MC","MCR"],"duties":{"S":{},"A":{"saindo":{"x":28},"ataque":{"x":30,"y":80}}}},"carrilero":{"label":"Carrilero","en":"Carrilero","abbr":"CAR","slots":["MCL","MC","MCR"],"duties":{"S":{"saindo":{"x":38},"ataque":{"x":35,"y":64}}}},"wide_midfielder":{"label":"Médio Ala","en":"Wide Midfielder","abbr":"WM","slots":["ML","MR"],"duties":{"D":{},"S":{},"A":{},"Au":{}}},"winger":{"label":"Extremo","en":"Winger","abbr":"W","slots":["ML","MR","AML","AMR"],"duties":{"S":{},"A":{"saindo":{"x":6},"ataque":{"x":5,"y":86}}}},"wide_playmaker":{"label":"Construtor Aberto","en":"Wide Playmaker","abbr":"WP","slots":["ML","MR"],"duties":{"S":{"saindo":{"x":25},"ataque":{"x":30,"y":68}},"A":{}}},"defensive_winger":{"label":"Extremo Defensivo","en":"Defensive Winger","abbr":"DW","slots":["ML","MR"],"duties":{"D":{"defendendo":{"y":30},"ataque":{"y":70}},"S":{}}},"inverted_winger":{"label":"Extremo Invertido","en":"Inverted Winger","abbr":"IW","slots":["ML","MR","AML","AMR"],"duties":{"S":{"ataque":{"x":28,"y":78}},"A":{}}},"attacking_midfielder":{"label":"Meia Ofensivo","en":"Attacking Midfielder","abbr":"AM","slots":["AMCL","AMC","AMCR"],"duties":{"S":{},"A":{}}},"shadow_striker":{"label":"Segundo Atacante","en":"Shadow Striker","abbr":"SS","slots":["AMCL","AMC","AMCR"],"duties":{"A":{"ataque":{"y":86}}}},"enganche":{"label":"Enganche","en":"Enganche","abbr":"EG","slots":["AMCL","AMC","AMCR"],"duties":{"S":{"defendendo":{"dy":4},"ataque":{"y":72}}}},"trequartista":{"label":"Trequartista","en":"Trequartista","abbr":"T","slots":["AMCL","AMC","AMCR","AML","AMR","STCL","STC","STCR"],"duties":{"A":{}}},"inside_forward":{"label":"Atacante Interior","en":"Inside Forward","abbr":"IF","slots":["AML","AMR"],"duties":{"S":{},"A":{"ataque":{"x":32,"y":88}}}},"raumdeuter":{"label":"Raumdeuter","en":"Raumdeuter","abbr":"RMD","slots":["AML","AMR"],"duties":{"A":{"ataque":{"x":30,"y":90}}}},"wide_target_forward":{"label":"Pivô Aberto","en":"Wide Target Forward","abbr":"WTF","slots":["AML","AMR"],"duties":{"S":{},"A":{}}},"advanced_forward":{"label":"Avançado","en":"Advanced Forward","abbr":"AF","slots":["STCL","STC","STCR"],"duties":{"A":{"defendendo":{"dy":6},"saindo":{"y":76},"ataque":{"y":92}}}},"complete_forward":{"label":"Atacante Completo","en":"Complete Forward","abbr":"CF","slots":["STCL","STC","STCR"],"duties":{"S":{},"A":{}}},"deep_lying_forward":{"label":"Atacante Recuado","en":"Deep-Lying Forward","abbr":"DLF","slots":["STCL","STC","STCR"],"duties":{"S":{"saindo":{"y":62},"ataque":{"y":78}},"A":{}}},"false_nine":{"label":"Falso 9","en":"False Nine","abbr":"F9","slots":["STCL","STC","STCR"],"duties":{"S":{"saindo":{"y":58},"ataque":{"y":72}}}},"poacher":{"label":"Matador","en":"Poacher","abbr":"P","slots":["STCL","STC","STCR"],"duties":{"A":{"defendendo":{"dy":6},"ataque":{"y":93}}}},"pressing_forward":{"label":"Atacante de Pressão","en":"Pressing Forward","abbr":"PF","slots":["STCL","STC","STCR"],"duties":{"D":{"defendendo":{"dy":4},"ataque":{"y":82}},"S":{},"A":{}}},"target_forward":{"label":"Pivô","en":"Target Forward","abbr":"TF","slots":["STCL","STC","STCR"],"duties":{"S":{},"A":{"ataque":{"y":90}}}}}</script>
+  <script type="application/json" id="data-instructions">{"mentality":{"label":"Mentalidade","en":"Mentality","default":3,"options":[{"label":"Muito Defensiva","en":"Very Defensive","dy":-8},{"label":"Defensiva","en":"Defensive","dy":-5},{"label":"Cautelosa","en":"Cautious","dy":-2},{"label":"Equilibrada","en":"Balanced","dy":0},{"label":"Positiva","en":"Positive","dy":2},{"label":"Ofensiva","en":"Attacking","dy":5},{"label":"Muito Ofensiva","en":"Very Attacking","dy":8}]},"defensiveLine":{"label":"Linha defensiva","en":"Defensive Line","default":2,"options":[{"label":"Muito mais baixa","en":"Much Deeper","y":15},{"label":"Mais baixa","en":"Deeper","y":20},{"label":"Padrão","en":"Standard","y":25},{"label":"Mais alta","en":"Higher","y":30},{"label":"Muito mais alta","en":"Much Higher","y":35}]},"lineOfEngagement":{"label":"Linha de pressão","en":"Line of Engagement","default":1,"options":[{"label":"Mais baixa","en":"Lower","dy":-8},{"label":"Padrão","en":"Standard","dy":0},{"label":"Mais alta","en":"Higher","dy":8}]},"widthInPossession":{"label":"Largura com bola","en":"Attacking Width","default":2,"options":[{"label":"Bem estreita","en":"Much Narrower","factor":0.8},{"label":"Estreita","en":"Narrower","factor":0.9},{"label":"Padrão","en":"Standard","factor":1},{"label":"Larga","en":"Wider","factor":1.08},{"label":"Bem larga","en":"Much Wider","factor":1.15}]},"flags":{"dlp_drop":{"label":"Construtor Recuado (D) no meio-defensivo recua entre os DCs","default":false}},"engine":{"collisionMinDist":6,"collisionIterations":5,"collisionAspect":[0.68,1.05],"clamp":[2,98],"insideDefault":8}}</script>
+  <script>
+/*
+ * FM23 Positioning Viewer — motor de posicionamento (funções puras).
+ * Modelo heurístico baseado em regras; NÃO é uma simulação do motor do FM.
+ *
+ * Coordenadas normalizadas 0–100: x 0 = lateral esquerda, y 0 = próprio gol.
+ * Funciona como script clássico no navegador (window.FMEngine) e como módulo CommonJS no Node.
+ */
+(function (root, factory) {
+  var api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.FMEngine = api;
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  var PHASES = ['defendendo', 'saindo', 'ataque'];
+  var BAND_ORDER = ['GK', 'D', 'DM', 'M', 'AM', 'ST'];
+  var LANE_ORDER = ['L', 'CL', 'C', 'CR', 'R'];
+  var CENTRAL_LANES = ['CL', 'C', 'CR'];
+  var DUTIES = {
+    D: { label: 'Defender', en: 'Defend' },
+    S: { label: 'Apoio', en: 'Support' },
+    A: { label: 'Ataque', en: 'Attack' },
+    Au: { label: 'Automático', en: 'Automatic' },
+    St: { label: 'Stopper', en: 'Stopper' },
+    Co: { label: 'Cobertura', en: 'Cover' }
+  };
+
+  // ---------- slots ----------
+
+  function slotInfo(formations, slot) {
+    var s = formations.slots[slot];
+    if (!s) throw new Error('Slot desconhecido: ' + slot);
+    var x;
+    if (s.band === 'GK') x = 50;
+    else if (s.band === 'ST') x = formations.stLaneX[s.lane];
+    else x = formations.laneX[s.lane];
+    var side = s.lane === 'L' || s.lane === 'CL' ? 'L' : s.lane === 'C' ? 'C' : 'R';
+    return { slot: slot, band: s.band, lane: s.lane, x: x, y: formations.bandY[s.band], side: side };
+  }
+
+  function slotOrder(formations, slot) {
+    var s = formations.slots[slot];
+    return BAND_ORDER.indexOf(s.band) * 10 + LANE_ORDER.indexOf(s.lane);
+  }
+
+  /** Numeração 1..11: GK primeiro, depois por faixa (trás → frente) e corredor (esq → dir). */
+  function numberPlayers(players, formations) {
+    var sorted = players
+      .map(function (p, i) { return { i: i, o: slotOrder(formations, p.slot) }; })
+      .sort(function (a, b) { return a.o - b.o; });
+    var nums = new Array(players.length);
+    sorted.forEach(function (s, k) { nums[s.i] = k + 1; });
+    return nums;
+  }
+
+  function rolesForSlot(roles, slot) {
+    return Object.keys(roles).filter(function (k) {
+      return (roles[k].slots || []).indexOf(slot) >= 0;
+    });
+  }
+
+  function isCentreBack(formations, slot) {
+    var s = formations.slots[slot];
+    return s && s.band === 'D' && CENTRAL_LANES.indexOf(s.lane) >= 0;
+  }
+
+  // ---------- validação ----------
+
+  function validate(players, data) {
+    var formations = data.formations, roles = data.roles;
+    var errors = [], warnings = [];
+    if (!Array.isArray(players)) return { ok: false, errors: ['Lista de jogadores inválida.'], warnings: [] };
+    if (players.length !== 11) errors.push('A tática precisa de exatamente 11 jogadores (tem ' + players.length + ').');
+
+    var seen = {}, gk = 0, centralByBand = {}, cbCount = 0;
+    players.forEach(function (p) {
+      if (!p || !formations.slots[p.slot]) { errors.push('Slot desconhecido: ' + (p && p.slot)); return; }
+      if (seen[p.slot]) errors.push('Slot repetido: ' + p.slot);
+      seen[p.slot] = true;
+      var s = formations.slots[p.slot];
+      if (s.band === 'GK') gk++;
+      if (CENTRAL_LANES.indexOf(s.lane) >= 0 && s.band !== 'GK') {
+        centralByBand[s.band] = (centralByBand[s.band] || 0) + 1;
+      }
+      if (isCentreBack(formations, p.slot)) cbCount++;
+
+      var role = roles[p.role];
+      if (!role) { errors.push(p.slot + ': função desconhecida "' + p.role + '".'); return; }
+      if ((role.slots || []).indexOf(p.slot) < 0) errors.push(p.slot + ': ' + role.label + ' não é válida neste slot.');
+      if (!role.duties || !role.duties[p.duty]) errors.push(p.slot + ': tarefa "' + p.duty + '" inválida para ' + role.label + '.');
+    });
+    if (gk !== 1) errors.push('A tática precisa de exatamente 1 goleiro (tem ' + gk + ').');
+    Object.keys(centralByBand).forEach(function (b) {
+      if (centralByBand[b] > 3) errors.push('No máximo 3 jogadores centrais na faixa ' + b + '.');
+    });
+    players.forEach(function (p) {
+      var role = roles[p.role];
+      if (role && role.requiresBack3 && cbCount !== 3) {
+        warnings.push(p.slot + ': ' + role.label + ' só faz sentido numa linha de 3 zagueiros.');
+      }
+    });
+    return { ok: errors.length === 0, errors: errors, warnings: warnings };
+  }
+
+  // ---------- instruções de equipe ----------
+
+  function pick(def, idx) {
+    if (idx == null || !def.options[idx]) idx = def.default;
+    return def.options[idx];
+  }
+
+  function resolveInstructions(instructions, ti) {
+    ti = ti || {};
+    var flags = {};
+    Object.keys(instructions.flags || {}).forEach(function (k) {
+      flags[k] = ti.flags && k in ti.flags ? !!ti.flags[k] : !!instructions.flags[k].default;
+    });
+    return {
+      mentalityDy: pick(instructions.mentality, ti.mentality).dy,
+      defLineY: pick(instructions.defensiveLine, ti.defensiveLine).y,
+      loeDy: pick(instructions.lineOfEngagement, ti.lineOfEngagement).dy,
+      widthFactor: pick(instructions.widthInPossession, ti.widthInPossession).factor,
+      flags: flags
+    };
+  }
+
+  // ---------- regras de função ----------
+
+  function getRule(roles, p, phase, flags) {
+    var role = roles[p.role];
+    var duty = role && role.duties && role.duties[p.duty];
+    var rule = duty && duty[phase];
+    if (!rule) return null;
+    if (rule.if && !flags[rule.if]) return null;
+    if (rule.onlyBands && rule.onlyBands.indexOf(p.band) < 0) return null;
+    return rule;
+  }
+
+  // ---------- efeitos especiais ----------
+
+  function centreBacks(list) {
+    return list.filter(function (p) { return p.isCB; }).sort(function (a, b) { return a.baseX - b.baseX; });
+  }
+
+  var EFFECTS = {
+    /** DCs abrem para x 25/75 e y 13 (Half-Back e, opcionalmente, DLP-D). */
+    split_cbs_wide: function (list) {
+      var dcs = centreBacks(list);
+      if (!dcs.length) return;
+      dcs.forEach(function (d) { d.by = 13; });
+      if (dcs.length >= 2) {
+        dcs[0].bx = 25;
+        dcs[dcs.length - 1].bx = 75;
+      }
+    },
+    /** Com um Ala Invertido de um lado, o DC daquele lado abre +5 em x na saída de bola. */
+    fullback_hold: function (list, phase, source) {
+      if (phase !== 'saindo' || source.side === 'C') return;
+      var dcs = centreBacks(list);
+      if (!dcs.length) return;
+      var target = source.side === 'L' ? dcs[0] : dcs[dcs.length - 1];
+      if (target.side !== source.side) return;
+      target.bx += source.side === 'L' ? -5 : 5;
+    }
+  };
+
+  function registerEffect(name, fn) { EFFECTS[name] = fn; }
+
+  // ---------- colisão / clamp ----------
+
+  /**
+   * Afasta pares a menos de minDist. `aspect` = [ax, ay] mede a distância num espaço escalado
+   * (ex.: [0.68, 1.05] = metros num campo 68×105); [1, 1] = unidades normalizadas puras.
+   */
+  function resolveCollisions(pts, minDist, iterations, aspect) {
+    minDist = minDist == null ? 6 : minDist;
+    iterations = iterations == null ? 5 : iterations;
+    var ax = aspect ? aspect[0] : 1, ay = aspect ? aspect[1] : 1;
+    for (var it = 0; it < iterations; it++) {
+      var moved = false;
+      for (var i = 0; i < pts.length; i++) {
+        for (var j = i + 1; j < pts.length; j++) {
+          var a = pts[i], b = pts[j];
+          var vx = (b.x - a.x) * ax, vy = (b.y - a.y) * ay;
+          var d = Math.sqrt(vx * vx + vy * vy);
+          if (d >= minDist) continue;
+          var ux, uy;
+          if (d < 1e-6) { ux = (i + j) % 2 ? 1 : -1; uy = 0; } // vetor determinístico p/ pontos coincidentes
+          else { ux = vx / d; uy = vy / d; }
+          var push = (minDist - d) / 2;
+          a.x -= ux * push / ax; a.y -= uy * push / ay;
+          b.x += ux * push / ax; b.y += uy * push / ay;
+          moved = true;
+        }
+      }
+      if (!moved) break;
+    }
+    return pts;
+  }
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  // ---------- pipeline ----------
+
+  /**
+   * Calcula as posições de uma fase.
+   * Ordem efetiva: base(slot) → fase da equipe → override/delta da função → efeitos
+   *                → instruções de equipe (aplicadas como deslocamento sobre o resultado)
+   *                → deltas da função → colisão → clamp.
+   * As instruções vêm depois do override para que mentalidade/linha/largura
+   * continuem valendo para jogadores com posição absoluta na regra.
+   */
+  function computePhase(players, phase, data, tiState) {
+    var formations = data.formations, roles = data.roles, instructions = data.instructions;
+    var ph = formations.phases[phase];
+    if (!ph) throw new Error('Fase desconhecida: ' + phase);
+    var eng = instructions.engine || {};
+    var ti = resolveInstructions(instructions, tiState);
+    var withBall = phase !== 'defendendo';
+    var nums = numberPlayers(players, formations);
+
+    // 1. posição base + transformação de fase
+    var list = players.map(function (p, i) {
+      var info = slotInfo(formations, p.slot);
+      return {
+        index: i, num: nums[i], slot: p.slot, role: p.role, duty: p.duty,
+        band: info.band, lane: info.lane, side: info.side,
+        baseX: info.x, baseY: info.y,
+        isCB: isCentreBack(formations, p.slot),
+        bx: 50 + (info.x - 50) * ph.width,
+        by: ph.y[info.band],
+        dx: 0, dy: 0, inside: 0, rule: null
+      };
+    });
+
+    if (ph.cbSplit) {
+      var dcs = centreBacks(list), xs = ph.cbSplit[String(dcs.length)];
+      if (xs) dcs.forEach(function (d, k) { d.bx = xs[k]; });
+    }
+
+    // 2. regras de função + tarefa (x escrito para o lado esquerdo, espelhado à direita)
+    var pending = [];
+    list.forEach(function (p) {
+      var rule = getRule(roles, p, phase, ti.flags);
+      if (!rule) return;
+      p.rule = rule;
+      var mirror = p.side === 'R';
+      if (rule.x != null && p.side !== 'C') p.bx = mirror ? 100 - rule.x : rule.x;
+      if (rule.y != null) p.by = rule.y;
+      if (rule.dx && p.side !== 'C') p.dx = mirror ? -rule.dx : rule.dx;
+      if (rule.dy) p.dy = rule.dy;
+      if (rule.inside && p.side !== 'C') p.inside = rule.inside === true ? (eng.insideDefault || 8) : rule.inside;
+      (rule.effects || []).forEach(function (e) { pending.push({ name: e, source: p }); });
+    });
+
+    // 3. efeitos sobre outros jogadores
+    var warnings = [];
+    pending.forEach(function (e) {
+      var fn = EFFECTS[e.name];
+      if (fn) fn(list, phase, e.source);
+      else warnings.push('Efeito desconhecido: ' + e.name);
+    });
+
+    // 4. instruções de equipe + deltas da função
+    list.forEach(function (p) {
+      p.tiW = withBall ? ti.widthFactor : 1;
+      if (p.band === 'GK') p.tiDy = 0;
+      else if (withBall) p.tiDy = ti.mentalityDy;
+      else p.tiDy = (ti.defLineY - ph.y.D) + (p.band === 'AM' || p.band === 'ST' ? ti.loeDy : 0);
+
+      var x = 50 + (p.bx - 50) * p.tiW + p.dx;
+      var y = p.by + p.tiDy + p.dy;
+      if (p.inside) x += (x < 50 ? 1 : -1) * Math.min(p.inside, Math.abs(x - 50));
+      p.x = x; p.y = y;
+    });
+
+    // 5. colisão e clamp
+    resolveCollisions(list, eng.collisionMinDist, eng.collisionIterations, eng.collisionAspect);
+    var lo = (eng.clamp || [2, 98])[0], hi = (eng.clamp || [2, 98])[1];
+    list.forEach(function (p) {
+      p.x = Math.round(clamp(p.x, lo, hi) * 10) / 10;
+      p.y = Math.round(clamp(p.y, lo, hi) * 10) / 10;
+    });
+
+    return { phase: phase, players: list, ball: ph.ball || null, warnings: warnings };
+  }
+
+  function computeAll(players, data, tiState) {
+    var out = {};
+    PHASES.forEach(function (ph) { out[ph] = computePhase(players, ph, data, tiState); });
+    return out;
+  }
+
+  // ---------- calibração (modo "editar regra") ----------
+
+  /** Converte uma posição final arrastada em override (x, y) da regra, já desfazendo TI, deltas e espelhamento. */
+  function overrideFromPosition(cp, fx, fy) {
+    var out = { y: Math.round((fy - cp.tiDy - cp.dy) * 10) / 10 };
+    if (cp.side !== 'C') {
+      var x = 50 + (fx - cp.dx - 50) / (cp.tiW || 1);
+      if (cp.side === 'R') x = 100 - x;
+      out.x = Math.round(x * 10) / 10;
+    }
+    return out;
+  }
+
+  /** Retorna uma cópia de roles com o override gravado em role/duty/fase. */
+  function applyOverride(roles, roleKey, duty, phase, patch) {
+    var next = JSON.parse(JSON.stringify(roles));
+    var d = next[roleKey].duties[duty] || (next[roleKey].duties[duty] = {});
+    var rule = d[phase] || (d[phase] = {});
+    Object.keys(patch).forEach(function (k) { rule[k] = patch[k]; });
+    return next;
+  }
+
+  return {
+    PHASES: PHASES, BAND_ORDER: BAND_ORDER, LANE_ORDER: LANE_ORDER, DUTIES: DUTIES, EFFECTS: EFFECTS,
+    slotInfo: slotInfo, slotOrder: slotOrder, numberPlayers: numberPlayers, rolesForSlot: rolesForSlot,
+    validate: validate, resolveInstructions: resolveInstructions,
+    computePhase: computePhase, computeAll: computeAll,
+    resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,
+    overrideFromPosition: overrideFromPosition, applyOverride: applyOverride
+  };
+});
+</script>
+  <script>
+/* FM23 Positioning Viewer — interface (vanilla JS, SVG). Depende de window.FMEngine. */
+(function () {
+  'use strict';
+
+  var E = window.FMEngine;
+  var LS_STATE = 'fm23pv.state.v1';
+  var LS_ROLES = 'fm23pv.roles.v1';
+  var LS_UI = 'fm23pv.ui.v1';
+  var SVGNS = 'http://www.w3.org/2000/svg';
+
+  // Campo desenhado em "metros": 68 × 105, com margem P. x/y normalizados 0–100 são escalados.
+  var P = 2.5, SX = 0.68, SY = 1.05, VW = 68 + 2 * P, VH = 105 + 2 * P, R = 2.9;
+
+  var PHASE_HINT = {
+    defendendo: 'sem a bola, bloco organizado',
+    saindo: 'bola com GR/zagueiros',
+    ataque: 'bola no terço final'
+  };
+  var BAND_LABEL = { GK: 'Goleiro', D: 'Defesa', DM: 'Meio-defensivo / alas', M: 'Meio', AM: 'Meia ofensivo', ST: 'Ataque' };
+
+  var data = null, baseRoles = null, lastComputed = null;
+  var state = null;
+  var ui = { ghost: false, edit: false, tab: 'defendendo', collapsed: false, selectedSlot: null };
+  var anim = { on: false, step: 0, timer: null };
+  var drag = null;
+
+  // ---------- utilidades ----------
+
+  function $(id) { return document.getElementById(id); }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function lsGet(k) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+  function lsSet(k, v) {
+    try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage indisponível */ }
+  }
+  function svgEl(tag, attrs, parent) {
+    var el = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  function el(tag, attrs, text) {
+    var e = document.createElement(tag);
+    for (var k in (attrs || {})) {
+      if (k === 'class') e.className = attrs[k];
+      else if (k in e && typeof attrs[k] !== 'string') e[k] = attrs[k];
+      else e.setAttribute(k, attrs[k]);
+    }
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function toSvg(x, y) { return [P + x * SX, P + (100 - y) * SY]; }
+  function fromSvg(sx, sy) { return [(sx - P) / SX, 100 - (sy - P) / SY]; }
+  function fmt(n) { return (Math.round(n * 10) / 10).toFixed(1).replace(/\.0$/, ''); }
+
+  var toastTimer = null;
+  function toast(msg, ms) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, ms || 3200);
+  }
+
+  function download(name, obj) {
+    var blob = new Blob([JSON.stringify(obj, null, 2) + '\n'], { type: 'application/json' });
+    var a = el('a', { href: URL.createObjectURL(blob), download: name });
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  }
+  function readJsonFile(input, cb) {
+    var f = input.files && input.files[0];
+    if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function () {
+      input.value = '';
+      try { cb(JSON.parse(fr.result)); } catch (e) { toast('Arquivo inválido: ' + e.message, 5000); }
+    };
+    fr.readAsText(f);
+  }
+
+  // ---------- dados ----------
+
+  function loadData() {
+    function inline(id) { var s = document.getElementById(id); return s ? JSON.parse(s.textContent) : null; }
+    var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions');
+    if (f && r && t) return Promise.resolve({ formations: f, roles: r, instructions: t });
+    var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json'];
+    return Promise.all(urls.map(function (u) {
+      return fetch(u, { cache: 'no-cache' }).then(function (res) {
+        if (!res.ok) throw new Error(u + ': HTTP ' + res.status);
+        return res.json();
+      });
+    })).then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2] }; });
+  }
+
+  function isRolesObj(o) {
+    if (!o || typeof o !== 'object' || Array.isArray(o)) return false;
+    var keys = Object.keys(o);
+    return keys.length > 0 && keys.every(function (k) {
+      return o[k] && Array.isArray(o[k].slots) && o[k].duties && typeof o[k].duties === 'object' && o[k].label;
+    });
+  }
+
+  function defaultTI() {
+    var ins = data.instructions, flags = {};
+    Object.keys(ins.flags || {}).forEach(function (k) { flags[k] = !!ins.flags[k].default; });
+    return {
+      mentality: ins.mentality.default,
+      defensiveLine: ins.defensiveLine.default,
+      lineOfEngagement: ins.lineOfEngagement.default,
+      widthInPossession: ins.widthInPossession.default,
+      flags: flags
+    };
+  }
+
+  function presetById(id) {
+    var list = data.formations.presets;
+    return list.find(function (p) { return p.id === id; }) || list[0];
+  }
+
+  function defaultState() {
+    var pr = presetById(data.formations.defaultPreset);
+    return { presetId: pr.id, players: clone(pr.players), ti: defaultTI() };
+  }
+
+  function validRoleFor(slot, role, duty) {
+    var r = data.roles[role];
+    return !!(r && r.slots.indexOf(slot) >= 0 && r.duties[duty]);
+  }
+
+  /** Garante função/tarefa válidas para o slot (após mover jogador ou importar regras). */
+  function fixPlayer(p) {
+    if (validRoleFor(p.slot, p.role, p.duty)) return p;
+    var r = data.roles[p.role];
+    if (r && r.slots.indexOf(p.slot) >= 0) { p.duty = Object.keys(r.duties)[0]; return p; }
+    var def = data.formations.defaultRoles[p.slot];
+    if (def && validRoleFor(p.slot, def[0], def[1])) { p.role = def[0]; p.duty = def[1]; return p; }
+    var opts = E.rolesForSlot(data.roles, p.slot);
+    if (opts.length) { p.role = opts[0]; p.duty = Object.keys(data.roles[opts[0]].duties)[0]; }
+    return p;
+  }
+
+  function saveState() { lsSet(LS_STATE, state); lsSet(LS_UI, { ghost: ui.ghost, tab: ui.tab, collapsed: ui.collapsed }); }
+
+  // ---------- montagem estática ----------
+
+  function buildStatic() {
+    var sel = $('preset');
+    data.formations.presets.forEach(function (p) { sel.appendChild(el('option', { value: p.id }, p.label)); });
+    $('applyPreset').addEventListener('click', function () {
+      var pr = presetById(sel.value);
+      state.presetId = pr.id;
+      state.players = clone(pr.players).map(fixPlayer);
+      ui.selectedSlot = null;
+      renderAll();
+      toast('Formação ' + pr.label + ' aplicada.');
+    });
+
+    buildTIForm();
+
+    var tabs = $('tabs'), fields = $('fields');
+    E.PHASES.forEach(function (ph) {
+      var label = data.formations.phases[ph].label;
+      var tab = el('button', { class: 'tab', role: 'tab', 'data-phase': ph }, label);
+      tab.addEventListener('click', function () { ui.tab = ph; syncTabs(); saveState(); });
+      tabs.appendChild(tab);
+
+      var card = el('section', { class: 'field-card', 'data-phase': ph });
+      var h = el('h3', null, label);
+      h.appendChild(el('span', null, PHASE_HINT[ph] + ' · ataca ↑'));
+      card.appendChild(h);
+      var svg = svgEl('svg', { class: 'pitch', id: 'pitch-' + ph, role: 'img', 'aria-label': 'Campo — ' + label });
+      svg.dataset.phase = ph;
+      card.appendChild(svg);
+      card.appendChild(el('p', { class: 'info', id: 'info-' + ph }, 'Passe o mouse ou toque num jogador para ver detalhes.'));
+      fields.appendChild(card);
+      buildPitch(svg);
+    });
+    buildPitch($('animSvg'));
+
+    var steps = $('animSteps');
+    E.PHASES.forEach(function (ph) { steps.appendChild(el('span', { 'data-phase': ph }, data.formations.phases[ph].label)); });
+
+    var legend = $('legend');
+    ['GK', 'D', 'DM', 'M', 'AM', 'ST'].forEach(function (b) {
+      var s = el('span');
+      var i = el('i'); i.style.background = 'var(--b-' + b + ')';
+      s.appendChild(i); s.appendChild(document.createTextNode(BAND_LABEL[b]));
+      legend.appendChild(s);
+    });
+    legend.appendChild(el('span', null, '○ bola'));
+    legend.appendChild(el('span', null, 'Linhas tracejadas = terços do campo'));
+
+    $('optGhost').checked = ui.ghost;
+    $('optGhost').addEventListener('change', function (e) { ui.ghost = e.target.checked; renderFields(); saveState(); });
+    $('optEdit').addEventListener('change', function (e) {
+      ui.edit = e.target.checked;
+      document.querySelectorAll('.fields svg.pitch').forEach(function (s) { s.classList.toggle('editing', ui.edit); });
+      if (ui.edit) toast('Modo editar: arraste um jogador para gravar a posição como override da função+tarefa naquela fase.', 5000);
+    });
+
+    $('togglePanel').addEventListener('click', function () {
+      ui.collapsed = !ui.collapsed;
+      $('layout').classList.toggle('collapsed', ui.collapsed);
+      saveState();
+    });
+    $('layout').classList.toggle('collapsed', ui.collapsed);
+
+    $('animate').addEventListener('click', toggleAnim);
+
+    $('exportTactic').addEventListener('click', function () {
+      download('tatica-fm23-' + state.presetId + '.json', {
+        format: 'fm23pv-tactic', version: 1, presetId: state.presetId, players: state.players, ti: state.ti
+      });
+    });
+    $('importTactic').addEventListener('click', function () { $('fileTactic').click(); });
+    $('fileTactic').addEventListener('change', function (e) {
+      readJsonFile(e.target, function (obj) {
+        if (!obj || !Array.isArray(obj.players)) { toast('Arquivo não parece uma tática exportada por este site.', 5000); return; }
+        var v = E.validate(obj.players, data);
+        if (!v.ok) { toast('Tática inválida: ' + v.errors[0], 6000); return; }
+        state = {
+          presetId: obj.presetId || state.presetId,
+          players: obj.players.map(function (p) { return { slot: p.slot, role: p.role, duty: p.duty }; }),
+          ti: Object.assign(defaultTI(), obj.ti || {})
+        };
+        renderAll(); syncTIForm();
+        toast('Tática importada.');
+      });
+    });
+    $('exportRoles').addEventListener('click', function () { download('roles.json', data.roles); });
+    $('importRoles').addEventListener('click', function () { $('fileRoles').click(); });
+    $('fileRoles').addEventListener('change', function (e) {
+      readJsonFile(e.target, function (obj) {
+        if (!isRolesObj(obj)) { toast('roles.json inválido: cada função precisa de label, slots e duties.', 6000); return; }
+        data.roles = obj;
+        lsSet(LS_ROLES, obj);
+        state.players.forEach(fixPlayer);
+        renderAll();
+        toast('Regras importadas (' + Object.keys(obj).length + ' funções).');
+      });
+    });
+    $('resetTactic').addEventListener('click', function () {
+      if (!confirm('Voltar para a formação e instruções padrão?')) return;
+      state = defaultState();
+      ui.selectedSlot = null;
+      renderAll(); syncTIForm();
+    });
+    $('resetRoles').addEventListener('click', function () {
+      if (!confirm('Descartar todas as regras editadas/importadas e voltar ao data/roles.json original?')) return;
+      data.roles = clone(baseRoles);
+      lsSet(LS_ROLES, null);
+      state.players.forEach(fixPlayer);
+      renderAll();
+      toast('Regras restauradas.');
+    });
+
+    window.addEventListener('pointermove', onDragMove);
+    window.addEventListener('pointerup', onDragEnd);
+    window.addEventListener('pointercancel', onDragCancel);
+  }
+
+  function buildTIForm() {
+    var form = $('tiForm'), ins = data.instructions;
+    ['mentality', 'defensiveLine', 'lineOfEngagement', 'widthInPossession'].forEach(function (key) {
+      var def = ins[key];
+      var lab = el('label', null, def.label + ' (' + def.en + ')');
+      var s = el('select', { 'data-key': key });
+      def.options.forEach(function (o, i) { s.appendChild(el('option', { value: String(i) }, o.label + (o.en ? ' (' + o.en + ')' : ''))); });
+      s.addEventListener('change', function () { state.ti[key] = Number(s.value); renderAll(); });
+      lab.appendChild(s);
+      form.appendChild(lab);
+    });
+    Object.keys(ins.flags || {}).forEach(function (k) {
+      var lab = el('label', { class: 'check' });
+      var cb = el('input', { type: 'checkbox', 'data-flag': k });
+      cb.addEventListener('change', function () { state.ti.flags[k] = cb.checked; renderAll(); });
+      lab.appendChild(cb);
+      lab.appendChild(document.createTextNode(ins.flags[k].label));
+      form.appendChild(lab);
+    });
+  }
+
+  function syncTIForm() {
+    document.querySelectorAll('#tiForm select').forEach(function (s) { s.value = String(state.ti[s.dataset.key]); });
+    document.querySelectorAll('#tiForm input[data-flag]').forEach(function (cb) { cb.checked = !!(state.ti.flags || {})[cb.dataset.flag]; });
+    $('preset').value = state.presetId;
+  }
+
+  function syncTabs() {
+    document.querySelectorAll('#tabs .tab').forEach(function (t) { t.setAttribute('aria-selected', String(t.dataset.phase === ui.tab)); });
+    document.querySelectorAll('#fields .field-card').forEach(function (c) { c.classList.toggle('active', c.dataset.phase === ui.tab); });
+  }
+
+  // ---------- campo SVG ----------
+
+  function buildPitch(svg) {
+    svg.setAttribute('viewBox', '0 0 ' + VW + ' ' + VH);
+    var id = svg.id;
+    var defs = svgEl('defs', {}, svg);
+    var m = svgEl('marker', { id: 'ah-' + id, viewBox: '0 0 6 6', refX: '5', refY: '3', markerWidth: '4', markerHeight: '4', orient: 'auto-start-reverse' }, defs);
+    svgEl('path', { d: 'M0,0 L6,3 L0,6 z', class: 'arrowhead' }, m);
+
+    svgEl('rect', { x: 0, y: 0, width: VW, height: VH, class: 'stripe-b' }, svg);
+    for (var i = 0; i < 10; i++) {
+      svgEl('rect', { x: P, y: P + i * 10.5, width: 68, height: 10.5, class: i % 2 ? 'stripe-b' : 'stripe-a' }, svg);
+    }
+    var cx = P + 34, top = P, bot = P + 105;
+    var g = svgEl('g', {}, svg);
+    svgEl('line', { x1: P, x2: P + 68, y1: P + 35, y2: P + 35, class: 'third' }, g);
+    svgEl('line', { x1: P, x2: P + 68, y1: P + 70, y2: P + 70, class: 'third' }, g);
+    svgEl('rect', { x: P, y: P, width: 68, height: 105, class: 'ln' }, g);
+    svgEl('line', { x1: P, x2: P + 68, y1: P + 52.5, y2: P + 52.5, class: 'ln' }, g);
+    svgEl('circle', { cx: cx, cy: P + 52.5, r: 9.15, class: 'ln' }, g);
+    svgEl('circle', { cx: cx, cy: P + 52.5, r: 0.4, class: 'spot' }, g);
+    // áreas, pequenas áreas, marcas do pênalti, meia-luas e gols
+    svgEl('rect', { x: cx - 20.16, y: top, width: 40.32, height: 16.5, class: 'ln' }, g);
+    svgEl('rect', { x: cx - 20.16, y: bot - 16.5, width: 40.32, height: 16.5, class: 'ln' }, g);
+    svgEl('rect', { x: cx - 9.16, y: top, width: 18.32, height: 5.5, class: 'ln' }, g);
+    svgEl('rect', { x: cx - 9.16, y: bot - 5.5, width: 18.32, height: 5.5, class: 'ln' }, g);
+    svgEl('circle', { cx: cx, cy: top + 11, r: 0.35, class: 'spot' }, g);
+    svgEl('circle', { cx: cx, cy: bot - 11, r: 0.35, class: 'spot' }, g);
+    svgEl('path', { d: 'M' + (cx - 7.31) + ',' + (top + 16.5) + ' A9.15,9.15 0 0 0 ' + (cx + 7.31) + ',' + (top + 16.5), class: 'ln' }, g);
+    svgEl('path', { d: 'M' + (cx - 7.31) + ',' + (bot - 16.5) + ' A9.15,9.15 0 0 1 ' + (cx + 7.31) + ',' + (bot - 16.5), class: 'ln' }, g);
+    svgEl('rect', { x: cx - 3.66, y: top - 1.6, width: 7.32, height: 1.6, class: 'ln' }, g);
+    svgEl('rect', { x: cx - 3.66, y: bot, width: 7.32, height: 1.6, class: 'ln' }, g);
+
+    svgEl('g', { class: 'ghosts' }, svg);
+    svgEl('g', { class: 'ball-layer' }, svg);
+    svgEl('g', { class: 'players' }, svg);
+  }
+
+  function abbrFont(len) { return len <= 3 ? 1.9 : len === 4 ? 1.68 : len === 5 ? 1.45 : 1.25; }
+
+  function playerTitle(cp) {
+    var r = data.roles[cp.role], d = E.DUTIES[cp.duty] || { label: cp.duty, en: cp.duty };
+    return cp.num + ' · ' + cp.slot + ' — ' + (r ? r.label + ' (' + r.en + ')' : cp.role) + ' · ' + d.label + ' (' + d.en + ')';
+  }
+
+  function renderPitch(svg, result, opts) {
+    var players = svg.querySelector('.players');
+    var ghosts = svg.querySelector('.ghosts');
+    var ballLayer = svg.querySelector('.ball-layer');
+
+    ghosts.textContent = '';
+    if (opts.ghost) {
+      result.players.forEach(function (cp) {
+        var a = toSvg(cp.baseX, cp.baseY), b = toSvg(cp.x, cp.y);
+        svgEl('circle', { cx: a[0], cy: a[1], r: R, class: 'ghost' }, ghosts);
+        var vx = b[0] - a[0], vy = b[1] - a[1], d = Math.sqrt(vx * vx + vy * vy);
+        if (d > 2 * R + 0.8) {
+          var ux = vx / d, uy = vy / d;
+          svgEl('line', {
+            x1: a[0] + ux * R, y1: a[1] + uy * R, x2: b[0] - ux * (R + 0.4), y2: b[1] - uy * (R + 0.4),
+            class: 'arrow', 'marker-end': 'url(#ah-' + svg.id + ')'
+          }, ghosts);
+        }
+      });
+    }
+
+    ballLayer.textContent = '';
+    if (result.ball) {
+      var bp = toSvg(result.ball.x, result.ball.y);
+      svgEl('circle', { cx: bp[0], cy: bp[1], r: 0.95, class: 'ball' }, ballLayer);
+    }
+
+    result.players.forEach(function (cp) {
+      var g = players.querySelector('g.pl[data-i="' + cp.index + '"]');
+      if (!g) {
+        g = svgEl('g', { class: 'pl', 'data-i': cp.index }, players);
+        svgEl('circle', { r: R, class: 'pc' }, g);
+        svgEl('text', { class: 'ab' }, g);
+        svgEl('circle', { cx: 2.35, cy: -2.35, r: 1.05, class: 'nb' }, g);
+        svgEl('text', { x: 2.35, y: -2.3, class: 'no' }, g);
+        svgEl('title', {}, g);
+        g.addEventListener('pointerenter', onPlayerHover);
+        g.addEventListener('pointerleave', onPlayerLeave);
+        g.addEventListener('click', onPlayerHover);
+        g.addEventListener('pointerdown', onDragStart);
+      }
+      var r = data.roles[cp.role];
+      var label = (r ? r.abbr : '?') + '-' + cp.duty;
+      var p = toSvg(cp.x, cp.y);
+      g.style.transform = 'translate(' + p[0] + 'px,' + p[1] + 'px)';
+      g.setAttribute('data-band', cp.band);
+      g.querySelector('.pc').style.fill = 'var(--b-' + cp.band + ')';
+      var t = g.querySelector('.ab');
+      t.textContent = label;
+      t.setAttribute('font-size', abbrFont(label.length));
+      g.querySelector('.no').textContent = cp.num;
+      g.querySelector('title').textContent = playerTitle(cp) + ' · x ' + fmt(cp.x) + ', y ' + fmt(cp.y);
+    });
+    players.querySelectorAll('g.pl').forEach(function (g) {
+      if (Number(g.dataset.i) >= result.players.length) g.remove();
+    });
+  }
+
+  function computedFor(svg, index) {
+    var ph = svg.dataset.phase;
+    return lastComputed && lastComputed[ph] && lastComputed[ph].players[index];
+  }
+
+  function onPlayerHover(e) {
+    var g = e.currentTarget, svg = g.ownerSVGElement;
+    var cp = computedFor(svg, Number(g.dataset.i));
+    if (!cp) return;
+    svg.querySelectorAll('g.pl.hl').forEach(function (x) { x.classList.remove('hl'); });
+    g.classList.add('hl');
+    var info = $('info-' + svg.dataset.phase);
+    if (!info) return;
+    info.textContent = '';
+    info.appendChild(el('b', null, cp.num + ' · ' + cp.slot));
+    var r = data.roles[cp.role], d = E.DUTIES[cp.duty] || { label: cp.duty, en: cp.duty };
+    var txt = ' ' + (r ? r.label + ' (' + r.en + ')' : cp.role) + ' — ' + d.label + ' · x ' + fmt(cp.x) + ', y ' + fmt(cp.y);
+    if (cp.rule) {
+      var keys = Object.keys(cp.rule).filter(function (k) { return k !== 'if' && k !== 'onlyBands'; });
+      txt += ' · regra: ' + keys.map(function (k) { return k + ' ' + (Array.isArray(cp.rule[k]) ? cp.rule[k].join('+') : cp.rule[k]); }).join(', ');
+    }
+    info.appendChild(document.createTextNode(txt));
+  }
+  function onPlayerLeave(e) { e.currentTarget.classList.remove('hl'); }
+
+  // ---------- modo editar regra (arrastar) ----------
+
+  function clientToSvg(svg, cx, cy) {
+    var pt = svg.createSVGPoint();
+    pt.x = cx; pt.y = cy;
+    var p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    return [p.x, p.y];
+  }
+
+  function onDragStart(e) {
+    var g = e.currentTarget, svg = g.ownerSVGElement;
+    if (!ui.edit || svg.id === 'animSvg') return;
+    e.preventDefault();
+    drag = { g: g, svg: svg, phase: svg.dataset.phase, index: Number(g.dataset.i), pointerId: e.pointerId, moved: false };
+    g.classList.add('dragging');
+  }
+  function onDragMove(e) {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    var p = clientToSvg(drag.svg, e.clientX, e.clientY);
+    p[0] = Math.max(P, Math.min(P + 68, p[0]));
+    p[1] = Math.max(P, Math.min(P + 105, p[1]));
+    drag.pos = p; drag.moved = true;
+    drag.g.style.transform = 'translate(' + p[0] + 'px,' + p[1] + 'px)';
+  }
+  function onDragCancel() {
+    if (!drag) return;
+    drag.g.classList.remove('dragging');
+    drag = null;
+    renderFields();
+  }
+  function onDragEnd(e) {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    var d = drag; drag = null;
+    d.g.classList.remove('dragging');
+    if (!d.moved) return;
+    var cp = computedFor(d.svg, d.index);
+    var n = fromSvg(d.pos[0], d.pos[1]);
+    var fx = E.clamp(n[0], 2, 98), fy = E.clamp(n[1], 2, 98);
+    var ov = E.overrideFromPosition(cp, fx, fy);
+    data.roles = E.applyOverride(data.roles, cp.role, cp.duty, d.phase, ov);
+    lsSet(LS_ROLES, data.roles);
+    renderAll();
+
+    var after = computedFor(d.svg, d.index);
+    var r = data.roles[cp.role];
+    var msg = 'Regra salva: ' + r.abbr + '-' + cp.duty + ' · ' + data.formations.phases[d.phase].label + ' → ' +
+      (ov.x != null ? 'x ' + fmt(ov.x) + ', ' : '') + 'y ' + fmt(ov.y) + ' (vale para todo ' + r.abbr + '-' + cp.duty + ').';
+    if (cp.side === 'C') msg += ' Slot central: só o y é gravado.';
+    if (after && Math.hypot(after.x - fx, after.y - fy) > 1.5) msg += ' Atenção: um efeito ou a colisão alterou a posição final.';
+    toast(msg, 6000);
+  }
+
+  // ---------- painel ----------
+
+  function renderSlotGrid() {
+    var grid = $('slotGrid'), f = data.formations;
+    grid.textContent = '';
+    var bySlot = {}, nums = E.numberPlayers(state.players, f);
+    state.players.forEach(function (p, i) { bySlot[p.slot] = { p: p, num: nums[i] }; });
+    var lookup = {};
+    Object.keys(f.slots).forEach(function (s) { lookup[f.slots[s].band + ':' + f.slots[s].lane] = s; });
+
+    ['ST', 'AM', 'M', 'DM', 'D', 'GK'].forEach(function (band) {
+      E.LANE_ORDER.forEach(function (lane) {
+        var slot = lookup[band + ':' + lane];
+        if (!slot) { grid.appendChild(el('div', { class: 'slot empty-cell', 'aria-hidden': 'true' })); return; }
+        var occ = bySlot[slot];
+        var b = el('button', { class: 'slot', 'data-slot': slot, 'data-band': band, type: 'button' });
+        if (occ) {
+          var r = data.roles[occ.p.role];
+          b.classList.add('filled');
+          b.style.background = 'var(--b-' + band + ')';
+          b.style.borderColor = 'var(--b-' + band + ')';
+          b.appendChild(document.createTextNode((r ? r.abbr : '?') + '-' + occ.p.duty));
+          b.appendChild(el('small', null, slot));
+          b.title = occ.num + ' · ' + slot + ' — ' + (r ? r.label : occ.p.role);
+          if (ui.selectedSlot === slot) b.classList.add('selected');
+        } else {
+          b.textContent = slot;
+          if (ui.selectedSlot) b.classList.add('target');
+          b.title = ui.selectedSlot ? 'Mover ' + ui.selectedSlot + ' para ' + slot : slot;
+        }
+        b.addEventListener('click', function () { onSlotClick(slot); });
+        grid.appendChild(b);
+      });
+    });
+  }
+
+  function onSlotClick(slot) {
+    var idx = state.players.findIndex(function (p) { return p.slot === slot; });
+    var selIdx = state.players.findIndex(function (p) { return p.slot === ui.selectedSlot; });
+    if (idx >= 0) {
+      if (ui.selectedSlot === slot) ui.selectedSlot = null;
+      else if (selIdx >= 0 && (slot === 'GK') === (ui.selectedSlot === 'GK')) {
+        // troca dois jogadores de linha de lugar
+        var a = state.players[selIdx], b = state.players[idx];
+        var t = a.slot; a.slot = b.slot; b.slot = t;
+        fixPlayer(a); fixPlayer(b);
+        ui.selectedSlot = null;
+      } else ui.selectedSlot = slot;
+    } else if (selIdx >= 0) {
+      if (ui.selectedSlot === 'GK' || slot === 'GK') { toast('O goleiro só pode ocupar o slot GK.'); return; }
+      var cnt = state.players.filter(function (p) {
+        var s = data.formations.slots[p.slot], t2 = data.formations.slots[slot];
+        return p.slot !== ui.selectedSlot && s.band === t2.band && ['CL', 'C', 'CR'].indexOf(s.lane) >= 0;
+      }).length;
+      if (['CL', 'C', 'CR'].indexOf(data.formations.slots[slot].lane) >= 0 && cnt >= 3) { toast('No máximo 3 jogadores centrais por faixa.'); return; }
+      state.players[selIdx].slot = slot;
+      fixPlayer(state.players[selIdx]);
+      ui.selectedSlot = null;
+    } else return;
+    renderAll();
+  }
+
+  function renderPlayerList() {
+    var list = $('playerList'), f = data.formations;
+    list.textContent = '';
+    var nums = E.numberPlayers(state.players, f);
+    var order = state.players.map(function (p, i) { return i; })
+      .sort(function (a, b) { return E.slotOrder(f, state.players[a].slot) - E.slotOrder(f, state.players[b].slot); });
+
+    order.forEach(function (i) {
+      var p = state.players[i], band = f.slots[p.slot].band;
+      var row = el('div', { class: 'prow' });
+      var num = el('span', { class: 'num', 'data-band': band }, String(nums[i]));
+      num.style.background = 'var(--b-' + band + ')';
+      row.appendChild(num);
+      row.appendChild(el('span', { class: 'slotname' }, p.slot));
+
+      var rs = el('select', { 'aria-label': 'Função ' + p.slot });
+      E.rolesForSlot(data.roles, p.slot)
+        .sort(function (a, b) { return data.roles[a].label.localeCompare(data.roles[b].label, 'pt-BR'); })
+        .forEach(function (k) {
+          var r = data.roles[k];
+          rs.appendChild(el('option', { value: k }, r.label + ' (' + r.en + ')' + (r.uncertain ? ' ⚠' : '')));
+        });
+      rs.value = p.role;
+      rs.addEventListener('change', function () {
+        p.role = rs.value;
+        if (!data.roles[p.role].duties[p.duty]) p.duty = Object.keys(data.roles[p.role].duties)[0];
+        renderAll();
+      });
+      row.appendChild(rs);
+
+      var ds = el('select', { 'aria-label': 'Tarefa ' + p.slot });
+      Object.keys((data.roles[p.role] || { duties: {} }).duties).forEach(function (d) {
+        ds.appendChild(el('option', { value: d }, (E.DUTIES[d] || { label: d }).label));
+      });
+      ds.value = p.duty;
+      ds.addEventListener('change', function () { p.duty = ds.value; renderAll(); });
+      row.appendChild(ds);
+      list.appendChild(row);
+    });
+  }
+
+  function renderValidation(v, extra) {
+    var box = $('validation');
+    box.textContent = '';
+    v.errors.forEach(function (m) { box.appendChild(el('div', { class: 'msg err' }, m)); });
+    v.warnings.concat(extra || []).forEach(function (m) { box.appendChild(el('div', { class: 'msg warn' }, m)); });
+  }
+
+  // ---------- render geral ----------
+
+  function renderFields() {
+    if (!lastComputed) return;
+    E.PHASES.forEach(function (ph) {
+      var svg = $('pitch-' + ph);
+      svg.classList.toggle('editing', ui.edit);
+      renderPitch(svg, lastComputed[ph], { ghost: ui.ghost });
+    });
+    if (anim.on) renderAnimStep();
+  }
+
+  function renderAll() {
+    var v = E.validate(state.players, data);
+    var extra = [];
+    if (v.ok) {
+      lastComputed = E.computeAll(state.players, data, state.ti);
+      E.PHASES.forEach(function (ph) { extra = extra.concat(lastComputed[ph].warnings); });
+    }
+    renderSlotGrid();
+    renderPlayerList();
+    renderValidation(v, extra);
+    renderFields();
+    $('rolesStatus').textContent = lsGet(LS_ROLES)
+      ? 'Usando regras personalizadas (salvas neste navegador). Exporte o roles.json para guardar.'
+      : 'Usando as regras padrão de data/roles.json.';
+    saveState();
+  }
+
+  // ---------- animação ----------
+
+  function renderAnimStep() {
+    var ph = E.PHASES[anim.step];
+    var svg = $('animSvg');
+    svg.dataset.phase = ph;
+    renderPitch(svg, lastComputed[ph], { ghost: false });
+    document.querySelectorAll('#animSteps span').forEach(function (s) { s.classList.toggle('on', s.dataset.phase === ph); });
+  }
+
+  function toggleAnim() {
+    anim.on = !anim.on;
+    $('animView').hidden = !anim.on;
+    $('fields').hidden = anim.on;
+    $('tabs').style.visibility = anim.on ? 'hidden' : '';
+    $('animate').textContent = anim.on ? '■ Parar' : '▶ Animar';
+    clearInterval(anim.timer);
+    if (anim.on) {
+      anim.step = 0;
+      renderAnimStep();
+      anim.timer = setInterval(function () { anim.step = (anim.step + 1) % E.PHASES.length; renderAnimStep(); }, 2000);
+    }
+  }
+
+  // ---------- início ----------
+
+  function showFatal(err) {
+    var box = el('div', { class: 'fatal' });
+    box.appendChild(el('strong', null, 'Não foi possível carregar os dados. '));
+    box.appendChild(document.createTextNode(
+      'Se você abriu o index.html direto do disco (file://), o navegador bloqueia a leitura de data/*.json. ' +
+      'Rode um servidor local na pasta do projeto (python3 -m http.server 8000) ou use o arquivo único dist/fm23-viewer.html. Detalhe: ' +
+      (err && err.message ? err.message : err)));
+    document.querySelector('.main').prepend(box);
+  }
+
+  function init() {
+    if (!E) { showFatal('engine.js não carregado'); return; }
+    loadData().then(function (d) {
+      data = d;
+      baseRoles = clone(d.roles);
+      var custom = lsGet(LS_ROLES);
+      if (isRolesObj(custom)) data.roles = custom;
+
+      var savedUi = lsGet(LS_UI) || {};
+      ui.ghost = !!savedUi.ghost;
+      ui.collapsed = !!savedUi.collapsed;
+      if (E.PHASES.indexOf(savedUi.tab) >= 0) ui.tab = savedUi.tab;
+
+      var saved = lsGet(LS_STATE);
+      if (saved && Array.isArray(saved.players) && E.validate(saved.players, data).ok) {
+        state = { presetId: saved.presetId, players: saved.players, ti: Object.assign(defaultTI(), saved.ti || {}) };
+      } else state = defaultState();
+
+      buildStatic();
+      syncTIForm();
+      syncTabs();
+      renderAll();
+    }).catch(showFatal);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>

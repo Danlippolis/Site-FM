@@ -98,6 +98,11 @@
       if (role && role.requiresBack3 && cbCount !== 3) {
         warnings.push(p.slot + ': ' + role.label + ' só faz sentido numa linha de 3 zagueiros.');
       }
+      if (!formations.slots[p.slot] || !p.instructions || !p.instructions.length) return;
+      var pis = (data.playerInstructions || {}).instructions || {};
+      var r = resolvePlayerInstructions(p, slotInfo(formations, p.slot), pis);
+      r.unknown.forEach(function (k) { warnings.push(p.slot + ': instrução individual desconhecida "' + k + '".'); });
+      r.ignored.forEach(function (i) { warnings.push(p.slot + ': "' + pis[i.key].label + '" ignorada — ' + i.reason + '.'); });
     });
     return { ok: errors.length === 0, errors: errors, warnings: warnings };
   }
@@ -134,6 +139,37 @@
     if (rule.if && !flags[rule.if]) return null;
     if (rule.onlyBands && rule.onlyBands.indexOf(p.band) < 0) return null;
     return rule;
+  }
+
+  // ---------- instruções individuais (PIs) ----------
+
+  var BAND_NAMES = { GK: 'goleiro', D: 'defesa', DM: 'meio-defensivo', M: 'meio', AM: 'meia ofensivo', ST: 'ataque' };
+
+  /** A instrução `def` está disponível para o jogador `p` no slot descrito por `info`? */
+  function piAvailability(def, p, info) {
+    if (def.notBands && def.notBands.indexOf(info.band) >= 0) return { ok: false, reason: 'não disponível para ' + BAND_NAMES[info.band] };
+    if (def.bands && def.bands.indexOf(info.band) < 0) return { ok: false, reason: 'só para ' + def.bands.map(function (b) { return BAND_NAMES[b]; }).join('/') };
+    if (def.lanes && def.lanes.indexOf(info.lane) < 0) return { ok: false, reason: 'não disponível neste corredor' };
+    if (def.sides && def.sides.indexOf(info.side) < 0) return { ok: false, reason: 'só para jogadores com lado definido (não central)' };
+    if (def.excludeRoles && def.excludeRoles.indexOf(p.role) >= 0) return { ok: false, reason: 'já embutida na função' };
+    return { ok: true };
+  }
+
+  /** Separa as PIs do jogador em aplicadas, ignoradas (indisponíveis/conflitantes) e desconhecidas. */
+  function resolvePlayerInstructions(p, info, pis) {
+    var applied = [], ignored = [], unknown = [];
+    (p.instructions || []).forEach(function (k) {
+      var def = pis[k];
+      if (!def) { unknown.push(k); return; }
+      var av = piAvailability(def, p, info);
+      if (!av.ok) { ignored.push({ key: k, reason: av.reason }); return; }
+      var clash = applied.filter(function (a) {
+        return (def.excludes || []).indexOf(a) >= 0 || (pis[a].excludes || []).indexOf(k) >= 0;
+      })[0];
+      if (clash) { ignored.push({ key: k, reason: 'conflita com "' + pis[clash].label + '"' }); return; }
+      applied.push(k);
+    });
+    return { applied: applied, ignored: ignored, unknown: unknown };
   }
 
   // ---------- efeitos especiais ----------
@@ -218,6 +254,7 @@
     var ti = resolveInstructions(instructions, tiState);
     var withBall = phase !== 'defendendo';
     var nums = numberPlayers(players, formations);
+    var pis = (data.playerInstructions || {}).instructions || {};
 
     // 1. posição base + transformação de fase
     var list = players.map(function (p, i) {
@@ -229,7 +266,8 @@
         isCB: isCentreBack(formations, p.slot),
         bx: 50 + (info.x - 50) * ph.width,
         by: ph.y[info.band],
-        dx: 0, dy: 0, inside: 0, rule: null
+        dx: 0, dy: 0, inside: 0, outside: 0, latShift: 0, rule: null,
+        instructions: resolvePlayerInstructions(p, info, pis).applied
       };
     });
 
@@ -250,7 +288,20 @@
       if (rule.dx && p.side !== 'C') p.dx = mirror ? -rule.dx : rule.dx;
       if (rule.dy) p.dy = rule.dy;
       if (rule.inside && p.side !== 'C') p.inside = rule.inside === true ? (eng.insideDefault || 8) : rule.inside;
+      if (rule.outside && p.side !== 'C') p.outside = rule.outside;
       (rule.effects || []).forEach(function (e) { pending.push({ name: e, source: p }); });
+    });
+
+    // 2b. instruções individuais: somam deltas por fase (dx espelhado; inside/outside relativos ao centro)
+    list.forEach(function (p) {
+      p.instructions.forEach(function (k) {
+        var eff = pis[k].phases && pis[k].phases[phase];
+        if (!eff) return;
+        if (eff.dx && p.side !== 'C') p.dx += p.side === 'R' ? -eff.dx : eff.dx;
+        if (eff.dy) p.dy += eff.dy;
+        if (eff.inside && p.side !== 'C') p.inside += eff.inside;
+        if (eff.outside && p.side !== 'C') p.outside += eff.outside;
+      });
     });
 
     // 3. efeitos sobre outros jogadores
@@ -270,7 +321,16 @@
 
       var x = 50 + (p.bx - 50) * p.tiW + p.dx;
       var y = p.by + p.tiDy + p.dy;
-      if (p.inside) x += (x < 50 ? 1 : -1) * Math.min(p.inside, Math.abs(x - 50));
+      if (p.side !== 'C' && (p.inside || p.outside)) {
+        var toCentre = p.side === 'L' ? 1 : -1;
+        var shift = -p.outside * toCentre;
+        var after = x + shift;
+        // "para dentro" nunca cruza o meio do campo
+        var room = Math.max(0, toCentre * (50 - after));
+        shift += toCentre * Math.min(p.inside, room);
+        x += shift;
+        p.latShift = shift;
+      }
       p.x = x; p.y = y;
     });
 
@@ -297,7 +357,7 @@
   function overrideFromPosition(cp, fx, fy) {
     var out = { y: Math.round((fy - cp.tiDy - cp.dy) * 10) / 10 };
     if (cp.side !== 'C') {
-      var x = 50 + (fx - cp.dx - 50) / (cp.tiW || 1);
+      var x = 50 + (fx - cp.dx - (cp.latShift || 0) - 50) / (cp.tiW || 1);
       if (cp.side === 'R') x = 100 - x;
       out.x = Math.round(x * 10) / 10;
     }
@@ -317,6 +377,7 @@
     PHASES: PHASES, BAND_ORDER: BAND_ORDER, LANE_ORDER: LANE_ORDER, DUTIES: DUTIES, EFFECTS: EFFECTS,
     slotInfo: slotInfo, slotOrder: slotOrder, numberPlayers: numberPlayers, rolesForSlot: rolesForSlot,
     validate: validate, resolveInstructions: resolveInstructions,
+    piAvailability: piAvailability, resolvePlayerInstructions: resolvePlayerInstructions,
     computePhase: computePhase, computeAll: computeAll,
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,
     overrideFromPosition: overrideFromPosition, applyOverride: applyOverride

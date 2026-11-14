@@ -1,0 +1,293 @@
+{
+  "goalkeeper": {
+    "label": "Goleiro", "en": "Goalkeeper", "abbr": "GK",
+    "slots": ["GK"],
+    "duties": { "D": {} }
+  },
+  "sweeper_keeper": {
+    "label": "Goleiro Líbero", "en": "Sweeper Keeper", "abbr": "SK",
+    "slots": ["GK"],
+    "duties": {
+      "D": {},
+      "S": { "saindo": { "y": 8 }, "ataque": { "y": 15 } },
+      "A": { "saindo": { "y": 12 }, "ataque": { "y": 20 } }
+    }
+  },
+
+  "central_defender": {
+    "label": "Zagueiro Central", "en": "Central Defender", "abbr": "CD",
+    "slots": ["DCL", "DC", "DCR"],
+    "duties": { "D": {}, "St": {}, "Co": {} }
+  },
+  "ball_playing_defender": {
+    "label": "Zagueiro com Bola", "en": "Ball-Playing Defender", "abbr": "BPD",
+    "slots": ["DCL", "DC", "DCR"],
+    "duties": { "D": {}, "St": {}, "Co": {} }
+  },
+  "no_nonsense_cb": {
+    "label": "Zagueiro Simples", "en": "No-Nonsense Centre-Back", "abbr": "NCB",
+    "slots": ["DCL", "DC", "DCR"],
+    "duties": { "D": {}, "Co": {} }
+  },
+  "wide_centre_back": {
+    "label": "Zagueiro Aberto", "en": "Wide Centre-Back", "abbr": "WCB",
+    "slots": ["DCL", "DCR"],
+    "requiresBack3": true,
+    "duties": {
+      "D": {},
+      "S": {},
+      "A": { "ataque": { "x": 20, "y": 60 } }
+    }
+  },
+  "libero": {
+    "label": "Líbero", "en": "Libero", "abbr": "LIB",
+    "slots": ["DCL", "DC", "DCR"],
+    "uncertain": true,
+    "duties": { "S": {}, "A": {} }
+  },
+
+  "full_back": {
+    "label": "Lateral", "en": "Full-Back", "abbr": "FB",
+    "slots": ["DL", "DR"],
+    "duties": {
+      "D":  { "saindo": { "y": 22 }, "ataque": { "y": 45 } },
+      "S":  { "saindo": { "y": 28 }, "ataque": { "y": 62 } },
+      "A":  { "saindo": { "y": 32 }, "ataque": { "y": 72 } },
+      "Au": {}
+    }
+  },
+  "wing_back": {
+    "label": "Ala", "en": "Wing-Back", "abbr": "WB",
+    "slots": ["DL", "DR", "WBL", "WBR"],
+    "duties": {
+      "D":  {},
+      "S":  { "saindo": { "y": 32 }, "ataque": { "y": 72 } },
+      "A":  { "saindo": { "y": 38 }, "ataque": { "x": 5, "y": 85 } },
+      "Au": {}
+    }
+  },
+  "complete_wing_back": {
+    "label": "Ala Completo", "en": "Complete Wing-Back", "abbr": "CWB",
+    "slots": ["DL", "DR", "WBL", "WBR"],
+    "duties": {
+      "S": {},
+      "A": { "saindo": { "y": 38 }, "ataque": { "x": 5, "y": 85 } }
+    }
+  },
+  "inverted_wing_back": {
+    "label": "Ala Invertido", "en": "Inverted Wing-Back", "abbr": "IWB",
+    "slots": ["DL", "DR", "WBL", "WBR"],
+    "duties": {
+      "D":  { "saindo": { "effects": ["fullback_hold"] } },
+      "S":  { "saindo": { "x": 35, "y": 32, "effects": ["fullback_hold"] }, "ataque": { "x": 38, "y": 55 } },
+      "A":  { "saindo": { "x": 35, "y": 36, "effects": ["fullback_hold"] }, "ataque": { "x": 35, "y": 70 } },
+      "Au": { "saindo": { "effects": ["fullback_hold"] } }
+    }
+  },
+  "no_nonsense_fb": {
+    "label": "Lateral Simples", "en": "No-Nonsense Full-Back", "abbr": "NFB",
+    "slots": ["DL", "DR"],
+    "duties": { "D": {} }
+  },
+
+  "defensive_midfielder": {
+    "label": "Volante", "en": "Defensive Midfielder", "abbr": "DM",
+    "slots": ["DMCL", "DMC", "DMCR"],
+    "duties": { "D": {}, "S": {} }
+  },
+  "deep_lying_playmaker": {
+    "label": "Construtor Recuado", "en": "Deep-Lying Playmaker", "abbr": "DLP",
+    "slots": ["DMCL", "DMC", "DMCR", "MCL", "MC", "MCR"],
+    "duties": {
+      "D": { "saindo": { "if": "dlp_drop", "onlyBands": ["DM"], "x": 50, "y": 15, "effects": ["split_cbs_wide"] } },
+      "S": {}
+    }
+  },
+  "anchor": {
+    "label": "Âncora", "en": "Anchor", "abbr": "A",
+    "slots": ["DMCL", "DMC", "DMCR"],
+    "duties": {
+      "D": { "defendendo": { "dy": -4 }, "saindo": { "y": 26 }, "ataque": { "y": 48 } }
+    }
+  },
+  "half_back": {
+    "label": "Meia-Defensivo Recuado", "en": "Half-Back", "abbr": "HB",
+    "slots": ["DMCL", "DMC", "DMCR"],
+    "duties": {
+      "D": {
+        "defendendo": { "dy": -3 },
+        "saindo": { "x": 50, "y": 15, "effects": ["split_cbs_wide"] },
+        "ataque": { "x": 50, "y": 42 }
+      }
+    }
+  },
+  "ball_winning_midfielder": {
+    "label": "Recuperador", "en": "Ball-Winning Midfielder", "abbr": "BWM",
+    "slots": ["DMCL", "DMC", "DMCR", "MCL", "MC", "MCR"],
+    "duties": { "D": {}, "S": {} }
+  },
+  "regista": {
+    "label": "Regista", "en": "Regista", "abbr": "REG",
+    "slots": ["DMCL", "DMC", "DMCR"],
+    "duties": { "S": { "saindo": { "y": 30 }, "ataque": { "y": 58 } } }
+  },
+  "roaming_playmaker": {
+    "label": "Construtor Móvel", "en": "Roaming Playmaker", "abbr": "RPM",
+    "slots": ["DMCL", "DMC", "DMCR", "MCL", "MC", "MCR"],
+    "duties": { "S": {} }
+  },
+  "segundo_volante": {
+    "label": "Segundo Volante", "en": "Segundo Volante", "abbr": "VOL",
+    "slots": ["DMCL", "DMC", "DMCR"],
+    "duties": { "S": {}, "A": { "ataque": { "y": 76 } } }
+  },
+
+  "central_midfielder": {
+    "label": "Médio Centro", "en": "Central Midfielder", "abbr": "CM",
+    "slots": ["MCL", "MC", "MCR"],
+    "duties": { "D": {}, "S": {}, "A": {}, "Au": {} }
+  },
+  "box_to_box": {
+    "label": "Box-to-Box", "en": "Box-to-Box Midfielder", "abbr": "BBM",
+    "slots": ["MCL", "MC", "MCR"],
+    "duties": { "S": { "ataque": { "y": 72 } } }
+  },
+  "advanced_playmaker": {
+    "label": "Construtor Avançado", "en": "Advanced Playmaker", "abbr": "AP",
+    "slots": ["MCL", "MC", "MCR", "AMCL", "AMC", "AMCR", "AML", "AMR"],
+    "duties": { "S": {}, "A": {} }
+  },
+  "mezzala": {
+    "label": "Mezzala", "en": "Mezzala", "abbr": "MEZ",
+    "slots": ["MCL", "MC", "MCR"],
+    "duties": {
+      "S": {},
+      "A": { "saindo": { "x": 28 }, "ataque": { "x": 30, "y": 80 } }
+    }
+  },
+  "carrilero": {
+    "label": "Carrilero", "en": "Carrilero", "abbr": "CAR",
+    "slots": ["MCL", "MC", "MCR"],
+    "duties": { "S": { "saindo": { "x": 38 }, "ataque": { "x": 35, "y": 64 } } }
+  },
+
+  "wide_midfielder": {
+    "label": "Médio Ala", "en": "Wide Midfielder", "abbr": "WM",
+    "slots": ["ML", "MR"],
+    "duties": { "D": {}, "S": {}, "A": {}, "Au": {} }
+  },
+  "winger": {
+    "label": "Extremo", "en": "Winger", "abbr": "W",
+    "slots": ["ML", "MR", "AML", "AMR"],
+    "duties": {
+      "S": {},
+      "A": { "saindo": { "x": 6 }, "ataque": { "x": 5, "y": 86 } }
+    }
+  },
+  "wide_playmaker": {
+    "label": "Construtor Aberto", "en": "Wide Playmaker", "abbr": "WP",
+    "slots": ["ML", "MR"],
+    "duties": {
+      "S": { "saindo": { "x": 25 }, "ataque": { "x": 30, "y": 68 } },
+      "A": {}
+    }
+  },
+  "defensive_winger": {
+    "label": "Extremo Defensivo", "en": "Defensive Winger", "abbr": "DW",
+    "slots": ["ML", "MR"],
+    "duties": {
+      "D": { "defendendo": { "y": 30 }, "ataque": { "y": 70 } },
+      "S": {}
+    }
+  },
+  "inverted_winger": {
+    "label": "Extremo Invertido", "en": "Inverted Winger", "abbr": "IW",
+    "slots": ["ML", "MR", "AML", "AMR"],
+    "duties": {
+      "S": { "ataque": { "x": 28, "y": 78 } },
+      "A": {}
+    }
+  },
+
+  "attacking_midfielder": {
+    "label": "Meia Ofensivo", "en": "Attacking Midfielder", "abbr": "AM",
+    "slots": ["AMCL", "AMC", "AMCR"],
+    "duties": { "S": {}, "A": {} }
+  },
+  "shadow_striker": {
+    "label": "Segundo Atacante", "en": "Shadow Striker", "abbr": "SS",
+    "slots": ["AMCL", "AMC", "AMCR"],
+    "duties": { "A": { "ataque": { "y": 86 } } }
+  },
+  "enganche": {
+    "label": "Enganche", "en": "Enganche", "abbr": "EG",
+    "slots": ["AMCL", "AMC", "AMCR"],
+    "duties": { "S": { "defendendo": { "dy": 4 }, "ataque": { "y": 72 } } }
+  },
+  "trequartista": {
+    "label": "Trequartista", "en": "Trequartista", "abbr": "T",
+    "slots": ["AMCL", "AMC", "AMCR", "AML", "AMR", "STCL", "STC", "STCR"],
+    "duties": { "A": {} }
+  },
+  "inside_forward": {
+    "label": "Atacante Interior", "en": "Inside Forward", "abbr": "IF",
+    "slots": ["AML", "AMR"],
+    "duties": {
+      "S": {},
+      "A": { "ataque": { "x": 32, "y": 88 } }
+    }
+  },
+  "raumdeuter": {
+    "label": "Raumdeuter", "en": "Raumdeuter", "abbr": "RMD",
+    "slots": ["AML", "AMR"],
+    "duties": { "A": { "ataque": { "x": 30, "y": 90 } } }
+  },
+  "wide_target_forward": {
+    "label": "Pivô Aberto", "en": "Wide Target Forward", "abbr": "WTF",
+    "slots": ["AML", "AMR"],
+    "duties": { "S": {}, "A": {} }
+  },
+
+  "advanced_forward": {
+    "label": "Avançado", "en": "Advanced Forward", "abbr": "AF",
+    "slots": ["STCL", "STC", "STCR"],
+    "duties": { "A": { "defendendo": { "dy": 6 }, "saindo": { "y": 76 }, "ataque": { "y": 92 } } }
+  },
+  "complete_forward": {
+    "label": "Atacante Completo", "en": "Complete Forward", "abbr": "CF",
+    "slots": ["STCL", "STC", "STCR"],
+    "duties": { "S": {}, "A": {} }
+  },
+  "deep_lying_forward": {
+    "label": "Atacante Recuado", "en": "Deep-Lying Forward", "abbr": "DLF",
+    "slots": ["STCL", "STC", "STCR"],
+    "duties": {
+      "S": { "saindo": { "y": 62 }, "ataque": { "y": 78 } },
+      "A": {}
+    }
+  },
+  "false_nine": {
+    "label": "Falso 9", "en": "False Nine", "abbr": "F9",
+    "slots": ["STCL", "STC", "STCR"],
+    "duties": { "S": { "saindo": { "y": 58 }, "ataque": { "y": 72 } } }
+  },
+  "poacher": {
+    "label": "Matador", "en": "Poacher", "abbr": "P",
+    "slots": ["STCL", "STC", "STCR"],
+    "duties": { "A": { "defendendo": { "dy": 6 }, "ataque": { "y": 93 } } }
+  },
+  "pressing_forward": {
+    "label": "Atacante de Pressão", "en": "Pressing Forward", "abbr": "PF",
+    "slots": ["STCL", "STC", "STCR"],
+    "duties": {
+      "D": { "defendendo": { "dy": 4 }, "ataque": { "y": 82 } },
+      "S": {},
+      "A": {}
+    }
+  },
+  "target_forward": {
+    "label": "Pivô", "en": "Target Forward", "abbr": "TF",
+    "slots": ["STCL", "STC", "STCR"],
+    "duties": { "S": {}, "A": { "ataque": { "y": 90 } } }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "mentality": {
+    "label": "Mentalidade",
+    "en": "Mentality",
+    "default": 3,
+    "options": [
+      { "label": "Muito Defensiva", "en": "Very Defensive", "dy": -8 },
+      { "label": "Defensiva", "en": "Defensive", "dy": -5 },
+      { "label": "Cautelosa", "en": "Cautious", "dy": -2 },
+      { "label": "Equilibrada", "en": "Balanced", "dy": 0 },
+      { "label": "Positiva", "en": "Positive", "dy": 2 },
+      { "label": "Ofensiva", "en": "Attacking", "dy": 5 },
+      { "label": "Muito Ofensiva", "en": "Very Attacking", "dy": 8 }
+    ]
+  },
+  "defensiveLine": {
+    "label": "Linha defensiva",
+    "en": "Defensive Line",
+    "default": 2,
+    "options": [
+      { "label": "Muito mais baixa", "en": "Much Deeper", "y": 15 },
+      { "label": "Mais baixa", "en": "Deeper", "y": 20 },
+      { "label": "Padrão", "en": "Standard", "y": 25 },
+      { "label": "Mais alta", "en": "Higher", "y": 30 },
+      { "label": "Muito mais alta", "en": "Much Higher", "y": 35 }
+    ]
+  },
+  "lineOfEngagement": {
+    "label": "Linha de pressão",
+    "en": "Line of Engagement",
+    "default": 1,
+    "options": [
+      { "label": "Mais baixa", "en": "Lower", "dy": -8 },
+      { "label": "Padrão", "en": "Standard", "dy": 0 },
+      { "label": "Mais alta", "en": "Higher", "dy": 8 }
+    ]
+  },
+  "widthInPossession": {
+    "label": "Largura com bola",
+    "en": "Attacking Width",
+    "default": 2,
+    "options": [
+      { "label": "Bem estreita", "en": "Much Narrower", "factor": 0.8 },
+      { "label": "Estreita", "en": "Narrower", "factor": 0.9 },
+      { "label": "Padrão", "en": "Standard", "factor": 1.0 },
+      { "label": "Larga", "en": "Wider", "factor": 1.08 },
+      { "label": "Bem larga", "en": "Much Wider", "factor": 1.15 }
+    ]
+  },
+  "flags": {
+    "dlp_drop": {
+      "label": "Construtor Recuado (D) no meio-defensivo recua entre os DCs",
+      "default": false
+    }
+  },
+  "engine": {
+    "collisionMinDist": 6,
+    "collisionIterations": 5,
+    "collisionAspect": [0.68, 1.05],
+    "clamp": [2, 98],
+    "insideDefault": 8
+  }
+}

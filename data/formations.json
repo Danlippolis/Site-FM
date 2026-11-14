@@ -1,0 +1,230 @@
+{
+  "laneX": { "L": 8, "CL": 35, "C": 50, "CR": 65, "R": 92 },
+  "stLaneX": { "CL": 40, "C": 50, "CR": 60 },
+  "bandY": { "GK": 4, "D": 22, "DM": 34, "M": 48, "AM": 64, "ST": 78 },
+
+  "slots": {
+    "GK":   { "band": "GK", "lane": "C" },
+    "DL":   { "band": "D",  "lane": "L" },
+    "DCL":  { "band": "D",  "lane": "CL" },
+    "DC":   { "band": "D",  "lane": "C" },
+    "DCR":  { "band": "D",  "lane": "CR" },
+    "DR":   { "band": "D",  "lane": "R" },
+    "WBL":  { "band": "DM", "lane": "L" },
+    "DMCL": { "band": "DM", "lane": "CL" },
+    "DMC":  { "band": "DM", "lane": "C" },
+    "DMCR": { "band": "DM", "lane": "CR" },
+    "WBR":  { "band": "DM", "lane": "R" },
+    "ML":   { "band": "M",  "lane": "L" },
+    "MCL":  { "band": "M",  "lane": "CL" },
+    "MC":   { "band": "M",  "lane": "C" },
+    "MCR":  { "band": "M",  "lane": "CR" },
+    "MR":   { "band": "M",  "lane": "R" },
+    "AML":  { "band": "AM", "lane": "L" },
+    "AMCL": { "band": "AM", "lane": "CL" },
+    "AMC":  { "band": "AM", "lane": "C" },
+    "AMCR": { "band": "AM", "lane": "CR" },
+    "AMR":  { "band": "AM", "lane": "R" },
+    "STCL": { "band": "ST", "lane": "CL" },
+    "STC":  { "band": "ST", "lane": "C" },
+    "STCR": { "band": "ST", "lane": "CR" }
+  },
+
+  "phases": {
+    "defendendo": {
+      "label": "Defendendo",
+      "y": { "GK": 4, "D": 25, "DM": 33, "M": 42, "AM": 50, "ST": 56 },
+      "width": 0.75
+    },
+    "saindo": {
+      "label": "Saindo com a bola",
+      "y": { "GK": 4, "D": 15, "DM": 28, "M": 42, "AM": 56, "ST": 70 },
+      "width": 1.05,
+      "cbSplit": { "2": [32, 68], "3": [25, 50, 75] },
+      "ball": { "x": 54, "y": 6 }
+    },
+    "ataque": {
+      "label": "No ataque",
+      "y": { "GK": 10, "D": 45, "DM": 55, "M": 66, "AM": 78, "ST": 88 },
+      "width": 1.0,
+      "ball": { "x": 50, "y": 80 }
+    }
+  },
+
+  "defaultRoles": {
+    "GK":   ["goalkeeper", "D"],
+    "DL":   ["full_back", "S"],   "DR":   ["full_back", "S"],
+    "DCL":  ["central_defender", "D"], "DC": ["central_defender", "D"], "DCR": ["central_defender", "D"],
+    "WBL":  ["wing_back", "S"],   "WBR":  ["wing_back", "S"],
+    "DMCL": ["defensive_midfielder", "S"], "DMC": ["defensive_midfielder", "D"], "DMCR": ["defensive_midfielder", "S"],
+    "ML":   ["wide_midfielder", "S"], "MR": ["wide_midfielder", "S"],
+    "MCL":  ["central_midfielder", "S"], "MC": ["central_midfielder", "S"], "MCR": ["central_midfielder", "S"],
+    "AML":  ["winger", "A"], "AMR": ["winger", "A"],
+    "AMCL": ["attacking_midfielder", "S"], "AMC": ["attacking_midfielder", "S"], "AMCR": ["attacking_midfielder", "S"],
+    "STCL": ["advanced_forward", "A"], "STC": ["advanced_forward", "A"], "STCR": ["advanced_forward", "A"]
+  },
+
+  "presets": [
+    {
+      "id": "4-4-2", "label": "4-4-2",
+      "players": [
+        { "slot": "GK", "role": "goalkeeper", "duty": "D" },
+        { "slot": "DL", "role": "full_back", "duty": "S" },
+        { "slot": "DCL", "role": "central_defender", "duty": "D" },
+        { "slot": "DCR", "role": "central_defender", "duty": "D" },
+        { "slot": "DR", "role": "full_back", "duty": "S" },
+        { "slot": "ML", "role": "wide_midfielder", "duty": "S" },
+        { "slot": "MCL", "role": "central_midfielder", "duty": "D" },
+        { "slot": "MCR", "role": "box_to_box", "duty": "S" },
+        { "slot": "MR", "role": "winger", "duty": "A" },
+        { "slot": "STCL", "role": "deep_lying_forward", "duty": "S" },
+        { "slot": "STCR", "role": "advanced_forward", "duty": "A" }
+      ]
+    },
+    {
+      "id": "4-2-3-1-wide", "label": "4-2-3-1 Wide (MC + AM aberto)",
+      "players": [
+        { "slot": "GK", "role": "goalkeeper", "duty": "D" },
+        { "slot": "DL", "role": "full_back", "duty": "S" },
+        { "slot": "DCL", "role": "central_defender", "duty": "D" },
+        { "slot": "DCR", "role": "ball_playing_defender", "duty": "D" },
+        { "slot": "DR", "role": "full_back", "duty": "S" },
+        { "slot": "MCL", "role": "deep_lying_playmaker", "duty": "S" },
+        { "slot": "MCR", "role": "box_to_box", "duty": "S" },
+        { "slot": "AML", "role": "inside_forward", "duty": "A" },
+        { "slot": "AMC", "role": "attacking_midfielder", "duty": "A" },
+        { "slot": "AMR", "role": "winger", "duty": "A" },
+        { "slot": "STC", "role": "advanced_forward", "duty": "A" }
+      ]
+    },
+    {
+      "id": "4-2-3-1-dm-wide", "label": "4-2-3-1 DM Wide",
+      "players": [
+        { "slot": "GK", "role": "sweeper_keeper", "duty": "S" },
+        { "slot": "DL", "role": "inverted_wing_back", "duty": "S" },
+        { "slot": "DCL", "role": "central_defender", "duty": "D" },
+        { "slot": "DCR", "role": "ball_playing_defender", "duty": "D" },
+        { "slot": "DR", "role": "full_back", "duty": "A" },
+        { "slot": "DMCL", "role": "defensive_midfielder", "duty": "S" },
+        { "slot": "DMCR", "role": "deep_lying_playmaker", "duty": "S" },
+        { "slot": "AML", "role": "inside_forward", "duty": "A" },
+        { "slot": "AMC", "role": "advanced_playmaker", "duty": "A" },
+        { "slot": "AMR", "role": "winger", "duty": "A" },
+        { "slot": "STC", "role": "advanced_forward", "duty": "A" }
+      ]
+    },
+    {
+      "id": "4-3-3-dm-wide", "label": "4-3-3 DM Wide",
+      "players": [
+        { "slot": "GK", "role": "sweeper_keeper", "duty": "S" },
+        { "slot": "DL", "role": "full_back", "duty": "S" },
+        { "slot": "DCL", "role": "central_defender", "duty": "D" },
+        { "slot": "DCR", "role": "ball_playing_defender", "duty": "D" },
+        { "slot": "DR", "role": "wing_back", "duty": "A" },
+        { "slot": "DMC", "role": "half_back", "duty": "D" },
+        { "slot": "MCL", "role": "mezzala", "duty": "A" },
+        { "slot": "MCR", "role": "carrilero", "duty": "S" },
+        { "slot": "AML", "role": "inside_forward", "duty": "A" },
+        { "slot": "AMR", "role": "winger", "duty": "A" },
+        { "slot": "STC", "role": "advanced_forward", "duty": "A" }
+      ]
+    },
+    {
+      "id": "4-1-4-1-dm-wide", "label": "4-1-4-1 DM Wide",
+      "players": [
+        { "slot": "GK", "role": "goalkeeper", "duty": "D" },
+        { "slot": "DL", "role": "full_back", "duty": "S" },
+        { "slot": "DCL", "role": "central_defender", "duty": "D" },
+        { "slot": "DCR", "role": "central_defender", "duty": "D" },
+        { "slot": "DR", "role": "full_back", "duty": "S" },
+        { "slot": "DMC", "role": "anchor", "duty": "D" },
+        { "slot": "ML", "role": "winger", "duty": "A" },
+        { "slot": "MCL", "role": "box_to_box", "duty": "S" },
+        { "slot": "MCR", "role": "advanced_playmaker", "duty": "S" },
+        { "slot": "MR", "role": "winger", "duty": "S" },
+        { "slot": "STC", "role": "pressing_forward", "duty": "S" }
+      ]
+    },
+    {
+      "id": "4-4-1-1", "label": "4-4-1-1",
+      "players": [
+        { "slot": "GK", "role": "goalkeeper", "duty": "D" },
+        { "slot": "DL", "role": "full_back", "duty": "S" },
+        { "slot": "DCL", "role": "central_defender", "duty": "D" },
+        { "slot": "DCR", "role": "central_defender", "duty": "D" },
+        { "slot": "DR", "role": "full_back", "duty": "S" },
+        { "slot": "ML", "role": "wide_midfielder", "duty": "S" },
+        { "slot": "MCL", "role": "ball_winning_midfielder", "duty": "D" },
+        { "slot": "MCR", "role": "central_midfielder", "duty": "S" },
+        { "slot": "MR", "role": "wide_midfielder", "duty": "S" },
+        { "slot": "AMC", "role": "shadow_striker", "duty": "A" },
+        { "slot": "STC", "role": "target_forward", "duty": "S" }
+      ]
+    },
+    {
+      "id": "3-5-2-wb", "label": "3-5-2 com alas (WBL/WBR)",
+      "players": [
+        { "slot": "GK", "role": "goalkeeper", "duty": "D" },
+        { "slot": "DCL", "role": "wide_centre_back", "duty": "S" },
+        { "slot": "DC", "role": "central_defender", "duty": "D" },
+        { "slot": "DCR", "role": "ball_playing_defender", "duty": "D" },
+        { "slot": "WBL", "role": "wing_back", "duty": "S" },
+        { "slot": "DMC", "role": "defensive_midfielder", "duty": "D" },
+        { "slot": "MCL", "role": "central_midfielder", "duty": "S" },
+        { "slot": "MCR", "role": "mezzala", "duty": "A" },
+        { "slot": "WBR", "role": "wing_back", "duty": "A" },
+        { "slot": "STCL", "role": "deep_lying_forward", "duty": "S" },
+        { "slot": "STCR", "role": "advanced_forward", "duty": "A" }
+      ]
+    },
+    {
+      "id": "3-4-3", "label": "3-4-3",
+      "players": [
+        { "slot": "GK", "role": "goalkeeper", "duty": "D" },
+        { "slot": "DCL", "role": "central_defender", "duty": "D" },
+        { "slot": "DC", "role": "central_defender", "duty": "D" },
+        { "slot": "DCR", "role": "central_defender", "duty": "D" },
+        { "slot": "ML", "role": "wide_midfielder", "duty": "S" },
+        { "slot": "MCL", "role": "central_midfielder", "duty": "D" },
+        { "slot": "MCR", "role": "box_to_box", "duty": "S" },
+        { "slot": "MR", "role": "wide_midfielder", "duty": "S" },
+        { "slot": "AML", "role": "inside_forward", "duty": "A" },
+        { "slot": "AMR", "role": "inside_forward", "duty": "A" },
+        { "slot": "STC", "role": "advanced_forward", "duty": "A" }
+      ]
+    },
+    {
+      "id": "5-2-1-2-wb", "label": "5-2-1-2 WB",
+      "players": [
+        { "slot": "GK", "role": "goalkeeper", "duty": "D" },
+        { "slot": "WBL", "role": "wing_back", "duty": "S" },
+        { "slot": "DCL", "role": "central_defender", "duty": "D" },
+        { "slot": "DC", "role": "central_defender", "duty": "Co" },
+        { "slot": "DCR", "role": "central_defender", "duty": "D" },
+        { "slot": "WBR", "role": "wing_back", "duty": "S" },
+        { "slot": "MCL", "role": "deep_lying_playmaker", "duty": "S" },
+        { "slot": "MCR", "role": "box_to_box", "duty": "S" },
+        { "slot": "AMC", "role": "attacking_midfielder", "duty": "A" },
+        { "slot": "STCL", "role": "advanced_forward", "duty": "A" },
+        { "slot": "STCR", "role": "deep_lying_forward", "duty": "S" }
+      ]
+    },
+    {
+      "id": "4-3-1-2-diamond", "label": "4-3-1-2 losango",
+      "players": [
+        { "slot": "GK", "role": "goalkeeper", "duty": "D" },
+        { "slot": "DL", "role": "wing_back", "duty": "S" },
+        { "slot": "DCL", "role": "central_defender", "duty": "D" },
+        { "slot": "DCR", "role": "ball_playing_defender", "duty": "D" },
+        { "slot": "DR", "role": "wing_back", "duty": "S" },
+        { "slot": "DMC", "role": "defensive_midfielder", "duty": "D" },
+        { "slot": "MCL", "role": "carrilero", "duty": "S" },
+        { "slot": "MCR", "role": "mezzala", "duty": "S" },
+        { "slot": "AMC", "role": "advanced_playmaker", "duty": "A" },
+        { "slot": "STCL", "role": "advanced_forward", "duty": "A" },
+        { "slot": "STCR", "role": "deep_lying_forward", "duty": "S" }
+      ]
+    }
+  ],
+  "defaultPreset": "4-2-3-1-dm-wide"
+}

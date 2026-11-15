@@ -343,6 +343,7 @@
       if (rule.inside && p.side !== 'C') p.inside = rule.inside === true ? (eng.insideDefault || 8) : rule.inside;
       if (rule.outside && p.side !== 'C') p.outside = rule.outside;
       if (rule.roam) addZone(p, rule.roam, rule.roam);
+      if (rule.lateral) addZone(p, rule.lateral, rule.lateralY || 3);
       (rule.effects || []).forEach(function (e) { pending.push({ name: e, source: p }); });
     });
 

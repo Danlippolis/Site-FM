@@ -243,7 +243,7 @@ test('deambular: zona só nas fases com bola; embutido no Trequartista; PI para 
   p.find((x) => x.slot === 'DMCL').instructions = ['roam_from_position'];
   const all = E.computeAll(p, data, {});
   assert.equal(byslot(all.defendendo, 'AMC').zone, null);
-  assert.equal(byslot(all.ataque, 'AMC').zone.rx, 8);
+  assert.deepEqual(byslot(all.ataque, 'AMC').zone, { rx: 14, ry: 8 }, 'deambular + corredores embutidos');
   assert.equal(byslot(all.ataque, 'DMCL').zone.rx, 8);
   assert.equal(byslot(all.saindo, 'DMCL').zone.rx, 6);
   const info = E.slotInfo(data.formations, 'AMC');
@@ -376,4 +376,13 @@ test('na saída de bola o Construtor Avançado recua para receber e o Meia Ofens
   p[i2] = { slot: 'AMCR', role: 'advanced_playmaker', duty: 'S' };
   const res = E.computePhase(p, 'saindo', noCol, {});
   assert.ok(byslot(res, 'AMCL').y - byslot(res, 'AMCR').y >= 8, `${byslot(res, 'AMCL').y} vs ${byslot(res, 'AMCR').y}`);
+});
+
+test('guia FM23 (Seif Khaled): corridas laterais do AP/Carrilero e corredores embutidos nos atacantes', () => {
+  const p = preset('4-3-3-dm-wide').map((x) => ({ ...x }));
+  Object.assign(p.find((x) => x.slot === 'STC'), { role: 'advanced_forward', duty: 'A' });
+  const res = E.computePhase(p, 'ataque', data, {});
+  assert.deepEqual(byslot(res, 'MCR').zone, { rx: 8, ry: 3 }, 'Carrilero: zona lateral');
+  assert.deepEqual(byslot(res, 'STC').zone, { rx: 14, ry: 8 }, 'Avançado: corredores + deambular');
+  assert.ok(data.roles.libero.duties.S && data.roles.libero.duties.A && !data.roles.libero.uncertain);
 });

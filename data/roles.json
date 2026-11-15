@@ -84,12 +84,21 @@
     "label": "Líbero",
     "en": "Libero",
     "abbr": "LIB",
-    "desc": "Varre atrás da linha sem a bola. S sobe ao meio-campo com a bola, como um construtor recuado; A tem liberdade quase total para avançar.",
+    "desc": "Varre atrás da linha sem a bola (recua um pouco). S sobe ao meio-campo com a bola, como um construtor recuado; A tem liberdade quase total para avançar.",
     "slots": ["DCL", "DC", "DCR"],
-    "uncertain": true,
     "duties": {
-      "S": { "defendendo": {"dy": -3}, "saindo": {"y": 25}, "ataque": {"y": 52} },
-      "A": { "defendendo": {"dy": -3}, "saindo": {"y": 30}, "ataque": {"y": 62} }
+      "S": {
+        "locked": ["close_down_less"],
+        "defendendo": { "dy": -3 },
+        "saindo": { "y": 25 },
+        "ataque": { "y": 52 }
+      },
+      "A": {
+        "locked": ["close_down_less", "get_further_forward"],
+        "defendendo": { "dy": -3 },
+        "saindo": { "y": 30 },
+        "ataque": { "y": 62 }
+      }
     }
   },
   "full_back": {
@@ -219,12 +228,12 @@
       "D": {
         "locked": ["hold_position", "close_down_less"],
         "saindo": { "if": "dlp_drop", "onlyBands": ["DM"], "x": 50, "y": 15, "effects": ["split_cbs_wide"] },
-        "ataque": { "byBand": { "DM": {"dy": -1}, "M": {"dy": -6} } }
+        "ataque": { "byBand": {"DM": {"dy": -1}, "M": {"dy": -6}} }
       },
       "S": {
         "locked": ["hold_position"],
-        "saindo": {"dy": -1},
-        "ataque": { "byBand": { "DM": {"dy": 5}, "M": {"dy": -3} } }
+        "saindo": { "byBand": {"DM": {"dy": -3}, "M": {"dy": -4}} },
+        "ataque": { "byBand": {"DM": {"dy": 5}, "M": {"dy": -3}} }
       }
     }
   },
@@ -318,9 +327,11 @@
     "label": "Box-to-Box",
     "en": "Box-to-Box Midfielder",
     "abbr": "BBM",
-    "desc": "Cobre o campo todo: protege a defesa e chega atrasado na área.",
+    "desc": "Cobre o campo todo: volta para ajudar a defesa e chega atrasado na área. Deambular embutido.",
     "slots": ["MCL", "MC", "MCR"],
-    "duties": { "S": {"locked": ["roam_from_position"], "ataque": {"y": 72}} }
+    "duties": {
+      "S": { "locked": ["roam_from_position"], "ataque": {"y": 72}, "defendendo": {"dy": -2} }
+    }
   },
   "advanced_playmaker": {
     "label": "Construtor Avançado",
@@ -330,12 +341,12 @@
     "slots": ["MCL", "MC", "MCR", "AMCL", "AMC", "AMCR", "AML", "AMR"],
     "duties": {
       "S": {
-        "saindo": { "byBand": { "AM": {"dy": -6}, "M": {"dy": -2} } },
-        "ataque": {"dy": 2}
+        "saindo": { "byBand": {"AM": {"dy": -6}, "M": {"dy": -2}}, "lateral": 6 },
+        "ataque": { "dy": 2, "lateral": 6 }
       },
       "A": {
-        "saindo": { "byBand": { "AM": {"dy": -3}, "M": {"dy": 0} } },
-        "ataque": {"dy": 6}
+        "saindo": { "byBand": {"AM": {"dy": -3}, "M": {"dy": 0}}, "lateral": 6 },
+        "ataque": { "dy": 6, "lateral": 6 }
       }
     }
   },
@@ -347,12 +358,12 @@
     "slots": ["MCL", "MC", "MCR"],
     "duties": {
       "S": {
-        "locked": ["stay_wider", "roam_from_position", "get_further_forward"],
+        "locked": ["stay_wider", "roam_from_position", "get_further_forward", "move_into_channels"],
         "saindo": { "x": 31 },
         "ataque": { "x": 32, "y": 72 }
       },
       "A": {
-        "locked": ["stay_wider", "roam_from_position", "get_further_forward"],
+        "locked": ["stay_wider", "roam_from_position", "get_further_forward", "move_into_channels"],
         "saindo": { "x": 28 },
         "ataque": { "x": 30, "y": 80 }
       }
@@ -362,10 +373,14 @@
     "label": "Carrilero",
     "en": "Carrilero",
     "abbr": "CAR",
-    "desc": "Carregador lateral: cobre o corredor entre o centro e a ponta e liga defesa e meio, sem vir na vertical.",
+    "desc": "Carregador lateral: cobre o corredor entre o centro e a ponta e liga defesa e meio, com corridas laterais, sem vir na vertical.",
     "slots": ["MCL", "MC", "MCR"],
     "duties": {
-      "S": { "locked": ["stay_wider"], "saindo": {"x": 38}, "ataque": {"x": 35, "y": 64} }
+      "S": {
+        "locked": ["stay_wider"],
+        "saindo": { "x": 38, "lateral": 8 },
+        "ataque": { "x": 35, "y": 64, "lateral": 8 }
+      }
     }
   },
   "wide_midfielder": {
@@ -468,7 +483,7 @@
     "slots": ["AMCL", "AMC", "AMCR"],
     "duties": {
       "A": {
-        "locked": ["roam_from_position", "get_further_forward", "close_down_more"],
+        "locked": ["roam_from_position", "get_further_forward", "close_down_more", "move_into_channels"],
         "defendendo": { "dy": 3 },
         "ataque": { "y": 86 }
       }
@@ -491,7 +506,10 @@
     "desc": "Entre o atacante e o meio, quase sem defender. Fora da bola, procura espaço livre e abre para os lados.",
     "slots": ["AMCL", "AMC", "AMCR", "AML", "AMR", "STCL", "STC", "STCR"],
     "duties": {
-      "A": { "locked": ["roam_from_position", "close_down_less"], "defendendo": {"dy": 5} }
+      "A": {
+        "locked": ["roam_from_position", "close_down_less", "move_into_channels"],
+        "defendendo": { "dy": 5 }
+      }
     }
   },
   "inside_forward": {
@@ -538,7 +556,7 @@
     "slots": ["STCL", "STC", "STCR"],
     "duties": {
       "A": {
-        "locked": ["roam_from_position", "get_further_forward"],
+        "locked": ["roam_from_position", "get_further_forward", "move_into_channels"],
         "defendendo": { "dy": 6 },
         "saindo": { "y": 76 },
         "ataque": { "y": 92 }
@@ -552,8 +570,12 @@
     "desc": "Faz de tudo: segura, cria e finaliza, com liberdade de movimento. S cria mais; A finaliza mais.",
     "slots": ["STCL", "STC", "STCR"],
     "duties": {
-      "S": { "locked": ["roam_from_position"], "saindo": {"y": 66}, "ataque": {"y": 82} },
-      "A": { "locked": ["roam_from_position"], "ataque": {"y": 90} }
+      "S": {
+        "locked": ["roam_from_position", "move_into_channels"],
+        "saindo": { "y": 66 },
+        "ataque": { "y": 82 }
+      },
+      "A": { "locked": ["roam_from_position", "move_into_channels"], "ataque": {"y": 90} }
     }
   },
   "deep_lying_forward": {
@@ -563,8 +585,16 @@
     "desc": "Recua para ligar o meio ao ataque. A também procura posições de finalização.",
     "slots": ["STCL", "STC", "STCR"],
     "duties": {
-      "S": { "locked": ["roam_from_position"], "saindo": {"y": 62}, "ataque": {"y": 78} },
-      "A": { "locked": ["roam_from_position"], "saindo": {"y": 66}, "ataque": {"y": 84} }
+      "S": {
+        "locked": ["roam_from_position", "move_into_channels"],
+        "saindo": { "y": 62 },
+        "ataque": { "y": 78 }
+      },
+      "A": {
+        "locked": ["roam_from_position", "move_into_channels"],
+        "saindo": { "y": 66 },
+        "ataque": { "y": 84 }
+      }
     }
   },
   "false_nine": {
@@ -595,7 +625,7 @@
       "D": { "locked": ["hold_position", "close_down_more"], "defendendo": {"dy": 4}, "ataque": {"y": 82} },
       "S": { "locked": ["close_down_more"], "defendendo": {"dy": 4}, "ataque": {"y": 86} },
       "A": {
-        "locked": ["roam_from_position", "get_further_forward", "close_down_more"],
+        "locked": ["roam_from_position", "get_further_forward", "close_down_more", "move_into_channels"],
         "defendendo": { "dy": 4 },
         "ataque": { "y": 90 }
       }

@@ -289,6 +289,17 @@
       if (target.side !== source.side) return;
       target.bx += source.side === 'L' ? -5 : 5;
     },
+    /**
+     * Half Back com Alas (ou Alas Completos) em Apoio/Ataque: no ataque sobe até o terço adversário
+     * (Book of Roles: "when using support or attacking wingbacks the HB can push into the opponents third").
+     */
+    hb_push_with_wingbacks: function (list, phase, source) {
+      if (phase !== 'ataque') return;
+      var wingBacks = list.some(function (p) {
+        return (p.role === 'wing_back' || p.role === 'complete_wing_back') && (p.effDuty === 'S' || p.effDuty === 'A');
+      });
+      if (wingBacks) source.by = 64;
+    },
     /** Lateral Invertido entra na linha dos zagueiros: os DCs deslizam para o lado oposto, formando uma linha de 3. */
     ifb_back_three: function (list, phase, source) {
       if (source.side === 'C') return;

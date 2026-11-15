@@ -202,16 +202,22 @@ Limitações: o adversário não tem instruções individuais nem característic
 
 9. **[Guide to Football — Tactical theory](https://fm.guidetofootball.com/tactical-theory/)**: framework teórico (528 conceitos) do qual vieram os nomes e as definições das notas de estrutura. O próprio site avisa que não foi testado no jogo e que sua aplicação a uma versão do FM é ao FM26.
 
-10. **The Book of Roles, de Daljit Singh (FM23, 2023)** (PDF de 152 páginas enviado pelo usuário, `Book-of-Roles.pdf` na `main`): movimento de cada função por fase, com legendas de capturas do jogo (as imagens não foram lidas, só o texto). Ajustes que vieram dele:
-   - **Ala (D)** fica acima do **Lateral (S)** (saída y 30, ataque y 65);
-   - **Half Back** no ataque sobe só um pouco à frente dos zagueiros (y 50; antes ficava atrás deles). O livro diz que com alas em S/A ele chega ao terço adversário; isso não foi modelado;
-   - **Atacante de Pressão** volta para defender: (D) −4 no bloco médio, e −4 extra no bloco baixo para todas as tarefas;
-   - **Trequartista** recua fundo na saída (−10 na faixa de meia ofensivo, −14 no ataque), mais que o Enganche;
-   - **Segundo Atacante** recua um pouco na construção (−4 na saída); **Pivô** recua como o Atacante Recuado (S y 62, A y 66);
-   - **Meia Aberto (S)** fecha para o meio-espaço na saída (x 22);
-   - no ataque: **Carrilero** fica perto da entrada da área (y 70, abaixo do Box-to-Box), **Ala Invertido (S)** chega à altura de um Meia Central (S) (y 63) e o **Construtor Móvel** acampa na entrada da área (y 74 em qualquer faixa).
+10. **The Book of Roles, de Daljit Singh (FM23, 2023)** (PDF de 152 páginas enviado pelo usuário, `Book-of-Roles.pdf` na `main`): movimento de cada função por fase, em texto e em ~177 capturas do jogo. As capturas 2D foram medidas: um script acha o campo pelas linhas brancas e desenha uma grade de 10% sobre ele, e a posição da função destacada (círculo vermelho ou legenda) foi lida em coordenadas do site, com a direção de ataque tirada do goleiro de cada time. Cada captura é um instante, não a média, então só entrou o que diverge bastante ou se repete em mais de uma imagem. Ajustes (entre parênteses, o que as capturas mostram):
+   - **Lateral (S)** segura na progressão: −6 (y 29–37 com a bola no meio); **Ala (D)** acima do Lateral (S): saída y 30, ataque y 70 (72–74 em três capturas);
+   - **Volante (D)** sem "pressionar menos" embutido (sai para pressionar ~20 acima dos zagueiros) e, com o **Âncora**, uns 10 acima dos zagueiros no ataque: y 56 e 55 (+9 a +14);
+   - **Half Back** um pouco à frente dos zagueiros no ataque (y 50) e no terço adversário com Alas em Apoio/Ataque (y 64; captura: ~66), efeito `hb_push_with_wingbacks`;
+   - **Regista** alto no ataque: y 74 (76–78); **Construtor Móvel** acampa na entrada da área: y 74;
+   - **Segundo Volante** sobe já na progressão: (A) saída y 34 e +12 na progressão (~68, "quase na linha do ponta"), ataque y 80; (S) +8 na progressão, ataque y 70;
+   - **Box-to-Box** com o time instalado no campo adversário: y 78 (80); **Carrilero** na entrada da área: y 76 (78);
+   - **Meia Aberto (S)** no meio-espaço: saída x 22 e ataque x 24, y 72 (x 20–33, y 72–83);
+   - **Trequartista** recua até o meio-campo na saída: y 40 (29–37; na progressão o modelo dá 57–62, como as capturas);
+   - **Segundo Atacante** recua na construção: saída y 46 (41–44);
+   - **Atacante Recuado** e **Pivô** recuam para segurar a bola: saída y 56 (S) / 60 (A) (Recuado 58 e Pivô 46–61 na progressão);
+   - **Atacante de Pressão** volta para defender: (D) −4 no bloco médio, todas as tarefas −8 no bloco baixo, e (D)/(S) recuam para y 62 na saída (59 na progressão).
 
-   **Não aplicado:** as listas de instruções embutidas do livro divergem do site em alguns pontos: sem "deambular" no Avançado, no Atacante Recuado e no Atacante de Pressão (A); sem "corridas pelos canais" no Atacante Completo (S); com "corridas pelos canais" no Raumdeuter; sem "pressionar menos" no Volante (D) e no Âncora. Como as listas do livro têm erros de copiar e colar (a do Ponta repete a do Meia Aberto), ficam para conferir no jogo.
+   **Conferidos e mantidos** (as capturas batem com o modelo): Construtor Recuado, Meia Aberto (D) sem a bola, Defensive Winger, Meia Central (S), Mezzala no ataque, Construtor Aberto, Ponta, Enganche, Falso 9, Avançado e Matador.
+
+   **Não aplicado:** as listas de instruções embutidas do livro divergem do site em alguns pontos: sem "deambular" no Avançado, no Atacante Recuado e no Atacante de Pressão (A); sem "corridas pelos canais" no Atacante Completo (S); com "corridas pelos canais" no Raumdeuter; sem "pressionar menos" no Âncora. Como as listas do livro têm erros de copiar e colar (a do Ponta repete a do Meia Aberto), ficam para conferir no jogo. Também ficaram de fora medidas de uma captura só (Mezzala mais aberta na progressão, Meia Ofensivo (S) mais recuado sem a bola, Ala Invertido (S) mais aberto no ataque).
 
 **Nenhuma fonte dá coordenadas.** As descrições ("recua um pouco", "sobe para pressionar") foram convertidas por mim em números, que servem de ponto de partida para calibrar. O fórum da SI, o FMInside, o Passion4FM e o sortitoutsi bloqueiam acesso automatizado e não foram lidos.
 

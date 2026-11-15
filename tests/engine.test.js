@@ -768,3 +768,36 @@ test('laterais e alas não sobem com a linha defensiva (só zagueiros e volantes
   const P4 = preset('4-4-2');
   assert.equal(byslot(E.computePhase(P4, 'ataque', noCol, { defensiveLine: 3 }), 'DL').y, byslot(E.computePhase(P4, 'ataque', noCol, {}), 'DL').y);
 });
+
+// ---------- Book of Roles: medidas tiradas das capturas 2D do livro (grade de 10% sobre o campo) ----------
+
+test('Capturas: Segundo Volante (A) já sobe na progressão; Regista alto no ataque', () => {
+  const xi = book.filter((p) => p.slot !== 'DMC').concat([P('DMCL', 'segundo_volante', 'A'), P('DMCR', 'regista', 'S')])
+    .filter((p) => p.slot !== 'MCR');
+  const prog = E.computePhase(xi, 'progressao', noCol, {});
+  assert.ok(byslot(prog, 'DMCL').y >= 62, `SV(A) na progressão: ${byslot(prog, 'DMCL').y} (livro ~68)`);
+  const atk = E.computePhase(xi, 'ataque', noCol, {});
+  assert.ok(byslot(atk, 'DMCR').y >= 70, `Regista no ataque: ${byslot(atk, 'DMCR').y} (livro 76-78)`);
+});
+
+test('Capturas: Âncora e Volante (D) ficam ~10 acima dos zagueiros no ataque', () => {
+  for (const role of ['anchor', 'defensive_midfielder']) {
+    const r = E.computePhase(swap(['DMC', role, 'D']), 'ataque', noCol, {});
+    const gap = byslot(r, 'DMC').y - byslot(r, 'DCL').y;
+    assert.ok(gap >= 8 && gap <= 14, `${role}: ${gap}`);
+  }
+});
+
+test('Capturas: Half Back sobe ao terço adversário com Alas em Apoio/Ataque', () => {
+  const xi = swap(['DMC', 'half_back', 'D'], ['DL', 'wing_back', 'S']);
+  const withWb = byslot(E.computePhase(xi, 'ataque', noCol, {}), 'DMC').y;
+  const withFb = byslot(E.computePhase(swap(['DMC', 'half_back', 'D']), 'ataque', noCol, {}), 'DMC').y;
+  assert.ok(withWb >= 60 && withWb > withFb + 10, `com Ala ${withWb}, com Lateral ${withFb}`);
+});
+
+test('Capturas: Meia Aberto (S) no ataque fica no meio-espaço; Lateral (S) segura na progressão', () => {
+  const atk = E.computePhase(book, 'ataque', noCol, {});
+  assert.ok(byslot(atk, 'ML').x >= 18 && byslot(atk, 'ML').y >= 70, `WM(S) ${byslot(atk, 'ML').x},${byslot(atk, 'ML').y}`);
+  const prog = E.computePhase(book, 'progressao', noCol, {});
+  assert.ok(byslot(prog, 'DL').y <= 40, `FB(S) na progressão: ${byslot(prog, 'DL').y} (livro 29-37)`);
+});

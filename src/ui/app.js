@@ -974,8 +974,27 @@
     document.querySelector('.main').prepend(box);
   }
 
+  /**
+   * Se a página veio de um cache antigo (o GitHub Pages não deixa configurar o tempo de cache),
+   * compara com version.json publicado e recarrega uma vez com ?v=<versão nova>.
+   */
+  function checkFreshVersion() {
+    var vm = document.querySelector('meta[name="fm23pv-version"]');
+    if (!vm || location.protocol === 'file:' || !window.fetch) return;
+    fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.version || j.version === vm.content) return;
+        var key = 'fm23pv.reloaded.' + j.version;
+        try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); } catch (e) { /* sem storage */ }
+        location.replace(location.pathname + '?v=' + j.version + location.hash);
+      })
+      .catch(function () { /* offline: segue com a versão atual */ });
+  }
+
   function init() {
     if (!E) { showFatal('engine.js não carregado'); return; }
+    checkFreshVersion();
     loadData().then(function (d) {
       data = d;
       baseRoles = clone(d.roles);

@@ -225,6 +225,7 @@
       h.appendChild(el('span', null, (data.formations.phases[ph].hint || '') + ' · ataca ↑'));
       card.appendChild(h);
       card.appendChild(el('p', { class: 'shape-line', id: 'shape-' + ph }));
+      card.appendChild(el('div', { class: 'scores', id: 'scores-' + ph }));
       card.appendChild(el('p', { class: 'opp-line', id: 'oppline-' + ph }));
       var svg = svgEl('svg', { class: 'pitch', id: 'pitch-' + ph, role: 'img', 'aria-label': 'Campo — ' + label });
       svg.dataset.phase = ph;
@@ -1087,6 +1088,7 @@
         sl.textContent = txt;
         sl.hidden = !ui.shapes;
       }
+      renderScores(ph);
     });
     if (anim.on) renderAnimStep();
     // reescreve os detalhes do jogador selecionado com os valores novos
@@ -1096,6 +1098,37 @@
       if (sel.team === 'opp') {
         if (lastComputed[ph].opponent) showOppInfo(svg, sel.index); else { ui.info[ph] = null; $('info-' + ph).textContent = 'Passe o mouse ou toque num jogador para ver detalhes.'; }
       } else showPlayerInfo(svg, sel.index);
+    });
+  }
+
+  var SCORE_DEFS = {
+    penetracao: 'Penetração: quão bem o time está posicionado para entrar no espaço — quão avançados estão os jogadores e quanto se comprometem a ir além.',
+    solidez: 'Solidez: quanto o time se mantém sólido atacando — profundidade das posições e contenção do avanço. É o contrapeso da penetração.',
+    apoio: 'Apoio: se o posicionamento vertical dá suporte ao ataque e mantém o time junto (sem buracos entre linhas, gente perto da bola).',
+    pressao: 'Pressão: quantos jogadores estão posicionados para disputar a bola e quão comprometidos estão com isso (não é a altura do bloco).',
+    cobertura: 'Cobertura: quanto do time fica atrás da bola protegendo o espaço onde o adversário jogaria.',
+    compactacao: 'Compactação: quão juntos os jogadores ficam e quão curto é o bloco, da frente até a última linha.'
+  };
+
+  /** Notas de estrutura da fase (framework do Guide to Football) em três barras. */
+  function renderScores(ph) {
+    var box = $('scores-' + ph);
+    if (!box || !lastComputed) return;
+    box.textContent = '';
+    box.hidden = !ui.shapes;
+    if (!ui.shapes) return;
+    E.structureScores(lastComputed[ph].players, ph, data).scores.forEach(function (sc) {
+      var item = el('div', { class: 'score', title: SCORE_DEFS[sc.key] + '\n' + sc.detail + '\n(framework: Guide to Football, tactical theory)' });
+      var head = el('div', { class: 'score-head' });
+      head.appendChild(el('span', null, sc.label));
+      head.appendChild(el('b', null, String(sc.value)));
+      item.appendChild(head);
+      var bar = el('div', { class: 'score-bar' });
+      var fill = el('i');
+      fill.style.width = sc.value + '%';
+      bar.appendChild(fill);
+      item.appendChild(bar);
+      box.appendChild(item);
     });
   }
 

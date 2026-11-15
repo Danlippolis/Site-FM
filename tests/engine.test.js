@@ -654,3 +654,38 @@ test('pressão realista: quem pressiona não passa da última linha de quem tem 
     }
   }
 });
+
+// ---------- notas de estrutura (Guide to Football) ----------
+
+test('notas de estrutura: 3 com a bola e 3 sem a bola, entre 0 e 100', () => {
+  const all = E.computeAll(preset('4-2-3-1-dm-wide'), data, {});
+  for (const ph of E.PHASES) {
+    const s = E.structureScores(all[ph].players, ph, data);
+    assert.equal(s.scores.length, 3);
+    assert.equal(s.withBall, E.isWithBall(data.formations, ph));
+    for (const x of s.scores) assert.ok(x.value >= 0 && x.value <= 100, `${ph}/${x.key}`);
+  }
+});
+
+test('notas fazem sentido: todos em Ataque penetram mais e são menos sólidos que todos em Defender', () => {
+  const dutyAll = (duty) => preset('4-2-3-1-dm-wide').map((x) => (x.slot !== 'GK' && data.roles[x.role].duties[duty] ? { ...x, duty } : x));
+  const sc = (pl, k) => E.structureScores(E.computePhase(pl, 'ataque', data, {}).players, 'ataque', data).scores.find((q) => q.key === k).value;
+  assert.ok(sc(dutyAll('A'), 'penetracao') > sc(dutyAll('D'), 'penetracao'));
+  assert.ok(sc(dutyAll('A'), 'solidez') < sc(dutyAll('D'), 'solidez'));
+});
+
+test('sem a bola: pressão alta pressiona mais; bloco baixo cobre mais', () => {
+  const all = E.computeAll(preset('4-4-2'), data, {});
+  const sc = (ph, k) => E.structureScores(all[ph].players, ph, data).scores.find((q) => q.key === k).value;
+  assert.ok(sc('bloco_baixo', 'cobertura') > sc('pressao', 'cobertura'));
+  assert.ok(sc('bloco_baixo', 'compactacao') >= sc('pressao', 'compactacao'));
+});
+
+test('laterais e alas não sobem com a linha defensiva (só zagueiros e volantes)', () => {
+  const P = preset('3-5-2-wb').map((x) => (x.slot === 'WBR' ? { ...x, role: 'wing_back', duty: 'A' } : x));
+  const std = E.computePhase(P, 'ataque', noCol, {}), high = E.computePhase(P, 'ataque', noCol, { defensiveLine: 3 });
+  assert.equal(byslot(high, 'WBR').y, byslot(std, 'WBR').y);
+  assert.equal(byslot(high, 'DC').y - byslot(std, 'DC').y, 5);
+  const P4 = preset('4-4-2');
+  assert.equal(byslot(E.computePhase(P4, 'ataque', noCol, { defensiveLine: 3 }), 'DL').y, byslot(E.computePhase(P4, 'ataque', noCol, {}), 'DL').y);
+});

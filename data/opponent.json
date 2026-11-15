@@ -1,0 +1,110 @@
+{
+  "phaseMap": {
+    "defendendo": { "phase": "ataque", "label": "com a bola, progredindo" },
+    "saindo": { "phase": "defendendo", "label": "pressionando nossa saída" },
+    "ataque": { "phase": "defendendo", "label": "bloco baixo" }
+  },
+  "offside": true,
+  "default": { "enabled": false, "presetId": "4-4-2", "styleId": "equilibrado" },
+  "styles": [
+    {
+      "id": "equilibrado",
+      "label": "Equilibrado",
+      "inspiredBy": "Balanced",
+      "desc": "Sem extremos: bloco médio, sobe um pouco para pressionar e recua um pouco quando atacado.",
+      "ti": {
+        "mentality": 3,
+        "defensiveLine": 2,
+        "lineOfEngagement": 1,
+        "widthInPossession": 2,
+        "defensiveWidth": 1
+      },
+      "shifts": { "defendendo": -10, "saindo": 6, "ataque": {"lineY": 16} }
+    },
+    {
+      "id": "pressao_alta",
+      "label": "Pressão alta",
+      "inspiredBy": "Gegenpress",
+      "desc": "Linha alta e marcação pressão logo na nossa saída; quase não recua, mesmo com a bola no terço final.",
+      "ti": {
+        "mentality": 5,
+        "defensiveLine": 3,
+        "lineOfEngagement": 2,
+        "widthInPossession": 2,
+        "defensiveWidth": 1
+      },
+      "shifts": { "defendendo": -8, "saindo": 16, "ataque": {"lineY": 22} }
+    },
+    {
+      "id": "posse",
+      "label": "Posse de bola curta",
+      "inspiredBy": "Tiki-Taka",
+      "desc": "Time compacto e por dentro com a bola; pressiona alto para recuperar rápido.",
+      "ti": {
+        "mentality": 4,
+        "defensiveLine": 3,
+        "lineOfEngagement": 2,
+        "widthInPossession": 1,
+        "defensiveWidth": 1
+      },
+      "shifts": { "defendendo": -6, "saindo": 12, "ataque": {"lineY": 20} }
+    },
+    {
+      "id": "pontas",
+      "label": "Jogo pelas pontas",
+      "inspiredBy": "Wing Play",
+      "desc": "Campo bem aberto com a bola, buscando cruzamentos; bloco médio sem a bola.",
+      "ti": {
+        "mentality": 4,
+        "defensiveLine": 2,
+        "lineOfEngagement": 1,
+        "widthInPossession": 4,
+        "defensiveWidth": 1
+      },
+      "shifts": { "defendendo": -10, "saindo": 6, "ataque": {"lineY": 16} }
+    },
+    {
+      "id": "direto",
+      "label": "Jogo direto",
+      "inspiredBy": "Route One",
+      "desc": "Bola longa para os atacantes; o meio participa pouco e o time fica mais esticado.",
+      "ti": {
+        "mentality": 4,
+        "defensiveLine": 2,
+        "lineOfEngagement": 1,
+        "widthInPossession": 3,
+        "defensiveWidth": 1
+      },
+      "shifts": { "defendendo": -12, "saindo": 4, "ataque": {"lineY": 16} }
+    },
+    {
+      "id": "contra_ataque",
+      "label": "Contra-ataque",
+      "inspiredBy": "Fluid/Direct Counter-Attack",
+      "desc": "Bloco médio-baixo esperando o erro para sair rápido; espaço atrás da nossa linha.",
+      "ti": {
+        "mentality": 2,
+        "defensiveLine": 1,
+        "lineOfEngagement": 0,
+        "widthInPossession": 3,
+        "defensiveWidth": 0
+      },
+      "shifts": { "defendendo": -14, "saindo": -2, "ataque": {"lineY": 13} }
+    },
+    {
+      "id": "bloco_baixo",
+      "label": "Bloco baixo (retranca)",
+      "inspiredBy": "Catenaccio / Park the Bus",
+      "desc": "Linhas baixas e fechadas perto da própria área; pouca gente no ataque.",
+      "ti": {
+        "mentality": 1,
+        "defensiveLine": 0,
+        "lineOfEngagement": 0,
+        "widthInPossession": 2,
+        "defensiveWidth": 0
+      },
+      "shifts": { "defendendo": -16, "saindo": -6, "ataque": {"lineY": 10} }
+    }
+  ],
+  "shiftsNote": "Número = desloca o bloco (sem o goleiro) em y, no referencial do adversário. {\"lineY\": n} = posiciona a linha de defensores dele em y n (perto da própria área) e o resto do bloco acompanha."
+}

@@ -21,7 +21,8 @@ swap('<!-- INLINE_DATA -->', [
   `<script type="application/json" id="data-formations">${json('data/formations.json')}</script>`,
   `<script type="application/json" id="data-roles">${json('data/roles.json')}</script>`,
   `<script type="application/json" id="data-instructions">${json('data/team-instructions.json')}</script>`,
-  `<script type="application/json" id="data-player-instructions">${json('data/player-instructions.json')}</script>`
+  `<script type="application/json" id="data-player-instructions">${json('data/player-instructions.json')}</script>`,
+  `<script type="application/json" id="data-opponent">${json('data/opponent.json')}</script>`
 ].join('\n  '));
 swap('<script src="src/engine/engine.js"></script>', `<script>\n${safeScript(read('src/engine/engine.js'))}</script>`);
 swap('<script src="src/ui/app.js"></script>', `<script>\n${safeScript(read('src/ui/app.js'))}</script>`);

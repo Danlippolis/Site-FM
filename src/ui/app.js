@@ -83,15 +83,15 @@
 
   function loadData() {
     function inline(id) { var s = document.getElementById(id); return s ? JSON.parse(s.textContent) : null; }
-    var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions'), pi = inline('data-player-instructions');
-    if (f && r && t && pi) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi });
-    var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json', 'data/player-instructions.json'];
+    var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions'), pi = inline('data-player-instructions'), op = inline('data-opponent');
+    if (f && r && t && pi && op) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi, opponent: op });
+    var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json', 'data/player-instructions.json', 'data/opponent.json'];
     return Promise.all(urls.map(function (u) {
       return fetch(u, { cache: 'no-cache' }).then(function (res) {
         if (!res.ok) throw new Error(u + ': HTTP ' + res.status);
         return res.json();
       });
-    })).then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3] }; });
+    })).then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3], opponent: a[4] }; });
   }
 
   function isRolesObj(o) {
@@ -122,7 +122,17 @@
 
   function defaultState() {
     var pr = presetById(data.formations.defaultPreset);
-    return { presetId: pr.id, players: clone(pr.players), ti: defaultTI() };
+    return { presetId: pr.id, players: clone(pr.players), ti: defaultTI(), opp: defaultOpp() };
+  }
+
+  function defaultOpp() { return clone((data.opponent && data.opponent.default) || { enabled: false }); }
+
+  /** Configuração do adversário para o motor: jogadores do atalho de formação escolhido. */
+  function oppConfig() {
+    var o = state.opp || {};
+    if (!o.enabled) return null;
+    var pr = presetById(o.presetId);
+    return { enabled: true, styleId: o.styleId, players: clone(pr.players).map(function (p) { return fixRole(p); }) };
   }
 
   function validRoleFor(slot, role, duty) {
@@ -175,6 +185,7 @@
     });
 
     buildTIForm();
+    buildOppForm();
 
     var tabs = $('tabs'), fields = $('fields');
     E.PHASES.forEach(function (ph) {
@@ -187,6 +198,7 @@
       var h = el('h3', null, label);
       h.appendChild(el('span', null, PHASE_HINT[ph] + ' · ataca ↑'));
       card.appendChild(h);
+      card.appendChild(el('p', { class: 'opp-line', id: 'oppline-' + ph }));
       var svg = svgEl('svg', { class: 'pitch', id: 'pitch-' + ph, role: 'img', 'aria-label': 'Campo — ' + label });
       svg.dataset.phase = ph;
       card.appendChild(svg);
@@ -209,6 +221,7 @@
     legend.appendChild(el('span', null, '○ bola'));
     legend.appendChild(el('span', null, '• ponto branco = jogador com instruções individuais'));
     legend.appendChild(el('span', null, '◌ área sombreada = zona de deambulação'));
+    legend.appendChild(el('span', null, '▢ quadrado claro = adversário (ataca para baixo)'));
     legend.appendChild(el('span', null, 'Linhas tracejadas = terços do campo'));
 
     $('optGhost').checked = ui.ghost;
@@ -230,7 +243,7 @@
 
     $('exportTactic').addEventListener('click', function () {
       download('tatica-fm23-' + state.presetId + '.json', {
-        format: 'fm23pv-tactic', version: 1, presetId: state.presetId, players: state.players, ti: state.ti
+        format: 'fm23pv-tactic', version: 1, presetId: state.presetId, players: state.players, ti: state.ti, opp: state.opp
       });
     });
     $('importTactic').addEventListener('click', function () { $('fileTactic').click(); });
@@ -246,9 +259,10 @@
             if (Array.isArray(p.instructions) && p.instructions.length) q.instructions = p.instructions.filter(function (k) { return typeof k === 'string'; });
             return q;
           }),
-          ti: Object.assign(defaultTI(), obj.ti || {})
+          ti: Object.assign(defaultTI(), obj.ti || {}),
+          opp: Object.assign(defaultOpp(), obj.opp || {})
         };
-        renderAll(); syncTIForm();
+        renderAll(); syncTIForm(); syncOppForm();
         toast('Tática importada.');
       });
     });
@@ -268,7 +282,7 @@
       if (!confirm('Voltar para a formação e instruções padrão?')) return;
       state = defaultState();
       ui.selectedSlot = null;
-      renderAll(); syncTIForm();
+      renderAll(); syncTIForm(); syncOppForm();
     });
     $('resetRoles').addEventListener('click', function () {
       if (!confirm('Descartar todas as regras editadas/importadas e voltar ao data/roles.json original?')) return;
@@ -304,6 +318,39 @@
       lab.appendChild(document.createTextNode(ins.flags[k].label));
       form.appendChild(lab);
     });
+  }
+
+  function buildOppForm() {
+    var form = $('oppForm'), cfg = data.opponent;
+    if (!cfg) { $('oppEnabled').closest('.card').hidden = true; return; }
+    var lf = el('label', null, 'Formação do adversário');
+    var fs = el('select', { id: 'oppPreset' });
+    data.formations.presets.forEach(function (p) { fs.appendChild(el('option', { value: p.id }, p.label)); });
+    fs.addEventListener('change', function () { state.opp.presetId = fs.value; renderAll(); });
+    lf.appendChild(fs); form.appendChild(lf);
+
+    var ls = el('label', null, 'Estilo de jogo do adversário');
+    var ss = el('select', { id: 'oppStyle' });
+    cfg.styles.forEach(function (st) { ss.appendChild(el('option', { value: st.id }, st.label + (st.inspiredBy ? ' (' + st.inspiredBy + ')' : ''))); });
+    ss.addEventListener('change', function () { state.opp.styleId = ss.value; renderAll(); syncOppForm(); });
+    ls.appendChild(ss); form.appendChild(ls);
+    form.appendChild(el('p', { class: 'hint', id: 'oppDesc' }));
+
+    $('oppEnabled').addEventListener('change', function (e) { state.opp.enabled = e.target.checked; renderAll(); syncOppForm(); });
+  }
+
+  function syncOppForm() {
+    if (!data.opponent) return;
+    var o = state.opp;
+    $('oppEnabled').checked = !!o.enabled;
+    $('oppPreset').value = o.presetId;
+    $('oppStyle').value = o.styleId;
+    $('oppForm').classList.toggle('off', !o.enabled);
+    var st = E.opponentStyle(data, o.styleId);
+    var ins = data.instructions;
+    $('oppDesc').textContent = st ? st.desc + ' Instruções: mentalidade ' + ins.mentality.options[st.ti.mentality].label.toLowerCase() +
+      ', linha defensiva ' + ins.defensiveLine.options[st.ti.defensiveLine].label.toLowerCase() +
+      ', linha de pressão ' + ins.lineOfEngagement.options[st.ti.lineOfEngagement].label.toLowerCase() + '.' : '';
   }
 
   function syncTIForm() {
@@ -353,6 +400,7 @@
     svgEl('g', { class: 'zones' }, svg);
     svgEl('g', { class: 'ghosts' }, svg);
     svgEl('g', { class: 'ball-layer' }, svg);
+    svgEl('g', { class: 'opps' }, svg);
     svgEl('g', { class: 'players' }, svg);
   }
 
@@ -434,6 +482,47 @@
     players.querySelectorAll('g.pl').forEach(function (g) {
       if (Number(g.dataset.i) >= result.players.length) g.remove();
     });
+    renderOpponent(svg, result.opponent);
+  }
+
+  function renderOpponent(svg, opp) {
+    var layer = svg.querySelector('.opps');
+    var list = opp ? opp.players : [];
+    list.forEach(function (cp) {
+      var g = layer.querySelector('g.op[data-i="' + cp.index + '"]');
+      if (!g) {
+        g = svgEl('g', { class: 'op', 'data-i': cp.index }, layer);
+        svgEl('rect', { x: -2.6, y: -2.6, width: 5.2, height: 5.2, rx: 1.1, class: 'oc' }, g);
+        svgEl('text', { class: 'oab' }, g);
+        svgEl('title', {}, g);
+        g.addEventListener('pointerenter', onOppHover);
+        g.addEventListener('click', onOppHover);
+      }
+      var r = data.roles[cp.role];
+      var label = (r ? r.abbr : '?') + '-' + cp.duty;
+      var p = toSvg(cp.x, cp.y);
+      g.style.transform = 'translate(' + p[0] + 'px,' + p[1] + 'px)';
+      var t = g.querySelector('.oab');
+      t.textContent = label;
+      t.setAttribute('font-size', abbrFont(label.length) * 0.9);
+      g.querySelector('title').textContent = 'Adversário · ' + cp.slot + ' — ' + (r ? r.label + ' (' + r.en + ')' : cp.role);
+    });
+    layer.querySelectorAll('g.op').forEach(function (g) {
+      if (Number(g.dataset.i) >= list.length) g.remove();
+    });
+  }
+
+  function onOppHover(e) {
+    var g = e.currentTarget, svg = g.ownerSVGElement, ph = svg.dataset.phase;
+    var opp = lastComputed && lastComputed[ph] && lastComputed[ph].opponent;
+    var cp = opp && opp.players[Number(g.dataset.i)];
+    var info = $('info-' + ph);
+    if (!cp || !info) return;
+    var r = data.roles[cp.role], d = E.DUTIES[cp.duty] || { label: cp.duty };
+    info.textContent = '';
+    info.appendChild(el('b', null, 'Adversário · ' + cp.slot));
+    info.appendChild(document.createTextNode(' ' + (r ? r.label + ' (' + r.en + ')' : cp.role) + ' — ' + d.label +
+      ' · ' + opp.label + (opp.style ? ' · estilo ' + opp.style.label : '') + (cp.offside ? ' · contido pela linha de impedimento' : '')));
   }
 
   function computedFor(svg, index) {
@@ -457,6 +546,7 @@
     txt += ' · x ' + fmt(cp.x) + ', y ' + fmt(cp.y);
     if (cp.zone) txt += cp.zone.rx > cp.zone.ry ? ' · circula pelos corredores (±' + fmt(cp.zone.rx) + ' na largura)' : ' · deambula num raio de ~' + fmt(cp.zone.rx);
     if (cp.locked && cp.locked.length) txt += ' · embutidas na função: ' + piLabels(cp.locked);
+    if (cp.offside) txt += ' · contido pela linha de impedimento do adversário';
     if (cp.rule) {
       var keys = Object.keys(cp.rule).filter(function (k) { return k !== 'if' && k !== 'onlyBands'; });
       txt += ' · regra: ' + keys.map(function (k) { return k + ' ' + (Array.isArray(cp.rule[k]) ? cp.rule[k].join('+') : cp.rule[k]); }).join(', ');
@@ -689,6 +779,12 @@
   function renderFields() {
     if (!lastComputed) return;
     E.PHASES.forEach(function (ph) {
+      var line = $('oppline-' + ph), o = lastComputed[ph].opponent;
+      if (!line) return;
+      line.textContent = o ? 'Adversário ' + presetById(state.opp.presetId).label + ' · ' + (o.style ? o.style.label : '') + ' · ' + o.label + ' (ataca ↓)' : '';
+      line.hidden = !o;
+    });
+    E.PHASES.forEach(function (ph) {
       var svg = $('pitch-' + ph);
       svg.classList.toggle('editing', ui.edit);
       renderPitch(svg, lastComputed[ph], { ghost: ui.ghost });
@@ -700,7 +796,7 @@
     var v = E.validate(state.players, data);
     var extra = [];
     if (v.ok) {
-      lastComputed = E.computeAll(state.players, data, state.ti);
+      lastComputed = E.computeMatch(state.players, data, state.ti, oppConfig());
       E.PHASES.forEach(function (ph) { extra = extra.concat(lastComputed[ph].warnings); });
     }
     renderSlotGrid();
@@ -764,11 +860,12 @@
 
       var saved = lsGet(LS_STATE);
       if (saved && Array.isArray(saved.players) && E.validate(saved.players, data).ok) {
-        state = { presetId: saved.presetId, players: saved.players, ti: Object.assign(defaultTI(), saved.ti || {}) };
+        state = { presetId: saved.presetId, players: saved.players, ti: Object.assign(defaultTI(), saved.ti || {}), opp: Object.assign(defaultOpp(), saved.opp || {}) };
       } else state = defaultState();
 
       buildStatic();
       syncTIForm();
+      syncOppForm();
       syncTabs();
       renderAll();
     }).catch(showFatal);

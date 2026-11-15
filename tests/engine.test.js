@@ -7,7 +7,8 @@ const data = {
   formations: require('../data/formations.json'),
   roles: require('../data/roles.json'),
   instructions: require('../data/team-instructions.json'),
-  playerInstructions: require('../data/player-instructions.json')
+  playerInstructions: require('../data/player-instructions.json'),
+  opponent: require('../data/opponent.json')
 };
 const preset = (id) => data.formations.presets.find((p) => p.id === id).players;
 const byslot = (res, slot) => res.players.find((p) => p.slot === slot);
@@ -305,4 +306,54 @@ test('Lateral Invertido vira terceiro zagueiro na construção e empurra os DCs'
 
 test('Zagueiro Simples tem tarefa Stopper', () => {
   assert.ok(data.roles.no_nonsense_cb.duties.St);
+});
+
+// ---------- adversário ----------
+
+const oppOf = (id, styleId) => ({ enabled: true, players: preset(id), styleId });
+
+test('adversário: 11 jogadores por fase, espelhado (goleiro dele no alto do campo)', () => {
+  const m = E.computeMatch(preset('4-3-3-dm-wide'), data, {}, oppOf('4-4-2', 'equilibrado'));
+  for (const ph of E.PHASES) {
+    const opp = m[ph].opponent.players;
+    assert.equal(opp.length, 11);
+    const gk = opp.find((p) => p.slot === 'GK');
+    assert.ok(gk.y > 85, `${ph}: GK ${gk.y}`);
+    for (const p of opp) assert.ok(p.x >= 2 && p.x <= 98 && p.y >= 2 && p.y <= 98);
+  }
+});
+
+test('adversário desligado não altera o nosso time', () => {
+  const a = E.computeAll(preset('4-3-3-dm-wide'), data, {});
+  const b = E.computeMatch(preset('4-3-3-dm-wide'), data, {}, { enabled: false, players: preset('4-4-2') });
+  assert.deepEqual(b.ataque.players.map((p) => [p.x, p.y]), a.ataque.players.map((p) => [p.x, p.y]));
+  assert.equal(b.ataque.opponent, undefined);
+});
+
+test('estilo muda a altura do bloco: pressão alta pressiona mais a saída que o bloco baixo', () => {
+  const press = E.computeMatch(preset('4-3-3-dm-wide'), data, {}, oppOf('4-4-2', 'pressao_alta'));
+  const low = E.computeMatch(preset('4-3-3-dm-wide'), data, {}, oppOf('4-4-2', 'bloco_baixo'));
+  const st = (m) => Math.min(...m.saindo.opponent.players.filter((p) => p.band === 'ST').map((p) => p.y));
+  assert.ok(st(press) < st(low) - 15, `${st(press)} vs ${st(low)}`);
+});
+
+test('impedimento: ninguém passa do último defensor rival no campo adversário', () => {
+  for (const style of data.opponent.styles.map((s) => s.id)) {
+    const m = E.computeMatch(preset('4-2-3-1-dm-wide'), data, {}, oppOf('4-4-2', style));
+    for (const ph of ['saindo', 'ataque']) {
+      const line = Math.max(50, ...m[ph].opponent.players.filter((p) => p.band !== 'GK').map((p) => p.y));
+      for (const p of m[ph].players) if (p.band !== 'GK') assert.ok(p.y <= line + 0.11, `${style}/${ph}/${p.slot} ${p.y} > ${line}`);
+    }
+    const lineD = Math.min(50, ...m.defendendo.players.filter((p) => p.band !== 'GK').map((p) => p.y));
+    for (const p of m.defendendo.opponent.players) if (p.band !== 'GK') assert.ok(p.y >= lineD - 0.11, `${style}/def/${p.slot}`);
+  }
+});
+
+test('no nosso ataque, a linha do adversário fica perto da própria área em qualquer estilo', () => {
+  for (const style of data.opponent.styles) {
+    const m = E.computeMatch(preset('4-2-3-1-dm-wide'), data, {}, oppOf('4-4-2', style.id));
+    const ds = m.ataque.opponent.players.filter((p) => p.band === 'D');
+    const avg = ds.reduce((t, p) => t + p.y, 0) / ds.length;
+    assert.ok(Math.abs(avg - (100 - style.shifts.ataque.lineY)) < 3, `${style.id}: ${avg}`);
+  }
 });

@@ -100,7 +100,7 @@
       }
       if (!formations.slots[p.slot] || !p.instructions || !p.instructions.length) return;
       var pis = (data.playerInstructions || {}).instructions || {};
-      var r = resolvePlayerInstructions(p, slotInfo(formations, p.slot), pis);
+      var r = resolvePlayerInstructions(p, slotInfo(formations, p.slot), pis, roles);
       r.unknown.forEach(function (k) { warnings.push(p.slot + ': instrução individual desconhecida "' + k + '".'); });
       r.ignored.forEach(function (i) { warnings.push(p.slot + ': "' + pis[i.key].label + '" ignorada — ' + i.reason + '.'); });
     });
@@ -125,16 +125,32 @@
       defLineY: pick(instructions.defensiveLine, ti.defensiveLine).y,
       loeDy: pick(instructions.lineOfEngagement, ti.lineOfEngagement).dy,
       widthFactor: pick(instructions.widthInPossession, ti.widthInPossession).factor,
+      defWidthFactor: instructions.defensiveWidth ? pick(instructions.defensiveWidth, ti.defensiveWidth).factor : null,
+      mentalityIdx: instructions.mentality.options[ti.mentality] ? ti.mentality : instructions.mentality.default,
       flags: flags
     };
   }
 
   // ---------- regras de função ----------
 
-  function getRule(roles, p, phase, flags) {
+  /**
+   * Tarefa efetiva para buscar regras: "Automático" segue a mentalidade
+   * (engine.autoDutyByMentality), a menos que a própria tarefa Au tenha regra para a fase.
+   */
+  function effectiveDuty(roles, p, phase, ti, eng) {
     var role = roles[p.role];
-    var duty = role && role.duties && role.duties[p.duty];
-    var rule = duty && duty[phase];
+    if (!role || p.duty !== 'Au') return p.duty;
+    var own = role.duties.Au && role.duties.Au[phase];
+    var map = eng && eng.autoDutyByMentality;
+    if ((own && Object.keys(own).length) || !map) return 'Au';
+    var d = map[ti.mentalityIdx];
+    return role.duties[d] ? d : 'Au';
+  }
+
+  function getRule(roles, p, phase, flags, duty) {
+    var role = roles[p.role];
+    var dutyRules = role && role.duties && role.duties[duty || p.duty];
+    var rule = dutyRules && dutyRules[phase];
     if (!rule) return null;
     if (rule.if && !flags[rule.if]) return null;
     if (rule.onlyBands && rule.onlyBands.indexOf(p.band) < 0) return null;
@@ -146,7 +162,18 @@
   var BAND_NAMES = { GK: 'goleiro', D: 'defesa', DM: 'meio-defensivo', M: 'meio', AM: 'meia ofensivo', ST: 'ataque' };
 
   /** A instrução `def` está disponível para o jogador `p` no slot descrito por `info`? */
-  function piAvailability(def, p, info) {
+  /** Instruções que a função+tarefa já traz embutidas no jogo (campo "locked" da tarefa em roles.json). */
+  function lockedFor(roles, p) {
+    var role = roles && roles[p.role];
+    var duty = role && role.duties && role.duties[p.duty];
+    return (duty && duty.locked) || [];
+  }
+
+  function piAvailability(def, p, info, roles, key) {
+    var locked = lockedFor(roles, p);
+    if (key && locked.indexOf(key) >= 0) return { ok: false, locked: true, reason: 'já embutida na função' };
+    var clash = (def.excludes || []).filter(function (k) { return locked.indexOf(k) >= 0; })[0];
+    if (clash) return { ok: false, reason: 'conflita com uma instrução embutida na função' };
     if (def.notBands && def.notBands.indexOf(info.band) >= 0) return { ok: false, reason: 'não disponível para ' + BAND_NAMES[info.band] };
     if (def.bands && def.bands.indexOf(info.band) < 0) return { ok: false, reason: 'só para ' + def.bands.map(function (b) { return BAND_NAMES[b]; }).join('/') };
     if (def.lanes && def.lanes.indexOf(info.lane) < 0) return { ok: false, reason: 'não disponível neste corredor' };
@@ -156,12 +183,12 @@
   }
 
   /** Separa as PIs do jogador em aplicadas, ignoradas (indisponíveis/conflitantes) e desconhecidas. */
-  function resolvePlayerInstructions(p, info, pis) {
+  function resolvePlayerInstructions(p, info, pis, roles) {
     var applied = [], ignored = [], unknown = [];
     (p.instructions || []).forEach(function (k) {
       var def = pis[k];
       if (!def) { unknown.push(k); return; }
-      var av = piAvailability(def, p, info);
+      var av = piAvailability(def, p, info, roles, k);
       if (!av.ok) { ignored.push({ key: k, reason: av.reason }); return; }
       var clash = applied.filter(function (a) {
         return (def.excludes || []).indexOf(a) >= 0 || (pis[a].excludes || []).indexOf(k) >= 0;
@@ -197,6 +224,12 @@
       var target = source.side === 'L' ? dcs[0] : dcs[dcs.length - 1];
       if (target.side !== source.side) return;
       target.bx += source.side === 'L' ? -5 : 5;
+    },
+    /** Lateral Invertido entra na linha dos zagueiros: os DCs deslizam para o lado oposto, formando uma linha de 3. */
+    ifb_back_three: function (list, phase, source) {
+      if (source.side === 'C') return;
+      var shift = source.side === 'L' ? 10 : -10;
+      centreBacks(list).forEach(function (d) { d.bx += shift; });
     }
   };
 
@@ -236,6 +269,13 @@
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+  /** Zona de liberdade (elipse rx × ry, unidades normalizadas) em volta da posição média. */
+  function addZone(p, rx, ry) {
+    if (!p.zone) p.zone = { rx: 0, ry: 0 };
+    p.zone.rx = Math.max(p.zone.rx, rx);
+    p.zone.ry = Math.max(p.zone.ry, ry);
+  }
+
   // ---------- pipeline ----------
 
   /**
@@ -255,6 +295,8 @@
     var withBall = phase !== 'defendendo';
     var nums = numberPlayers(players, formations);
     var pis = (data.playerInstructions || {}).instructions || {};
+    var defaultLineY = formations.phases.defendendo.y.D;
+    var defLineWithBall = eng.defLineWithBallFactor == null ? 1 : eng.defLineWithBallFactor;
 
     // 1. posição base + transformação de fase
     var list = players.map(function (p, i) {
@@ -264,10 +306,12 @@
         band: info.band, lane: info.lane, side: info.side,
         baseX: info.x, baseY: info.y,
         isCB: isCentreBack(formations, p.slot),
-        bx: 50 + (info.x - 50) * ph.width,
+        bx: 50 + (info.x - 50) * (withBall || !ti.defWidthFactor ? ph.width : ti.defWidthFactor),
         by: ph.y[info.band],
         dx: 0, dy: 0, inside: 0, outside: 0, latShift: 0, rule: null,
-        instructions: resolvePlayerInstructions(p, info, pis).applied
+        instructions: resolvePlayerInstructions(p, info, pis, roles).applied,
+        locked: lockedFor(roles, p).slice(),
+        zone: null, touch: null, effDuty: p.duty
       };
     });
 
@@ -279,7 +323,8 @@
     // 2. regras de função + tarefa (x escrito para o lado esquerdo, espelhado à direita)
     var pending = [];
     list.forEach(function (p) {
-      var rule = getRule(roles, p, phase, ti.flags);
+      p.effDuty = effectiveDuty(roles, p, phase, ti, eng);
+      var rule = getRule(roles, p, phase, ti.flags, p.effDuty);
       if (!rule) return;
       p.rule = rule;
       var mirror = p.side === 'R';
@@ -289,18 +334,30 @@
       if (rule.dy) p.dy = rule.dy;
       if (rule.inside && p.side !== 'C') p.inside = rule.inside === true ? (eng.insideDefault || 8) : rule.inside;
       if (rule.outside && p.side !== 'C') p.outside = rule.outside;
+      if (rule.roam) addZone(p, rule.roam, rule.roam);
       (rule.effects || []).forEach(function (e) { pending.push({ name: e, source: p }); });
     });
 
-    // 2b. instruções individuais: somam deltas por fase (dx espelhado; inside/outside relativos ao centro)
+    // 2b. instruções individuais: somam deltas por fase (dx espelhado; inside/outside relativos ao centro).
+    //     As embutidas na função só contribuem com zonas (deambular/corredores): o deslocamento delas
+    //     já está nas regras da função em roles.json.
     list.forEach(function (p) {
+      var wideLane = p.lane === 'L' || p.lane === 'R';
       p.instructions.forEach(function (k) {
         var eff = pis[k].phases && pis[k].phases[phase];
         if (!eff) return;
         if (eff.dx && p.side !== 'C') p.dx += p.side === 'R' ? -eff.dx : eff.dx;
         if (eff.dy) p.dy += eff.dy;
         if (eff.inside && p.side !== 'C') p.inside += eff.inside;
-        if (eff.outside && p.side !== 'C') p.outside += eff.outside;
+        if (eff.touchline != null && wideLane) p.touch = eff.touchline;
+        else if (eff.wideInside && wideLane) p.inside += eff.wideInside;
+        else if (eff.outside && p.side !== 'C') p.outside += eff.outside;
+      });
+      p.instructions.concat(p.locked).forEach(function (k) {
+        var eff = pis[k] && pis[k].phases && pis[k].phases[phase];
+        if (!eff) return;
+        if (eff.roam) addZone(p, eff.roam, eff.roam);
+        if (eff.centerSpread && p.side === 'C') addZone(p, eff.centerSpread, eff.centerSpreadY || 4);
       });
     });
 
@@ -316,7 +373,10 @@
     list.forEach(function (p) {
       p.tiW = withBall ? ti.widthFactor : 1;
       if (p.band === 'GK') p.tiDy = 0;
-      else if (withBall) p.tiDy = ti.mentalityDy;
+      else if (withBall) {
+        // a linha defensiva também define a altura dos defensores com a bola (manual do FM23)
+        p.tiDy = ti.mentalityDy + (p.band === 'D' ? (ti.defLineY - defaultLineY) * defLineWithBall : 0);
+      }
       else p.tiDy = (ti.defLineY - ph.y.D) + (p.band === 'AM' || p.band === 'ST' ? ti.loeDy : 0);
 
       var x = 50 + (p.bx - 50) * p.tiW + p.dx;
@@ -330,6 +390,12 @@
         shift += toCentre * Math.min(p.inside, room);
         x += shift;
         p.latShift = shift;
+      }
+      if (p.touch != null) {
+        // "Abrir mais" num jogador aberto: colado na linha lateral
+        var tx = p.side === 'R' ? 100 - p.touch : p.touch;
+        p.latShift += tx - x;
+        x = tx;
       }
       p.x = x; p.y = y;
     });
@@ -376,8 +442,8 @@
   return {
     PHASES: PHASES, BAND_ORDER: BAND_ORDER, LANE_ORDER: LANE_ORDER, DUTIES: DUTIES, EFFECTS: EFFECTS,
     slotInfo: slotInfo, slotOrder: slotOrder, numberPlayers: numberPlayers, rolesForSlot: rolesForSlot,
-    validate: validate, resolveInstructions: resolveInstructions,
-    piAvailability: piAvailability, resolvePlayerInstructions: resolvePlayerInstructions,
+    validate: validate, resolveInstructions: resolveInstructions, effectiveDuty: effectiveDuty,
+    piAvailability: piAvailability, resolvePlayerInstructions: resolvePlayerInstructions, lockedFor: lockedFor,
     computePhase: computePhase, computeAll: computeAll,
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,
     overrideFromPosition: overrideFromPosition, applyOverride: applyOverride

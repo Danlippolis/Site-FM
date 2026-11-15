@@ -206,6 +206,12 @@ svg.pitch.editing { touch-action: none; }
 .pitch .oab { fill: #111827; font-weight: 800; text-anchor: middle; dominant-baseline: central; letter-spacing: -.03em; pointer-events: none; }
 .opp-line { margin: -4px 0 8px; font-size: 12px; color: var(--muted); }
 .shape-line { margin: -4px 0 6px; font-size: 12px; color: var(--text); font-variant-numeric: tabular-nums; }
+.scores { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 8px; }
+.score { cursor: help; }
+.score-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 11.5px; color: var(--muted); }
+.score-head b { color: var(--text); font-variant-numeric: tabular-nums; }
+.score-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 2px; }
+.score-bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
 .opp-form.off { opacity: .55; }
 .opp-roles { margin-top: 4px; }
 .opp-roles summary { cursor: pointer; font-size: 13px; color: var(--text); padding: 4px 0; }

@@ -719,6 +719,71 @@
     return c;
   }
 
+  // ---------- notas de estrutura (Guide to Football, "tactical theory") ----------
+
+  function c01(v) { return Math.max(0, Math.min(1, v)); }
+  function hasKey(p, k) { return (p.instructions || []).indexOf(k) >= 0 || (p.locked || []).indexOf(k) >= 0 || (p.traits || []).indexOf(k) >= 0; }
+
+  /**
+   * Notas 0–100 por fase, com as definições do framework do Guide to Football:
+   * com a bola — Penetração, Solidez e Apoio; sem a bola — Pressão, Cobertura e Compactação.
+   * Calculadas só com as posições da fase, a bola da fase e as tarefas/instruções de cada jogador.
+   */
+  function structureScores(players, phase, data) {
+    var ph = data.formations.phases[phase];
+    var ball = ph.ball || { x: 50, y: 50 };
+    var out = players.filter(function (p) { return p.band !== 'GK'; });
+    var n = out.length || 1;
+    var d = function (a, b) { return Math.hypot((a.x - b.x) * 0.68, (a.y - b.y) * 1.05); };
+    var ys = out.map(function (p) { return p.y; });
+    if (isWithBall(data.formations, phase)) {
+      var top4 = out.slice().sort(function (a, b) { return b.y - a.y; }).slice(0, 4);
+      var height = top4.reduce(function (t, p) { return t + p.y; }, 0) / top4.length;
+      var final3 = out.filter(function (p) { return p.y >= 67; }).length;
+      var commit = out.filter(function (p) {
+        return p.duty === 'A' || ['get_further_forward', 'roam_from_position', 'gets_forward_whenever_possible', 'gets_into_opposition_area', 'arrives_late', 'makes_runs_in_behind'].some(function (k) { return hasKey(p, k); });
+      }).length;
+      var pen = 0.5 * c01((height - 40) / 45) + 0.3 * c01(final3 / 4) + 0.2 * c01(commit / 5);
+
+      var line = Math.max(ball.y - 5, 30);
+      var behind = out.filter(function (p) { return p.y < line; }).length;
+      var restrain = out.filter(function (p) {
+        return p.duty === 'D' || p.duty === 'Co' || p.duty === 'St' || hasKey(p, 'hold_position') || hasKey(p, 'stays_back');
+      }).length;
+      var sol = 0.6 * c01(behind / 4) + 0.4 * c01(restrain / 4);
+
+      var lines = teamShape(out).lines;
+      var means = lines.map(function (l) { return l.reduce(function (t, p) { return t + p.y; }, 0) / l.length; });
+      var maxGap = 0;
+      for (var i = 1; i < means.length; i++) maxGap = Math.max(maxGap, (means[i] - means[i - 1]) * 1.05);
+      var near = out.filter(function (p) { return d(p, ball) <= 15; }).length;
+      var sup = 0.5 * c01((30 - maxGap) / 15) + 0.5 * c01(near / 3);
+      return { withBall: true, scores: [
+        { key: 'penetracao', label: 'Penetração', value: Math.round(pen * 100), detail: 'os 4 mais avançados a ' + Math.round(height * 1.05) + ' m do nosso gol em média, ' + final3 + ' no terço final, ' + commit + ' com compromisso de avançar' },
+        { key: 'solidez', label: 'Solidez', value: Math.round(sol * 100), detail: behind + ' atrás da linha da bola (ideal 4), ' + restrain + ' com contenção (Defender/Manter posição)' },
+        { key: 'apoio', label: 'Apoio', value: Math.round(sup * 100), detail: 'maior buraco entre linhas ' + Math.round(maxGap) + ' m, ' + near + ' a até 15 m da bola' }
+      ] };
+    }
+    var contest = out.filter(function (p) { return d(p, ball) <= 25; }).length;
+    var pressers = out.filter(function (p) { return p.duty === 'St' || hasKey(p, 'close_down_more'); }).length;
+    var pre = 0.7 * c01(contest / 3) + 0.3 * c01(pressers / 3);
+    var last = Math.min.apply(null, ys);
+    var ownHalf = out.filter(function (p) { return p.y <= 50; }).length;
+    var cov = 0.5 * c01(1 - last / 50) + 0.5 * c01(ownHalf / 8);
+    var len = (Math.max.apply(null, ys) - last) * 1.05;
+    var xs = out.map(function (p) { return p.x; });
+    var wid = (Math.max.apply(null, xs) - Math.min.apply(null, xs)) * 0.68;
+    var nn = out.reduce(function (t, p) {
+      return t + Math.min.apply(null, out.filter(function (q) { return q !== p; }).map(function (q) { return d(p, q); }));
+    }, 0) / n;
+    var cmp = 0.5 * c01((55 - len) / 30) + 0.3 * c01((60 - wid) / 25) + 0.2 * c01((18 - nn) / 10);
+    return { withBall: false, scores: [
+      { key: 'pressao', label: 'Pressão', value: Math.round(pre * 100), detail: contest + ' a até 25 m da bola, ' + pressers + ' com pressão embutida/instruída ou Stopper (mede quem disputa a bola, não a altura do bloco)' },
+      { key: 'cobertura', label: 'Cobertura', value: Math.round(cov * 100), detail: 'última linha a ' + Math.round(last * 1.05) + ' m do gol, ' + ownHalf + ' no próprio campo' },
+      { key: 'compactacao', label: 'Compactação', value: Math.round(cmp * 100), detail: 'bloco de ' + Math.round(len) + ' × ' + Math.round(wid) + ' m, ' + nn.toFixed(1) + ' m até o companheiro mais próximo em média' }
+    ] };
+  }
+
   // ---------- equilíbrio da tática e sugestão de funções ----------
 
   function lanesOccupied(ps) {
@@ -1026,6 +1091,7 @@
     overrideFromPosition: overrideFromPosition, applyOverride: applyOverride,
     deltaFromPosition: deltaFromPosition, teamShape: teamShape, isWithBall: isWithBall,
     evaluateBalance: evaluateBalance, suggestRoles: suggestRoles, opponentCache: opponentCache,
+    structureScores: structureScores,
     OPP_PHASES: OPP_PHASES
   };
 });

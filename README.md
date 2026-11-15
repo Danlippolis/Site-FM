@@ -113,6 +113,21 @@ No painel **PI** de cada jogador há a seção **Características do jogador**, 
 
 Como no jogo, a característica pode ser **anulada por uma instrução** (individual ou embutida na função), definida em `overriddenBy`. Exemplos: "Avança sempre que possível" num Lateral (Defender), que tem "Manter posição" embutido; "Cola na linha lateral" num Atacante Interior, que corta para dentro. O painel mostra "sem efeito" nesses casos. Os números são estimativas; o manual só define o comportamento.
 
+## Notas de estrutura (Penetração, Solidez, Apoio · Pressão, Cobertura, Compactação)
+
+Abaixo da linha de estrutura de cada campo aparecem três notas de 0 a 100, com os nomes e definições do framework de [teoria tática do Guide to Football](https://fm.guidetofootball.com/tactical-theory/) (*attacking structure scores* e *out-of-possession structure scores*). O framework é um modelo teórico próprio do site, "não testado no motor do jogo"; aqui ele organiza a leitura. As fórmulas são minhas e usam só as posições da fase, a bola da fase e as tarefas/instruções de cada jogador (`structureScores` no motor):
+
+| Fase | Nota | Como mede |
+|---|---|---|
+| com a bola | **Penetração** | altura média dos 4 mais avançados, quantos chegam ao terço final e quantos têm compromisso de avançar (tarefa Ataque, Avançar mais, Deambular, características de chegada) |
+| com a bola | **Solidez** | quantos ficam atrás da linha da bola (ideal 4) e quantos têm contenção (Defender, Manter posição, Fica sempre atrás) |
+| com a bola | **Apoio** | maior buraco entre as linhas do time (ideal até ~15 m) e quantos estão a até 15 m da bola |
+| sem a bola | **Pressão** | quantos estão a até 25 m da bola e quantos têm pressão embutida/instruída ou tarefa Stopper (mede quem disputa a bola, não a altura do bloco) |
+| sem a bola | **Cobertura** | altura da última linha e quantos ficam no próprio campo |
+| sem a bola | **Compactação** | comprimento e largura do bloco e distância média ao companheiro mais próximo |
+
+As notas aparecem junto com as linhas de estrutura (opção "Mostrar linhas de estrutura e medidas").
+
 ## Sugerir funções (equilíbrio da tática)
 
 No card **Funções e tarefas**, a linha *Equilíbrio da tática: N/100* mostra o índice atual (passe o mouse para ver cada critério). O botão **✨ Sugerir funções** procura trocas de função+tarefa, sem mudar a formação, que aumentam esse índice. Ele mostra cada troca com o ganho e o critério que melhorou; você aplica as que quiser e pode **desfazer**.
@@ -184,6 +199,8 @@ Limitações: o adversário não tem instruções individuais nem característic
    - **zona à frente da defesa** ("golden zone") → critério novo no índice de equilíbrio (peso 10);
    - **tipo de atacante x linha do adversário**: contra linha alta rendem os de ruptura (Avançado, Matador, Atacante de Pressão, Completo); contra linha baixa, os de ligação/referência (Recuado, Pivô, Falso 9, Trequartista, Completo) → critério novo contra o adversário (peso 5; neutro contra linha padrão).
 8. **Ala Invertido no FM23** — tópico do [FM-Arena](https://fm-arena.com/thread/4615-fm23-inverted-wing-backs-how-they-work/) (lido via resumo de busca; o site bloqueou o acesso direto) e relato no bug tracker oficial da SI de que os Alas Invertidos ficavam abertos no FM23: **só inverte se o slot de volante do seu lado (DMCL/DMCR) estiver livre**; senão, age como Ala na mesma tarefa (`needsFreeSlot` + `fallbackRole` em `roles.json`). Isso muda, por exemplo, o 4-2-3-1 DM Wide, em que os dois volantes ocupam esses slots.
+
+9. **[Guide to Football — Tactical theory](https://fm.guidetofootball.com/tactical-theory/)**: framework teórico (528 conceitos) do qual vieram os nomes e as definições das notas de estrutura. O próprio site avisa que não foi testado no jogo e que sua aplicação a uma versão do FM é ao FM26.
 
 **Nenhuma fonte dá coordenadas.** As descrições ("recua um pouco", "sobe para pressionar") foram convertidas por mim em números, que servem de ponto de partida para calibrar. O fórum da SI, o FMInside, o Passion4FM e o sortitoutsi bloqueiam acesso automatizado e não foram lidos.
 

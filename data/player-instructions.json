@@ -5,80 +5,141 @@
   },
   "instructions": {
     "get_further_forward": {
-      "label": "Avançar mais", "en": "Get Further Forward", "group": "com_bola",
+      "label": "Avançar mais",
+      "en": "Get Further Forward",
+      "group": "com_bola",
       "excludes": ["hold_position"],
       "notBands": ["GK"],
-      "phases": { "saindo": { "dy": 3 }, "ataque": { "dy": 6 } }
+      "phases": {
+        "saindo": { "dy": 3 },
+        "ataque": { "dy": 6 }
+      }
     },
     "hold_position": {
-      "label": "Manter posição", "en": "Hold Position", "group": "com_bola",
-      "excludes": ["get_further_forward"],
+      "label": "Manter posição",
+      "en": "Hold Position",
+      "group": "com_bola",
+      "excludes": ["get_further_forward", "roam_from_position"],
       "notBands": ["GK"],
-      "phases": { "saindo": { "dy": -2 }, "ataque": { "dy": -8 } }
+      "phases": {
+        "saindo": { "dy": -2 },
+        "ataque": { "dy": -8 }
+      }
+    },
+    "roam_from_position": {
+      "label": "Deambular (sair da posição)",
+      "en": "Roam From Position",
+      "group": "com_bola",
+      "excludes": ["hold_position"],
+      "notBands": ["GK", "D"],
+      "excludeRoles": ["trequartista", "regista", "roaming_playmaker", "complete_forward", "raumdeuter"],
+      "phases": {
+        "saindo": { "roam": 6 },
+        "ataque": { "roam": 8 }
+      }
     },
     "stay_wider": {
-      "label": "Abrir mais", "en": "Stay Wider", "group": "com_bola",
+      "label": "Abrir mais",
+      "en": "Stay Wider",
+      "group": "com_bola",
       "excludes": ["sit_narrower"],
       "notBands": ["GK"],
       "sides": ["L", "R"],
       "excludeRoles": ["winger"],
-      "phases": { "saindo": { "outside": 4 }, "ataque": { "outside": 6 } }
+      "phases": {
+        "saindo": { "outside": 4 },
+        "ataque": { "outside": 6 }
+      }
     },
     "sit_narrower": {
-      "label": "Fechar mais (jogar por dentro)", "en": "Sit Narrower", "group": "com_bola",
+      "label": "Fechar mais (jogar por dentro)",
+      "en": "Sit Narrower",
+      "group": "com_bola",
       "excludes": ["stay_wider"],
       "notBands": ["GK"],
       "sides": ["L", "R"],
       "excludeRoles": ["inverted_wing_back"],
-      "phases": { "saindo": { "inside": 4 }, "ataque": { "inside": 7 } }
+      "phases": {
+        "saindo": { "inside": 4 },
+        "ataque": { "inside": 7 }
+      }
     },
     "cut_inside": {
-      "label": "Cortar para dentro com a bola", "en": "Cut Inside With Ball", "group": "com_bola",
+      "label": "Cortar para dentro com a bola",
+      "en": "Cut Inside With Ball",
+      "group": "com_bola",
       "excludes": ["run_wide"],
       "lanes": ["L", "R"],
       "notBands": ["GK"],
       "excludeRoles": ["inside_forward", "inverted_winger"],
-      "phases": { "ataque": { "inside": 5 } }
+      "phases": {
+        "ataque": { "inside": 5 }
+      }
     },
     "run_wide": {
-      "label": "Correr pela lateral com a bola", "en": "Run Wide With Ball", "group": "com_bola",
+      "label": "Correr pela lateral com a bola",
+      "en": "Run Wide With Ball",
+      "group": "com_bola",
       "excludes": ["cut_inside"],
       "lanes": ["L", "R"],
       "notBands": ["GK"],
       "excludeRoles": ["winger"],
-      "phases": { "ataque": { "outside": 4 } }
+      "phases": {
+        "ataque": { "outside": 4 }
+      }
     },
     "move_into_channels": {
-      "label": "Mover-se para os corredores", "en": "Move Into Channels", "group": "com_bola",
+      "label": "Mover-se para os corredores",
+      "en": "Move Into Channels",
+      "group": "com_bola",
       "bands": ["AM", "ST"],
       "lanes": ["CL", "CR"],
-      "phases": { "saindo": { "outside": 4 }, "ataque": { "outside": 8 } }
+      "phases": {
+        "saindo": { "outside": 4 },
+        "ataque": { "outside": 8 }
+      }
     },
     "cross_from_byline": {
-      "label": "Cruzar da linha de fundo", "en": "Cross From Byline", "group": "com_bola",
+      "label": "Cruzar da linha de fundo",
+      "en": "Cross From Byline",
+      "group": "com_bola",
       "excludes": ["cross_from_deep"],
       "lanes": ["L", "R"],
       "notBands": ["GK"],
-      "phases": { "ataque": { "dy": 3 } }
+      "phases": {
+        "ataque": { "dy": 3 }
+      }
     },
     "cross_from_deep": {
-      "label": "Cruzar de trás", "en": "Cross From Deep", "group": "com_bola",
+      "label": "Cruzar de trás",
+      "en": "Cross From Deep",
+      "group": "com_bola",
       "excludes": ["cross_from_byline"],
       "lanes": ["L", "R"],
       "notBands": ["GK"],
-      "phases": { "ataque": { "dy": -5 } }
+      "phases": {
+        "ataque": { "dy": -5 }
+      }
     },
     "close_down_more": {
-      "label": "Pressionar mais", "en": "Close Down More", "group": "sem_bola",
+      "label": "Pressionar mais",
+      "en": "Close Down More",
+      "group": "sem_bola",
       "excludes": ["close_down_less"],
       "notBands": ["GK"],
-      "phases": { "defendendo": { "dy": 3 } }
+      "phases": {
+        "defendendo": { "dy": 3 }
+      }
     },
     "close_down_less": {
-      "label": "Pressionar menos", "en": "Close Down Less", "group": "sem_bola",
+      "label": "Pressionar menos",
+      "en": "Close Down Less",
+      "group": "sem_bola",
       "excludes": ["close_down_more"],
       "notBands": ["GK"],
-      "phases": { "defendendo": { "dy": -3 } }
+      "phases": {
+        "defendendo": { "dy": -3 }
+      }
     }
   }
 }

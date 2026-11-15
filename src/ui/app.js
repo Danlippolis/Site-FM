@@ -207,6 +207,7 @@
     });
     legend.appendChild(el('span', null, '○ bola'));
     legend.appendChild(el('span', null, '• ponto branco = jogador com instruções individuais'));
+    legend.appendChild(el('span', null, '◌ área sombreada = zona de deambulação'));
     legend.appendChild(el('span', null, 'Linhas tracejadas = terços do campo'));
 
     $('optGhost').checked = ui.ghost;
@@ -347,6 +348,7 @@
     svgEl('rect', { x: cx - 3.66, y: top - 1.6, width: 7.32, height: 1.6, class: 'ln' }, g);
     svgEl('rect', { x: cx - 3.66, y: bot, width: 7.32, height: 1.6, class: 'ln' }, g);
 
+    svgEl('g', { class: 'zones' }, svg);
     svgEl('g', { class: 'ghosts' }, svg);
     svgEl('g', { class: 'ball-layer' }, svg);
     svgEl('g', { class: 'players' }, svg);
@@ -365,6 +367,17 @@
     var players = svg.querySelector('.players');
     var ghosts = svg.querySelector('.ghosts');
     var ballLayer = svg.querySelector('.ball-layer');
+    var zones = svg.querySelector('.zones');
+
+    // zona de deambulação (Roam): área em que o jogador circula, não um ponto fixo
+    zones.textContent = '';
+    result.players.forEach(function (cp) {
+      if (!cp.roam) return;
+      var c = toSvg(cp.x, cp.y);
+      var z = svgEl('ellipse', { cx: c[0], cy: c[1], rx: cp.roam * SX, ry: cp.roam * SY, class: 'zone' }, zones);
+      z.style.stroke = 'var(--b-' + cp.band + ')';
+      z.style.fill = 'var(--b-' + cp.band + ')';
+    });
 
     ghosts.textContent = '';
     if (opts.ghost) {
@@ -437,13 +450,17 @@
     info.textContent = '';
     info.appendChild(el('b', null, cp.num + ' · ' + cp.slot));
     var r = data.roles[cp.role], d = E.DUTIES[cp.duty] || { label: cp.duty, en: cp.duty };
-    var txt = ' ' + (r ? r.label + ' (' + r.en + ')' : cp.role) + ' — ' + d.label + ' · x ' + fmt(cp.x) + ', y ' + fmt(cp.y);
+    var txt = ' ' + (r ? r.label + ' (' + r.en + ')' : cp.role) + ' — ' + d.label;
+    if (cp.effDuty && cp.effDuty !== cp.duty) txt += ' → ' + (E.DUTIES[cp.effDuty] || { label: cp.effDuty }).label + ' (pela mentalidade)';
+    txt += ' · x ' + fmt(cp.x) + ', y ' + fmt(cp.y);
+    if (cp.roam) txt += ' · deambula num raio de ~' + fmt(cp.roam);
     if (cp.rule) {
       var keys = Object.keys(cp.rule).filter(function (k) { return k !== 'if' && k !== 'onlyBands'; });
       txt += ' · regra: ' + keys.map(function (k) { return k + ' ' + (Array.isArray(cp.rule[k]) ? cp.rule[k].join('+') : cp.rule[k]); }).join(', ');
     }
     if (cp.instructions.length) txt += ' · instruções: ' + piLabels(cp.instructions);
     info.appendChild(document.createTextNode(txt));
+    if (r && r.desc) info.appendChild(el('span', { class: 'desc' }, r.desc));
   }
   function onPlayerLeave(e) { e.currentTarget.classList.remove('hl'); }
 

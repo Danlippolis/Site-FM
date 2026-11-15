@@ -43,6 +43,7 @@ Botão **PI** ao lado de cada jogador abre as instruções disponíveis para aqu
 | Instrução | Efeito inicial |
 |---|---|
 | Avançar mais (Get Further Forward) | saindo dy +3, ataque dy +6 |
+| Deambular / sair da posição (Roam From Position) | zona de raio 6 / 8 (saindo / ataque); não para GK nem defensores |
 | Manter posição (Hold Position) | saindo dy −2, ataque dy −8 |
 | Abrir mais (Stay Wider) | para fora 4 / 6 (saindo / ataque) |
 | Fechar mais (Sit Narrower) | para dentro 4 / 7 |
@@ -54,7 +55,23 @@ Botão **PI** ao lado de cada jogador abre as instruções disponíveis para aqu
 
 Formato em `data/player-instructions.json`: `phases.<fase>` aceita `dx`, `dy`, `inside` (rumo ao centro, nunca cruza o meio) e `outside`. Disponibilidade por `bands`, `notBands`, `lanes`, `sides`, `excludeRoles`; exclusão mútua por `excludes`. As PIs entram como deltas depois da regra da função, então o modo editar regra continua gravando só a parte da função.
 
-**A confirmar no jogo:** os valores são estimativas minhas; a disponibilidade por função é aproximada (ex.: no FM algumas PIs ficam travadas por função); os nomes em português são traduções minhas, não necessariamente os da localização oficial. "Sair da posição" (Roam) ficou de fora por não ter efeito posicional determinístico; traits continuam fora do escopo.
+**A confirmar no jogo:** os valores são estimativas minhas; a disponibilidade por função é aproximada (ex.: no FM algumas PIs ficam travadas por função); os nomes em português são traduções minhas, não necessariamente os da localização oficial. Traits continuam fora do escopo.
+
+## Deambular (Roam From Position)
+
+Deambular não tem posição fixa: o jogador circula para achar espaço. Por isso o site desenha uma **zona** (elipse tracejada) em volta da posição média, só nas fases com bola, em vez de mover o ponto.
+- Embutido na função (campo `roam` em `roles.json`): Trequartista (10), Construtor Móvel (8), Raumdeuter (8), Regista (6), Atacante Completo (6) e Líbero (A) no ataque (6).
+- Como instrução individual: raio 6 na saída e 8 no ataque. Exclui "Manter posição" e fica indisponível para as funções que já deambulam.
+
+## Base da pesquisa
+
+As descrições (`desc`) e as regras das funções que a spec deixou vazias vêm de leitura qualitativa, principalmente do [guia de funções do FMScout](https://www.fmscout.com/a-guide-to-player-roles-in-football-manager.html) (atualizado para o FM22) e do [guia de pares e combinações](https://www.fmscout.com/a-tactical-guide-pairs-and-combinations.html). **Nenhuma fonte pública dá coordenadas**: a descrição ("recua um pouco", "sobe para pressionar") foi convertida por mim em números, que servem de ponto de partida para calibrar. O fórum da Sports Interactive, o FMInside e o Passion4FM bloqueiam acesso automatizado e não foram lidos.
+
+Pontos que a pesquisa mudou ou levantou:
+- **Stopper / Cobertura** dos zagueiros agora têm efeito: Stopper sobe 3 sem a bola; Cobertura recua 3.
+- **Automático** (laterais, alas, médio centro, médio ala) segue a mentalidade, como o guia descreve: Muito Defensiva e Defensiva → D; Cautelosa a Positiva → S; Ofensiva e Muito Ofensiva → A (`engine.autoDutyByMentality`). O mapeamento exato é estimativa minha.
+- **Half-Back:** as fontes divergem. O guia de funções diz que ele vira um zagueiro a mais com a bola (o que a spec usa); o guia de pares, mais antigo, diz que recua entre os zagueiros quando o time perde a bola. Mantive a spec.
+- **Regista, Construtor Móvel, Trequartista, Raumdeuter e Atacante Completo** são descritos com liberdade posicional. Só o Trequartista tem fonte afirmando que o Deambular é travado na função; para os outros é inferência.
 
 ## Decisões que diferem/complementam a spec
 

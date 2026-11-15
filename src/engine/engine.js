@@ -125,16 +125,31 @@
       defLineY: pick(instructions.defensiveLine, ti.defensiveLine).y,
       loeDy: pick(instructions.lineOfEngagement, ti.lineOfEngagement).dy,
       widthFactor: pick(instructions.widthInPossession, ti.widthInPossession).factor,
+      mentalityIdx: instructions.mentality.options[ti.mentality] ? ti.mentality : instructions.mentality.default,
       flags: flags
     };
   }
 
   // ---------- regras de função ----------
 
-  function getRule(roles, p, phase, flags) {
+  /**
+   * Tarefa efetiva para buscar regras: "Automático" segue a mentalidade
+   * (engine.autoDutyByMentality), a menos que a própria tarefa Au tenha regra para a fase.
+   */
+  function effectiveDuty(roles, p, phase, ti, eng) {
     var role = roles[p.role];
-    var duty = role && role.duties && role.duties[p.duty];
-    var rule = duty && duty[phase];
+    if (!role || p.duty !== 'Au') return p.duty;
+    var own = role.duties.Au && role.duties.Au[phase];
+    var map = eng && eng.autoDutyByMentality;
+    if ((own && Object.keys(own).length) || !map) return 'Au';
+    var d = map[ti.mentalityIdx];
+    return role.duties[d] ? d : 'Au';
+  }
+
+  function getRule(roles, p, phase, flags, duty) {
+    var role = roles[p.role];
+    var dutyRules = role && role.duties && role.duties[duty || p.duty];
+    var rule = dutyRules && dutyRules[phase];
     if (!rule) return null;
     if (rule.if && !flags[rule.if]) return null;
     if (rule.onlyBands && rule.onlyBands.indexOf(p.band) < 0) return null;
@@ -267,7 +282,8 @@
         bx: 50 + (info.x - 50) * ph.width,
         by: ph.y[info.band],
         dx: 0, dy: 0, inside: 0, outside: 0, latShift: 0, rule: null,
-        instructions: resolvePlayerInstructions(p, info, pis).applied
+        instructions: resolvePlayerInstructions(p, info, pis).applied,
+        roam: 0, effDuty: p.duty
       };
     });
 
@@ -279,7 +295,11 @@
     // 2. regras de função + tarefa (x escrito para o lado esquerdo, espelhado à direita)
     var pending = [];
     list.forEach(function (p) {
-      var rule = getRule(roles, p, phase, ti.flags);
+      p.effDuty = effectiveDuty(roles, p, phase, ti, eng);
+      // "Deambular" embutido na função: zona de liberdade nas fases com bola
+      var role = roles[p.role];
+      if (withBall && role && role.roam) p.roam = role.roam;
+      var rule = getRule(roles, p, phase, ti.flags, p.effDuty);
       if (!rule) return;
       p.rule = rule;
       var mirror = p.side === 'R';
@@ -289,6 +309,7 @@
       if (rule.dy) p.dy = rule.dy;
       if (rule.inside && p.side !== 'C') p.inside = rule.inside === true ? (eng.insideDefault || 8) : rule.inside;
       if (rule.outside && p.side !== 'C') p.outside = rule.outside;
+      if (rule.roam) p.roam = Math.max(p.roam, rule.roam);
       (rule.effects || []).forEach(function (e) { pending.push({ name: e, source: p }); });
     });
 
@@ -301,6 +322,7 @@
         if (eff.dy) p.dy += eff.dy;
         if (eff.inside && p.side !== 'C') p.inside += eff.inside;
         if (eff.outside && p.side !== 'C') p.outside += eff.outside;
+        if (eff.roam) p.roam = Math.max(p.roam, eff.roam);
       });
     });
 
@@ -376,7 +398,7 @@
   return {
     PHASES: PHASES, BAND_ORDER: BAND_ORDER, LANE_ORDER: LANE_ORDER, DUTIES: DUTIES, EFFECTS: EFFECTS,
     slotInfo: slotInfo, slotOrder: slotOrder, numberPlayers: numberPlayers, rolesForSlot: rolesForSlot,
-    validate: validate, resolveInstructions: resolveInstructions,
+    validate: validate, resolveInstructions: resolveInstructions, effectiveDuty: effectiveDuty,
     piAvailability: piAvailability, resolvePlayerInstructions: resolvePlayerInstructions,
     computePhase: computePhase, computeAll: computeAll,
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,

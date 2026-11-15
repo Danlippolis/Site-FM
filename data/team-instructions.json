@@ -58,6 +58,7 @@
     "collisionIterations": 5,
     "collisionAspect": [0.68, 1.05],
     "clamp": [2, 98],
-    "insideDefault": 8
+    "insideDefault": 8,
+    "autoDutyByMentality": ["D", "D", "S", "S", "S", "A", "A"]
   }
 }

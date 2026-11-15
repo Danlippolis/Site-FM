@@ -1,14 +1,16 @@
 {
   "goalkeeper": {
     "label": "Goleiro", "en": "Goalkeeper", "abbr": "GK",
+    "desc": "Goleiro tradicional: fica na área, defende chutes e cruzamentos.",
     "slots": ["GK"],
     "duties": { "D": {} }
   },
   "sweeper_keeper": {
     "label": "Goleiro Líbero", "en": "Sweeper Keeper", "abbr": "SK",
+    "desc": "Sai da área para cortar bolas longas e iniciar jogadas. D não se afasta muito da área; S fica logo fora dela; A sai bem longe.",
     "slots": ["GK"],
     "duties": {
-      "D": {},
+      "D": { "saindo": { "y": 6 }, "ataque": { "y": 12 } },
       "S": { "saindo": { "y": 8 }, "ataque": { "y": 15 } },
       "A": { "saindo": { "y": 12 }, "ataque": { "y": 20 } }
     }
@@ -16,38 +18,58 @@
 
   "central_defender": {
     "label": "Zagueiro Central", "en": "Central Defender", "abbr": "CD",
+    "desc": "D fica em linha com o parceiro; Stopper sobe para pressionar antes da área; Cobertura recua um pouco atrás da linha para varrer.",
     "slots": ["DCL", "DC", "DCR"],
-    "duties": { "D": {}, "St": {}, "Co": {} }
+    "duties": {
+      "D": {},
+      "St": { "defendendo": { "dy": 3 } },
+      "Co": { "defendendo": { "dy": -3 }, "ataque": { "dy": -3 } }
+    }
   },
   "ball_playing_defender": {
     "label": "Zagueiro com Bola", "en": "Ball-Playing Defender", "abbr": "BPD",
+    "desc": "Zagueiro que constrói com passes longos e verticais. Posição igual à do zagueiro central em cada tarefa.",
     "slots": ["DCL", "DC", "DCR"],
-    "duties": { "D": {}, "St": {}, "Co": {} }
+    "duties": {
+      "D": {},
+      "St": { "defendendo": { "dy": 3 } },
+      "Co": { "defendendo": { "dy": -3 }, "ataque": { "dy": -3 } }
+    }
   },
   "no_nonsense_cb": {
     "label": "Zagueiro Simples", "en": "No-Nonsense Centre-Back", "abbr": "NCB",
+    "desc": "Só afasta o perigo, sem risco. Fica em linha com o parceiro; Cobertura recua um pouco.",
     "slots": ["DCL", "DC", "DCR"],
-    "duties": { "D": {}, "Co": {} }
+    "duties": {
+      "D": {},
+      "Co": { "defendendo": { "dy": -3 }, "ataque": { "dy": -3 } }
+    }
   },
   "wide_centre_back": {
     "label": "Zagueiro Aberto", "en": "Wide Centre-Back", "abbr": "WCB",
+    "desc": "Zagueiro de linha de 3 que abre como lateral. D apoia por trás; S faz overlap/underlap; A avança com frequência e conduz.",
     "slots": ["DCL", "DCR"],
     "requiresBack3": true,
     "duties": {
       "D": {},
-      "S": {},
+      "S": { "ataque": { "x": 24, "y": 53 } },
       "A": { "ataque": { "x": 20, "y": 60 } }
     }
   },
   "libero": {
     "label": "Líbero", "en": "Libero", "abbr": "LIB",
+    "desc": "Varre atrás da linha sem a bola. S sobe ao meio-campo com a bola, como um construtor recuado; A tem liberdade quase total para avançar.",
     "slots": ["DCL", "DC", "DCR"],
     "uncertain": true,
-    "duties": { "S": {}, "A": {} }
+    "duties": {
+      "S": { "defendendo": { "dy": -3 }, "saindo": { "y": 25 }, "ataque": { "y": 52 } },
+      "A": { "defendendo": { "dy": -3 }, "saindo": { "y": 30 }, "ataque": { "y": 62, "roam": 6 } }
+    }
   },
 
   "full_back": {
     "label": "Lateral", "en": "Full-Back", "abbr": "FB",
+    "desc": "Defender é prioridade; avança quando o time precisa de largura. A faz overlap e cruza.",
     "slots": ["DL", "DR"],
     "duties": {
       "D":  { "saindo": { "y": 22 }, "ataque": { "y": 45 } },
@@ -58,9 +80,10 @@
   },
   "wing_back": {
     "label": "Ala", "en": "Wing-Back", "abbr": "WB",
+    "desc": "Sobe e desce o corredor. D fica mais atrás; S apoia o meio; A acompanha a linha de ataque dando largura.",
     "slots": ["DL", "DR", "WBL", "WBR"],
     "duties": {
-      "D":  {},
+      "D":  { "saindo": { "y": 26 }, "ataque": { "y": 58 } },
       "S":  { "saindo": { "y": 32 }, "ataque": { "y": 72 } },
       "A":  { "saindo": { "y": 38 }, "ataque": { "x": 5, "y": 85 } },
       "Au": {}
@@ -68,43 +91,55 @@
   },
   "complete_wing_back": {
     "label": "Ala Completo", "en": "Complete Wing-Back", "abbr": "CWB",
+    "desc": "Lateral ofensivo: avança sempre que possível e entra no terço defensivo adversário.",
     "slots": ["DL", "DR", "WBL", "WBR"],
     "duties": {
-      "S": {},
+      "S": { "saindo": { "y": 34 }, "ataque": { "y": 76 } },
       "A": { "saindo": { "y": 38 }, "ataque": { "x": 5, "y": 85 } }
     }
   },
   "inverted_wing_back": {
     "label": "Ala Invertido", "en": "Inverted Wing-Back", "abbr": "IWB",
+    "desc": "Alinha como lateral e fecha para dentro com a bola. S vira opção de passe no meio; A avança por dentro. Sem companheiros à frente, sobe mais.",
     "slots": ["DL", "DR", "WBL", "WBR"],
     "duties": {
       "D":  { "saindo": { "effects": ["fullback_hold"] } },
       "S":  { "saindo": { "x": 35, "y": 32, "effects": ["fullback_hold"] }, "ataque": { "x": 38, "y": 55 } },
       "A":  { "saindo": { "x": 35, "y": 36, "effects": ["fullback_hold"] }, "ataque": { "x": 35, "y": 70 } },
-      "Au": { "saindo": { "effects": ["fullback_hold"] } }
+      "Au": {}
     }
   },
   "no_nonsense_fb": {
     "label": "Lateral Simples", "en": "No-Nonsense Full-Back", "abbr": "NFB",
+    "desc": "Quase só defende; raramente passa do meio-campo.",
     "slots": ["DL", "DR"],
-    "duties": { "D": {} }
+    "duties": { "D": { "saindo": { "y": 18 }, "ataque": { "y": 40 } } }
   },
 
   "defensive_midfielder": {
     "label": "Volante", "en": "Defensive Midfielder", "abbr": "DM",
+    "desc": "Protege a linha defensiva. D é quase um zagueiro a mais à frente da linha; S fica mais perto da linha do meio, um pouco atrás.",
     "slots": ["DMCL", "DMC", "DMCR"],
-    "duties": { "D": {}, "S": {} }
+    "duties": {
+      "D": { "defendendo": { "dy": -2 }, "saindo": { "y": 24 }, "ataque": { "y": 46 } },
+      "S": { "saindo": { "y": 30 }, "ataque": { "y": 58 } }
+    }
   },
   "deep_lying_playmaker": {
     "label": "Construtor Recuado", "en": "Deep-Lying Playmaker", "abbr": "DLP",
+    "desc": "Cria de trás, entre a defesa e o meio. D fica e passa; S conduz a bola para fora da defesa.",
     "slots": ["DMCL", "DMC", "DMCR", "MCL", "MC", "MCR"],
     "duties": {
-      "D": { "saindo": { "if": "dlp_drop", "onlyBands": ["DM"], "x": 50, "y": 15, "effects": ["split_cbs_wide"] } },
-      "S": {}
+      "D": {
+        "saindo": { "if": "dlp_drop", "onlyBands": ["DM"], "x": 50, "y": 15, "effects": ["split_cbs_wide"] },
+        "ataque": { "dy": -6 }
+      },
+      "S": { "saindo": { "dy": -1 }, "ataque": { "dy": -3 } }
     }
   },
   "anchor": {
     "label": "Âncora", "en": "Anchor", "abbr": "A",
+    "desc": "Fica parado entre a defesa e o meio; não avança nem recua como zagueiro.",
     "slots": ["DMCL", "DMC", "DMCR"],
     "duties": {
       "D": { "defendendo": { "dy": -4 }, "saindo": { "y": 26 }, "ataque": { "y": 48 } }
@@ -112,6 +147,7 @@
   },
   "half_back": {
     "label": "Meia-Defensivo Recuado", "en": "Half-Back", "abbr": "HB",
+    "desc": "Recua entre os zagueiros, que abrem, formando uma linha de 3; protege logo acima da linha sem a bola.",
     "slots": ["DMCL", "DMC", "DMCR"],
     "duties": {
       "D": {
@@ -123,171 +159,232 @@
   },
   "ball_winning_midfielder": {
     "label": "Recuperador", "en": "Ball-Winning Midfielder", "abbr": "BWM",
+    "desc": "Pressiona para recuperar a bola. D recupera à frente da linha defensiva; S pressiona mais alto. Não segura posição.",
     "slots": ["DMCL", "DMC", "DMCR", "MCL", "MC", "MCR"],
-    "duties": { "D": {}, "S": {} }
+    "duties": {
+      "D": { "defendendo": { "dy": -1 }, "ataque": { "dy": -4 } },
+      "S": { "defendendo": { "dy": 4 }, "ataque": { "dy": 2 } }
+    }
   },
   "regista": {
     "label": "Regista", "en": "Regista", "abbr": "REG",
+    "desc": "Construtor recuado com muito mais liberdade: dita o jogo de trás e se move sem posição fixa.",
     "slots": ["DMCL", "DMC", "DMCR"],
+    "roam": 6,
     "duties": { "S": { "saindo": { "y": 30 }, "ataque": { "y": 58 } } }
   },
   "roaming_playmaker": {
     "label": "Construtor Móvel", "en": "Roaming Playmaker", "abbr": "RPM",
+    "desc": "Pega a bola atrás e a leva adiante por todo o meio-campo, chegando até a entrada da área adversária.",
     "slots": ["DMCL", "DMC", "DMCR", "MCL", "MC", "MCR"],
-    "duties": { "S": {} }
+    "roam": 8,
+    "duties": { "S": { "saindo": { "dy": 2 }, "ataque": { "dy": 8 } } }
   },
   "segundo_volante": {
     "label": "Segundo Volante", "en": "Segundo Volante", "abbr": "VOL",
+    "desc": "Volante que chega atrasado na área. S escolhe quando chegar; A chega com frequência e finaliza de fora.",
     "slots": ["DMCL", "DMC", "DMCR"],
-    "duties": { "S": {}, "A": { "ataque": { "y": 76 } } }
+    "duties": { "S": { "ataque": { "y": 66 } }, "A": { "ataque": { "y": 76 } } }
   },
 
   "central_midfielder": {
     "label": "Médio Centro", "en": "Central Midfielder", "abbr": "CM",
+    "desc": "Meio-campista de ligação. D joga recuado; S equilibra; A avança para o terço final. Automático muda conforme a mentalidade.",
     "slots": ["MCL", "MC", "MCR"],
-    "duties": { "D": {}, "S": {}, "A": {}, "Au": {} }
+    "duties": {
+      "D": { "saindo": { "dy": -2 }, "ataque": { "dy": -6 } },
+      "S": {},
+      "A": { "saindo": { "dy": 3 }, "ataque": { "dy": 8 } },
+      "Au": {}
+    }
   },
   "box_to_box": {
     "label": "Box-to-Box", "en": "Box-to-Box Midfielder", "abbr": "BBM",
+    "desc": "Cobre o campo todo: protege a defesa e chega atrasado na área.",
     "slots": ["MCL", "MC", "MCR"],
     "duties": { "S": { "ataque": { "y": 72 } } }
   },
   "advanced_playmaker": {
     "label": "Construtor Avançado", "en": "Advanced Playmaker", "abbr": "AP",
+    "desc": "Busca espaço entre o meio e a defesa adversária. A faz uma corrida atrasada contra a defesa.",
     "slots": ["MCL", "MC", "MCR", "AMCL", "AMC", "AMCR", "AML", "AMR"],
-    "duties": { "S": {}, "A": {} }
+    "duties": {
+      "S": { "ataque": { "dy": 2 } },
+      "A": { "ataque": { "dy": 6 } }
+    }
   },
   "mezzala": {
     "label": "Mezzala", "en": "Mezzala", "abbr": "MEZ",
+    "desc": "Meia que atua no meio-espaço (entre o centro e a ponta), mais alto que a linha do meio e com menos obrigação defensiva.",
     "slots": ["MCL", "MC", "MCR"],
     "duties": {
-      "S": {},
+      "S": { "saindo": { "x": 31 }, "ataque": { "x": 32, "y": 72 } },
       "A": { "saindo": { "x": 28 }, "ataque": { "x": 30, "y": 80 } }
     }
   },
   "carrilero": {
     "label": "Carrilero", "en": "Carrilero", "abbr": "CAR",
+    "desc": "Carregador lateral: cobre o corredor entre o centro e a ponta e liga defesa e meio, sem vir na vertical.",
     "slots": ["MCL", "MC", "MCR"],
     "duties": { "S": { "saindo": { "x": 38 }, "ataque": { "x": 35, "y": 64 } } }
   },
 
   "wide_midfielder": {
     "label": "Médio Ala", "en": "Wide Midfielder", "abbr": "WM",
+    "desc": "O meia aberto do 4-4-2. D cobre a defesa e cruza de trás; S acompanha a linha do meio; A sobe e cruza rápido.",
     "slots": ["ML", "MR"],
-    "duties": { "D": {}, "S": {}, "A": {}, "Au": {} }
+    "duties": {
+      "D": { "defendendo": { "dy": -3 }, "ataque": { "y": 58 } },
+      "S": {},
+      "A": { "saindo": { "y": 48 }, "ataque": { "y": 76 } },
+      "Au": {}
+    }
   },
   "winger": {
     "label": "Extremo", "en": "Winger", "abbr": "W",
+    "desc": "Cola na linha lateral e ataca a linha de fundo. S cruza mais cedo; A ataca a defesa.",
     "slots": ["ML", "MR", "AML", "AMR"],
     "duties": {
-      "S": {},
+      "S": { "saindo": { "x": 6 }, "ataque": { "x": 6, "y": 78 } },
       "A": { "saindo": { "x": 6 }, "ataque": { "x": 5, "y": 86 } }
     }
   },
   "wide_playmaker": {
     "label": "Construtor Aberto", "en": "Wide Playmaker", "abbr": "WP",
+    "desc": "Com a bola, S fecha para o meio-campo e cria; A ocupa o espaço entre o meio e o ataque.",
     "slots": ["ML", "MR"],
     "duties": {
       "S": { "saindo": { "x": 25 }, "ataque": { "x": 30, "y": 68 } },
-      "A": {}
+      "A": { "saindo": { "x": 25 }, "ataque": { "x": 30, "y": 76 } }
     }
   },
   "defensive_winger": {
     "label": "Extremo Defensivo", "en": "Defensive Winger", "abbr": "DW",
+    "desc": "Pressiona o ponta adversário. D é um escudo para a defesa; S é um ponta tradicional com menos obrigação defensiva.",
     "slots": ["ML", "MR"],
     "duties": {
       "D": { "defendendo": { "y": 30 }, "ataque": { "y": 70 } },
-      "S": {}
+      "S": { "defendendo": { "dy": -2 }, "ataque": { "y": 74 } }
     }
   },
   "inverted_winger": {
     "label": "Extremo Invertido", "en": "Inverted Winger", "abbr": "IW",
+    "desc": "Corta para o meio entre as linhas para abrir o corredor ao lateral. A ataca mais a defesa.",
     "slots": ["ML", "MR", "AML", "AMR"],
     "duties": {
       "S": { "ataque": { "x": 28, "y": 78 } },
-      "A": {}
+      "A": { "ataque": { "x": 30, "y": 84 } }
     }
   },
 
   "attacking_midfielder": {
     "label": "Meia Ofensivo", "en": "Attacking Midfielder", "abbr": "AM",
+    "desc": "Joga à frente do meio. S fica nos bolsões para ligar o jogo; A também aparece na área.",
     "slots": ["AMCL", "AMC", "AMCR"],
-    "duties": { "S": {}, "A": {} }
+    "duties": {
+      "S": { "ataque": { "dy": -4 } },
+      "A": { "ataque": { "dy": 6 } }
+    }
   },
   "shadow_striker": {
     "label": "Segundo Atacante", "en": "Shadow Striker", "abbr": "SS",
+    "desc": "Finalizador vindo de trás: avança agressivamente e pressiona da frente, sem recuar.",
     "slots": ["AMCL", "AMC", "AMCR"],
-    "duties": { "A": { "ataque": { "y": 86 } } }
+    "duties": { "A": { "defendendo": { "dy": 3 }, "ataque": { "y": 86 } } }
   },
   "enganche": {
     "label": "Enganche", "en": "Enganche", "abbr": "EG",
+    "desc": "Ponto fixo de ligação entre meio e ataque: se movimenta pouco e quase não defende.",
     "slots": ["AMCL", "AMC", "AMCR"],
     "duties": { "S": { "defendendo": { "dy": 4 }, "ataque": { "y": 72 } } }
   },
   "trequartista": {
     "label": "Trequartista", "en": "Trequartista", "abbr": "T",
+    "desc": "Entre o atacante e o meio, quase sem defender. Fora da bola, procura espaço livre e abre para os lados. Deambular já vem embutido.",
     "slots": ["AMCL", "AMC", "AMCR", "AML", "AMR", "STCL", "STC", "STCR"],
-    "duties": { "A": {} }
+    "roam": 10,
+    "duties": { "A": { "defendendo": { "dy": 5 } } }
   },
   "inside_forward": {
     "label": "Atacante Interior", "en": "Inside Forward", "abbr": "IF",
+    "desc": "Parte da ponta em diagonal para o centro e a área, usando o pé contrário. A vira quase um atacante a mais.",
     "slots": ["AML", "AMR"],
     "duties": {
-      "S": {},
+      "S": { "ataque": { "x": 26, "y": 82 } },
       "A": { "ataque": { "x": 32, "y": 88 } }
     }
   },
   "raumdeuter": {
     "label": "Raumdeuter", "en": "Raumdeuter", "abbr": "RMD",
+    "desc": "\"Intérprete do espaço\": procura bolsões, abertos ou por dentro, para aparecer no terço final. Não defende.",
     "slots": ["AML", "AMR"],
-    "duties": { "A": { "ataque": { "x": 30, "y": 90 } } }
+    "roam": 8,
+    "duties": { "A": { "defendendo": { "dy": 3 }, "ataque": { "x": 30, "y": 90 } } }
   },
   "wide_target_forward": {
     "label": "Pivô Aberto", "en": "Wide Target Forward", "abbr": "WTF",
+    "desc": "Referência física pelo lado, recebendo bolas longas. A ataca a área depois de escorar.",
     "slots": ["AML", "AMR"],
-    "duties": { "S": {}, "A": {} }
+    "duties": {
+      "S": { "ataque": { "x": 10, "y": 80 } },
+      "A": { "ataque": { "x": 16, "y": 88 } }
+    }
   },
 
   "advanced_forward": {
     "label": "Avançado", "en": "Advanced Forward", "abbr": "AF",
+    "desc": "Referência do ataque: joga na última linha e persegue a bola, pressionando menos que o atacante de pressão.",
     "slots": ["STCL", "STC", "STCR"],
     "duties": { "A": { "defendendo": { "dy": 6 }, "saindo": { "y": 76 }, "ataque": { "y": 92 } } }
   },
   "complete_forward": {
     "label": "Atacante Completo", "en": "Complete Forward", "abbr": "CF",
+    "desc": "Faz de tudo: segura, cria e finaliza, com liberdade de movimento. S cria mais; A finaliza mais.",
     "slots": ["STCL", "STC", "STCR"],
-    "duties": { "S": {}, "A": {} }
+    "roam": 6,
+    "duties": {
+      "S": { "saindo": { "y": 66 }, "ataque": { "y": 82 } },
+      "A": { "ataque": { "y": 90 } }
+    }
   },
   "deep_lying_forward": {
     "label": "Atacante Recuado", "en": "Deep-Lying Forward", "abbr": "DLF",
+    "desc": "Recua para ligar o meio ao ataque. A também procura posições de finalização.",
     "slots": ["STCL", "STC", "STCR"],
     "duties": {
       "S": { "saindo": { "y": 62 }, "ataque": { "y": 78 } },
-      "A": {}
+      "A": { "saindo": { "y": 66 }, "ataque": { "y": 84 } }
     }
   },
   "false_nine": {
     "label": "Falso 9", "en": "False Nine", "abbr": "F9",
+    "desc": "Atacante que recua até o meio para arrastar zagueiros e abrir espaço.",
     "slots": ["STCL", "STC", "STCR"],
     "duties": { "S": { "saindo": { "y": 58 }, "ataque": { "y": 72 } } }
   },
   "poacher": {
     "label": "Matador", "en": "Poacher", "abbr": "P",
+    "desc": "Vive na última linha, buscando romper a defesa e finalizar. Não participa da construção.",
     "slots": ["STCL", "STC", "STCR"],
     "duties": { "A": { "defendendo": { "dy": 6 }, "ataque": { "y": 93 } } }
   },
   "pressing_forward": {
     "label": "Atacante de Pressão", "en": "Pressing Forward", "abbr": "PF",
+    "desc": "A primeira linha de defesa: pressiona quem tem a bola. D foca na pressão; A pressiona e também finaliza como avançado.",
     "slots": ["STCL", "STC", "STCR"],
     "duties": {
       "D": { "defendendo": { "dy": 4 }, "ataque": { "y": 82 } },
-      "S": {},
-      "A": {}
+      "S": { "defendendo": { "dy": 4 }, "ataque": { "y": 86 } },
+      "A": { "defendendo": { "dy": 4 }, "ataque": { "y": 90 } }
     }
   },
   "target_forward": {
     "label": "Pivô", "en": "Target Forward", "abbr": "TF",
+    "desc": "Referência física: ganha a bola alta e escora. A também busca espaço para finalizar.",
     "slots": ["STCL", "STC", "STCR"],
-    "duties": { "S": {}, "A": { "ataque": { "y": 90 } } }
+    "duties": {
+      "S": { "saindo": { "y": 72 }, "ataque": { "y": 86 } },
+      "A": { "ataque": { "y": 90 } }
+    }
   }
 }

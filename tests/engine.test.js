@@ -215,3 +215,33 @@ test('modo edição continua inverso exato com PIs laterais ativas', () => {
   const amr2 = byslot(E.computePhase(p, 'ataque', { ...data, roles }, { widthInPossession: 1 }), 'AMR');
   assert.ok(Math.abs(amr2.x - 75) < 0.3 && Math.abs(amr2.y - 70) < 0.3, `${amr2.x},${amr2.y}`);
 });
+
+// ---------- pesquisa de funções: Automático, deambular, descrições ----------
+
+test('toda função tem descrição e toda combinação função+tarefa é avaliável', () => {
+  for (const [k, r] of Object.entries(data.roles)) {
+    assert.ok(r.desc && r.desc.length > 10, k);
+  }
+});
+
+test('tarefa Automático segue a mentalidade (Defensiva → D, Ofensiva → A)', () => {
+  const p = preset('4-4-2').map((x) => (x.slot === 'DL' ? { ...x, role: 'full_back', duty: 'Au' } : { ...x }));
+  const def = E.computePhase(p, 'ataque', data, { mentality: 1 });
+  const att = E.computePhase(p, 'ataque', data, { mentality: 5 });
+  assert.equal(byslot(def, 'DL').effDuty, 'D');
+  assert.equal(byslot(att, 'DL').effDuty, 'A');
+  assert.ok(byslot(att, 'DL').y > byslot(def, 'DL').y);
+});
+
+test('deambular: zona só nas fases com bola; embutido no Trequartista; PI para os demais', () => {
+  const p = preset('4-2-3-1-dm-wide').map((x) => (x.slot === 'AMC' ? { ...x, role: 'trequartista', duty: 'A' } : { ...x }));
+  p.find((x) => x.slot === 'DMCL').instructions = ['roam_from_position'];
+  const all = E.computeAll(p, data, {});
+  assert.equal(byslot(all.defendendo, 'AMC').roam, 0);
+  assert.equal(byslot(all.ataque, 'AMC').roam, 10);
+  assert.equal(byslot(all.ataque, 'DMCL').roam, 8);
+  assert.equal(byslot(all.saindo, 'DMCL').roam, 6);
+  const pis = data.playerInstructions.instructions;
+  const info = E.slotInfo(data.formations, 'AMC');
+  assert.equal(E.piAvailability(pis.roam_from_position, { role: 'trequartista' }, info).ok, false);
+});

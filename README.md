@@ -198,9 +198,20 @@ Limitações: o adversário não tem instruções individuais nem característic
    - **estrutura de pressão**: um 4-2-3-1 tende a pressionar em **4-4-2** → na Pressão alta, com um centroavante só e um meia central, o meia sobe ao lado dele e os meias abertos recuam para a linha do meio (`pressShape`);
    - **zona à frente da defesa** ("golden zone") → critério novo no índice de equilíbrio (peso 10);
    - **tipo de atacante x linha do adversário**: contra linha alta rendem os de ruptura (Avançado, Matador, Atacante de Pressão, Completo); contra linha baixa, os de ligação/referência (Recuado, Pivô, Falso 9, Trequartista, Completo) → critério novo contra o adversário (peso 5; neutro contra linha padrão).
-8. **Ala Invertido no FM23** — tópico do [FM-Arena](https://fm-arena.com/thread/4615-fm23-inverted-wing-backs-how-they-work/) (lido via resumo de busca; o site bloqueou o acesso direto) e relato no bug tracker oficial da SI de que os Alas Invertidos ficavam abertos no FM23: **só inverte se o slot de volante do seu lado (DMCL/DMCR) estiver livre**; senão, age como Ala na mesma tarefa (`needsFreeSlot` + `fallbackRole` em `roles.json`). Isso muda, por exemplo, o 4-2-3-1 DM Wide, em que os dois volantes ocupam esses slots.
+8. **Ala Invertido no FM23** — tópico do [FM-Arena](https://fm-arena.com/thread/4615-fm23-inverted-wing-backs-how-they-work/) (lido via resumo de busca; o site bloqueou o acesso direto) e relato no bug tracker oficial da SI de que os Alas Invertidos ficavam abertos no FM23: **só inverte se o slot de volante do seu lado (DMCL/DMCR) estiver livre**; senão, age como Ala na mesma tarefa (`needsFreeSlot` + `fallbackRole` em `roles.json`). Isso muda, por exemplo, o 4-2-3-1 DM Wide, em que os dois volantes ocupam esses slots. O *Book of Roles* (item 10) acrescenta uma condição: sem ponta/meia aberto à frente dele (ML/AML à esquerda, MR/AMR à direita), também age como Ala (`needsOccupiedSlot`). O livro diz "sem pontas/meias abertos nos slots AML/AMR/ML/MR" sem especificar o lado; assumi que vale o do próprio lado.
 
 9. **[Guide to Football — Tactical theory](https://fm.guidetofootball.com/tactical-theory/)**: framework teórico (528 conceitos) do qual vieram os nomes e as definições das notas de estrutura. O próprio site avisa que não foi testado no jogo e que sua aplicação a uma versão do FM é ao FM26.
+
+10. **The Book of Roles, de Daljit Singh (FM23, 2023)** (PDF de 152 páginas enviado pelo usuário, `Book-of-Roles.pdf` na `main`): movimento de cada função por fase, com legendas de capturas do jogo (as imagens não foram lidas, só o texto). Ajustes que vieram dele:
+   - **Ala (D)** fica acima do **Lateral (S)** (saída y 30, ataque y 65);
+   - **Half Back** no ataque sobe só um pouco à frente dos zagueiros (y 50; antes ficava atrás deles). O livro diz que com alas em S/A ele chega ao terço adversário; isso não foi modelado;
+   - **Atacante de Pressão** volta para defender: (D) −4 no bloco médio, e −4 extra no bloco baixo para todas as tarefas;
+   - **Trequartista** recua fundo na saída (−10 na faixa de meia ofensivo, −14 no ataque), mais que o Enganche;
+   - **Segundo Atacante** recua um pouco na construção (−4 na saída); **Pivô** recua como o Atacante Recuado (S y 62, A y 66);
+   - **Meia Aberto (S)** fecha para o meio-espaço na saída (x 22);
+   - no ataque: **Carrilero** fica perto da entrada da área (y 70, abaixo do Box-to-Box), **Ala Invertido (S)** chega à altura de um Meia Central (S) (y 63) e o **Construtor Móvel** acampa na entrada da área (y 74 em qualquer faixa).
+
+   **Não aplicado:** as listas de instruções embutidas do livro divergem do site em alguns pontos: sem "deambular" no Avançado, no Atacante Recuado e no Atacante de Pressão (A); sem "corridas pelos canais" no Atacante Completo (S); com "corridas pelos canais" no Raumdeuter; sem "pressionar menos" no Volante (D) e no Âncora. Como as listas do livro têm erros de copiar e colar (a do Ponta repete a do Meia Aberto), ficam para conferir no jogo.
 
 **Nenhuma fonte dá coordenadas.** As descrições ("recua um pouco", "sobe para pressionar") foram convertidas por mim em números, que servem de ponto de partida para calibrar. O fórum da SI, o FMInside, o Passion4FM e o sortitoutsi bloqueiam acesso automatizado e não foram lidos.
 

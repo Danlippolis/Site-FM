@@ -160,16 +160,23 @@
   /**
    * Função que precisa de um slot livre ao lado para ter o comportamento próprio (ex.: no FM23 o
    * Ala Invertido só fecha para dentro com o slot de volante do seu lado livre). Sem ele, usa as
-   * regras de fallbackRole na mesma tarefa. Devolve a chave da função cujas regras valem.
+   * regras de fallbackRole na mesma tarefa. `needsOccupiedSlot` é o inverso: exige ao menos um dos
+   * slots ocupado (o Ala Invertido precisa de um ponta/meia aberto à frente, Book of Roles).
+   * Devolve a chave da função cujas regras valem.
    */
   function ruleRole(roles, p, occupied) {
-    var role = roles[p.role], need = role && role.needsFreeSlot;
-    if (!need || !occupied) return p.role;
-    var slots = need[p.side] || [];
-    var blocked = slots.some(function (s) { return occupied[s]; });
-    if (!blocked) return p.role;
-    p.fallback = need.fallbackRole;
-    return need.fallbackRole && roles[need.fallbackRole] ? need.fallbackRole : p.role;
+    var role = roles[p.role];
+    if (!role || !occupied) return p.role;
+    var free = role.needsFreeSlot, taken = role.needsOccupiedSlot, fb = null, why = null;
+    if (free && (free[p.side] || []).some(function (s) { return occupied[s]; })) {
+      fb = free.fallbackRole; why = 'dm_slot';
+    } else if (taken && taken[p.side] && !taken[p.side].some(function (s) { return occupied[s]; })) {
+      fb = taken.fallbackRole; why = 'no_wide_ahead';
+    }
+    if (!fb) return p.role;
+    p.fallback = fb;
+    p.fallbackWhy = why;
+    return roles[fb] ? fb : p.role;
   }
 
   function getRule(roles, p, phase, flags, duty, occupied) {

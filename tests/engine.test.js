@@ -601,6 +601,85 @@ test('Ala Invertido só inverte com o slot de volante do seu lado livre (FM23); 
   assert.ok(rb.x < 15 && rb.fallback === 'wing_back', `não inverte: ${rb.x}`);
 });
 
+// ---------- The Book of Roles (Daljit Singh, FM23), PDF enviado pelo usuário ----------
+
+const P = (slot, role, duty) => ({ slot, role, duty });
+// 4-1-4-1 de teste: troque um slot com `swap(slot, role, duty)`
+const book = [
+  P('GK', 'goalkeeper', 'D'), P('DL', 'full_back', 'S'), P('DCL', 'central_defender', 'D'), P('DCR', 'central_defender', 'D'),
+  P('DR', 'full_back', 'S'), P('DMC', 'defensive_midfielder', 'D'), P('ML', 'wide_midfielder', 'S'),
+  P('MCL', 'central_midfielder', 'S'), P('MCR', 'central_midfielder', 'S'), P('MR', 'winger', 'S'), P('STC', 'advanced_forward', 'A')
+];
+const swap = (...changes) => book.map((p) => {
+  const c = changes.find((x) => x[0] === p.slot);
+  return c ? P(c[0], c[1], c[2]) : p;
+});
+
+test('Ala Invertido sem ponta/meia aberto à frente age como Ala (Book of Roles)', () => {
+  // sem ninguém em ML/AML (o ponta do lado direito não conta para o lado esquerdo)
+  const xi = swap(['DL', 'inverted_wing_back', 'S']).filter((p) => p.slot !== 'ML').concat([P('MC', 'central_midfielder', 'S')]);
+  const dl = byslot(E.computePhase(xi, 'ataque', noCol, {}), 'DL');
+  assert.equal(dl.fallback, 'wing_back');
+  assert.equal(dl.fallbackWhy, 'no_wide_ahead');
+  const withWinger = byslot(E.computePhase(swap(['DL', 'inverted_wing_back', 'S']), 'ataque', noCol, {}), 'DL');
+  assert.ok(!withWinger.fallback && withWinger.x > 30, `com meia aberto à frente, inverte: ${withWinger.x}`);
+});
+
+test('Ala (D) fica acima do Lateral (S) na saída e no ataque', () => {
+  const xi = swap(['DL', 'wing_back', 'D']);
+  for (const ph of ['saindo', 'ataque']) {
+    const r = E.computePhase(xi, ph, noCol, {});
+    assert.ok(byslot(r, 'DL').y > byslot(r, 'DR').y, `${ph}: WB(D) ${byslot(r, 'DL').y} x FB(S) ${byslot(r, 'DR').y}`);
+  }
+});
+
+test('Half Back no ataque fica um pouco à frente dos zagueiros, não atrás', () => {
+  const r = E.computePhase(swap(['DMC', 'half_back', 'D']), 'ataque', noCol, {});
+  const hb = byslot(r, 'DMC').y, cb = byslot(r, 'DCL').y;
+  assert.ok(hb > cb && hb - cb <= 8, `HB ${hb} x DC ${cb}`);
+});
+
+test('Atacante de Pressão volta mais que um Avançado sem a bola; o (D) é o mais recuado', () => {
+  const y = (duty, ph) => byslot(E.computePhase(swap(['STC', 'pressing_forward', duty]), ph, noCol, {}), 'STC').y;
+  const af = (ph) => byslot(E.computePhase(book, ph, noCol, {}), 'STC').y;
+  for (const ph of ['defendendo', 'bloco_baixo']) {
+    assert.ok(y('D', ph) < y('S', ph) && y('S', ph) <= y('A', ph), `${ph}: D ${y('D', ph)}, S ${y('S', ph)}, A ${y('A', ph)}`);
+    assert.ok(y('A', ph) < af(ph), `${ph}: PF(A) ${y('A', ph)} x AF ${af(ph)}`);
+  }
+});
+
+test('Trequartista recua na saída, mais fundo que o Enganche e que um Meia (S)', () => {
+  const ys = (role, duty) => byslot(E.computePhase(swap(['STC', 'advanced_forward', 'A']).concat([P('AMC', role, duty)])
+    .filter((p) => p.slot !== 'MCR'), 'saindo', noCol, {}), 'AMC').y;
+  assert.ok(ys('trequartista', 'A') < ys('enganche', 'S'), 'T x EG');
+  assert.ok(ys('trequartista', 'A') < ys('attacking_midfielder', 'S'), 'T x AM(S)');
+  const st = byslot(E.computePhase(swap(['STC', 'trequartista', 'A']), 'saindo', noCol, {}), 'STC').y;
+  const af = byslot(E.computePhase(book, 'saindo', noCol, {}), 'STC').y;
+  assert.ok(st < af - 10, `T no ataque recua: ${st} x AF ${af}`);
+});
+
+test('Segundo Atacante recua um pouco na saída; Pivô recua como o Atacante Recuado', () => {
+  const am = (role, duty) => byslot(E.computePhase(book.filter((p) => p.slot !== 'MCR').concat([P('AMC', role, duty)]), 'saindo', noCol, {}), 'AMC').y;
+  assert.ok(am('shadow_striker', 'A') < am('attacking_midfielder', 'S'));
+  const st = (role, duty) => byslot(E.computePhase(swap(['STC', role, duty]), 'saindo', noCol, {}), 'STC').y;
+  assert.ok(st('target_forward', 'S') <= st('deep_lying_forward', 'S'));
+  assert.ok(st('target_forward', 'A') <= st('deep_lying_forward', 'A'));
+});
+
+test('Meia Aberto (S) fecha para o meio-espaço na saída', () => {
+  const r = E.computePhase(book, 'saindo', noCol, {});
+  assert.ok(byslot(r, 'ML').x > 15 && byslot(r, 'ML').x < byslot(r, 'MCL').x, `WM(S) x ${byslot(r, 'ML').x}`);
+});
+
+test('No ataque: Carrilero e IWB(S) acima de um Meia Central (S); RPM perto da entrada da área', () => {
+  const r = E.computePhase(swap(['MCR', 'carrilero', 'S']), 'ataque', noCol, {});
+  assert.ok(byslot(r, 'MCR').y > byslot(r, 'MCL').y, 'CAR x CM(S)');
+  const dm = E.computePhase(swap(['DMC', 'roaming_playmaker', 'S']), 'ataque', noCol, {});
+  assert.ok(byslot(dm, 'DMC').y >= 70, `RPM ${byslot(dm, 'DMC').y}`);
+  const iwb = E.computePhase(swap(['DL', 'inverted_wing_back', 'S']), 'ataque', noCol, {});
+  assert.ok(Math.abs(byslot(iwb, 'DL').y - byslot(iwb, 'MCL').y) <= 4, 'IWB(S) chega à altura do CM(S)');
+});
+
 test('Zagueiro com Bola conduz na saída (sobe mais que o Zagueiro Central)', () => {
   const r = E.computePhase(preset('4-2-3-1-dm-wide'), 'saindo', noCol, {});
   assert.ok(byslot(r, 'DCR').y - byslot(r, 'DCL').y >= 2.5);

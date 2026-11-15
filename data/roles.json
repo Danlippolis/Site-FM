@@ -133,13 +133,13 @@
     "label": "Ala",
     "en": "Wing-Back",
     "abbr": "WB",
-    "desc": "Sobe e desce o corredor. D fica mais atrás; S apoia o meio; A acompanha a linha de ataque dando largura.",
+    "desc": "Sobe e desce o corredor. D fica mais atrás, mas ainda acima de um Lateral (S); S apoia o meio; A acompanha a linha de ataque dando largura.",
     "slots": ["DL", "DR", "WBL", "WBR"],
     "duties": {
       "D": {
         "locked": ["hold_position", "run_wide", "cross_from_deep"],
-        "saindo": { "y": 26 },
-        "ataque": { "y": 58 }
+        "saindo": { "y": 30 },
+        "ataque": { "y": 65 }
       },
       "S": { "locked": ["get_further_forward", "run_wide"], "saindo": {"y": 32}, "ataque": {"y": 72} },
       "A": {
@@ -173,7 +173,7 @@
     "label": "Ala Invertido",
     "en": "Inverted Wing-Back",
     "abbr": "IWB",
-    "desc": "Alinha como lateral e fecha para dentro com a bola. S vira opção de passe no meio; A avança por dentro. No FM23 só inverte se o slot de volante do seu lado estiver livre; senão, age como Ala.",
+    "desc": "Alinha como lateral e fecha para dentro com a bola. S vira opção de passe no meio; A avança por dentro. No FM23 só inverte se o slot de volante do seu lado estiver livre e houver um ponta/meia aberto à frente dele; senão, age como Ala.",
     "slots": ["DL", "DR", "WBL", "WBR"],
     "duties": {
       "D": {
@@ -183,7 +183,7 @@
       "S": {
         "locked": ["sit_narrower", "roam_from_position", "cut_inside"],
         "saindo": { "x": 35, "y": 32, "effects": ["fullback_hold"] },
-        "ataque": { "x": 38, "y": 55 }
+        "ataque": { "x": 38, "y": 63 }
       },
       "A": {
         "locked": ["sit_narrower", "roam_from_position", "get_further_forward", "cut_inside"],
@@ -192,7 +192,8 @@
       },
       "Au": {}
     },
-    "needsFreeSlot": { "L": ["DMCL"], "R": ["DMCR"], "fallbackRole": "wing_back" }
+    "needsFreeSlot": { "L": ["DMCL"], "R": ["DMCR"], "fallbackRole": "wing_back" },
+    "needsOccupiedSlot": { "L": ["ML", "AML"], "R": ["MR", "AMR"], "fallbackRole": "wing_back" }
   },
   "no_nonsense_fb": {
     "label": "Lateral Simples",
@@ -258,14 +259,14 @@
     "label": "Meia-Defensivo Recuado",
     "en": "Half-Back",
     "abbr": "HB",
-    "desc": "Recua entre os zagueiros, que abrem, formando uma linha de 3; protege logo acima da linha sem a bola.",
+    "desc": "Recua entre os zagueiros, que abrem, formando uma linha de 3; protege logo acima da linha sem a bola. No ataque sobe só um pouco à frente dos zagueiros.",
     "slots": ["DMCL", "DMC", "DMCR"],
     "duties": {
       "D": {
         "locked": ["hold_position", "close_down_less"],
         "defendendo": { "dy": -3 },
         "saindo": { "x": 50, "y": 15, "effects": ["split_cbs_wide"] },
-        "ataque": { "x": 50, "y": 42 }
+        "ataque": { "x": 50, "y": 50 }
       }
     }
   },
@@ -301,7 +302,7 @@
     "desc": "Pega a bola atrás e a leva adiante por todo o meio-campo, chegando até a entrada da área adversária.",
     "slots": ["DMCL", "DMC", "DMCR", "MCL", "MC", "MCR"],
     "duties": {
-      "S": { "locked": ["roam_from_position"], "saindo": {"dy": 2}, "ataque": {"dy": 8} }
+      "S": { "locked": ["roam_from_position"], "saindo": {"dy": 2}, "ataque": {"y": 74} }
     }
   },
   "segundo_volante": {
@@ -375,13 +376,13 @@
     "label": "Carrilero",
     "en": "Carrilero",
     "abbr": "CAR",
-    "desc": "Carregador lateral: cobre o corredor entre o centro e a ponta e liga defesa e meio, com corridas laterais, sem vir na vertical.",
+    "desc": "Carregador lateral: cobre o corredor entre o centro e a ponta e liga defesa e meio, com corridas laterais, sem vir na vertical. No ataque fica perto da entrada da área, sem entrar.",
     "slots": ["MCL", "MC", "MCR"],
     "duties": {
       "S": {
         "locked": ["stay_wider"],
         "saindo": { "x": 38, "lateral": 8 },
-        "ataque": { "x": 35, "y": 64, "lateral": 8 }
+        "ataque": { "x": 35, "y": 70, "lateral": 8 }
       }
     }
   },
@@ -389,7 +390,7 @@
     "label": "Médio Ala",
     "en": "Wide Midfielder",
     "abbr": "WM",
-    "desc": "O meia aberto do 4-4-2. D cobre a defesa e cruza de trás; S acompanha a linha do meio; A sobe e cruza rápido.",
+    "desc": "O meia aberto do 4-4-2. D cobre a defesa e cruza de trás; S fecha para o meio-espaço na saída e acompanha a linha do meio; A sobe e cruza rápido.",
     "slots": ["ML", "MR"],
     "duties": {
       "D": {
@@ -397,7 +398,7 @@
         "defendendo": { "dy": -3 },
         "ataque": { "y": 58 }
       },
-      "S": {},
+      "S": { "saindo": {"x": 22} },
       "A": { "locked": ["get_further_forward"], "saindo": {"y": 48}, "ataque": {"y": 76} },
       "Au": {}
     }
@@ -481,12 +482,13 @@
     "label": "Segundo Atacante",
     "en": "Shadow Striker",
     "abbr": "SS",
-    "desc": "Finalizador vindo de trás: avança agressivamente e pressiona da frente, sem recuar.",
+    "desc": "Finalizador vindo de trás: recua um pouco na construção para ajudar a passar pelo meio, depois avança agressivamente; pressiona da frente.",
     "slots": ["AMCL", "AMC", "AMCR"],
     "duties": {
       "A": {
         "locked": ["roam_from_position", "get_further_forward", "close_down_more", "move_into_channels"],
         "defendendo": { "dy": 3 },
+        "saindo": { "dy": -4 },
         "ataque": { "y": 86 }
       }
     }
@@ -505,12 +507,13 @@
     "label": "Trequartista",
     "en": "Trequartista",
     "abbr": "T",
-    "desc": "Entre o atacante e o meio, quase sem defender. Fora da bola, procura espaço livre e abre para os lados.",
+    "desc": "Entre o atacante e o meio, quase sem defender. Na saída recua fundo para receber (mais que o Enganche); fora da bola, procura espaço livre e abre para os lados.",
     "slots": ["AMCL", "AMC", "AMCR", "AML", "AMR", "STCL", "STC", "STCR"],
     "duties": {
       "A": {
         "locked": ["roam_from_position", "close_down_less", "move_into_channels"],
-        "defendendo": { "dy": 5 }
+        "defendendo": { "dy": 5 },
+        "saindo": { "byBand": { "AM": { "dy": -10 }, "ST": { "dy": -14 } } }
       }
     }
   },
@@ -621,14 +624,15 @@
     "label": "Atacante de Pressão",
     "en": "Pressing Forward",
     "abbr": "PF",
-    "desc": "A primeira linha de defesa: pressiona quem tem a bola. D foca na pressão; A pressiona e também finaliza como avançado.",
+    "desc": "A primeira linha de defesa: pressiona quem tem a bola e é dos poucos atacantes que voltam para defender no próprio campo. D fica mais recuado e pressiona os volantes; A pressiona e também finaliza como avançado.",
     "slots": ["STCL", "STC", "STCR"],
     "duties": {
-      "D": { "locked": ["hold_position", "close_down_more"], "defendendo": {"dy": 4}, "ataque": {"y": 82} },
-      "S": { "locked": ["close_down_more"], "defendendo": {"dy": 4}, "ataque": {"y": 86} },
+      "D": { "locked": ["hold_position", "close_down_more"], "defendendo": {"dy": -4}, "bloco_baixo": {"dy": -4}, "ataque": {"y": 82} },
+      "S": { "locked": ["close_down_more"], "bloco_baixo": {"dy": -4}, "ataque": {"y": 86} },
       "A": {
         "locked": ["roam_from_position", "get_further_forward", "close_down_more", "move_into_channels"],
-        "defendendo": { "dy": 4 },
+        "defendendo": { "dy": 2 },
+        "bloco_baixo": { "dy": -4 },
         "ataque": { "y": 90 }
       }
     }
@@ -637,11 +641,11 @@
     "label": "Pivô",
     "en": "Target Forward",
     "abbr": "TF",
-    "desc": "Referência física: ganha a bola alta e escora. A também busca espaço para finalizar.",
+    "desc": "Referência física: recua para segurar a bola e escorar (como o Atacante Recuado). A também busca espaço para finalizar.",
     "slots": ["STCL", "STC", "STCR"],
     "duties": {
-      "S": { "saindo": {"y": 72}, "ataque": {"y": 86} },
-      "A": { "locked": ["get_further_forward"], "ataque": {"y": 90} }
+      "S": { "saindo": {"y": 62}, "ataque": {"y": 86} },
+      "A": { "locked": ["get_further_forward"], "saindo": {"y": 66}, "ataque": {"y": 90} }
     }
   }
 }

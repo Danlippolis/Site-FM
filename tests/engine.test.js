@@ -8,7 +8,8 @@ const data = {
   roles: require('../data/roles.json'),
   instructions: require('../data/team-instructions.json'),
   playerInstructions: require('../data/player-instructions.json'),
-  opponent: require('../data/opponent.json')
+  opponent: require('../data/opponent.json'),
+  playerTraits: require('../data/player-traits.json')
 };
 const preset = (id) => data.formations.presets.find((p) => p.id === id).players;
 const byslot = (res, slot) => res.players.find((p) => p.slot === slot);
@@ -385,4 +386,37 @@ test('guia FM23 (Seif Khaled): corridas laterais do AP/Carrilero e corredores em
   assert.deepEqual(byslot(res, 'MCR').zone, { rx: 8, ry: 3 }, 'Carrilero: zona lateral');
   assert.deepEqual(byslot(res, 'STC').zone, { rx: 14, ry: 8 }, 'Avançado: corredores + deambular');
   assert.ok(data.roles.libero.duties.S && data.roles.libero.duties.A && !data.roles.libero.uncertain);
+});
+
+// ---------- características (traits) ----------
+
+const withTraits = (presetId, slot, traits, extra = {}) =>
+  preset(presetId).map((x) => (x.slot === slot ? { ...x, ...extra, traits } : { ...x }));
+
+test('trait "Cola na linha lateral" prende o aberto na linha; "Corta para dentro pela esquerda" só vale à esquerda', () => {
+  const p = withTraits('4-4-2', 'ML', ['hugs_line']);
+  assert.equal(byslot(E.computePhase(p, 'ataque', noCol, {}), 'ML').x, 4);
+  const base = E.computePhase(preset('4-4-2'), 'ataque', noCol, {});
+  const l = E.computePhase(withTraits('4-4-2', 'ML', ['cuts_inside_left']), 'ataque', noCol, {});
+  assert.equal(byslot(l, 'ML').x - byslot(base, 'ML').x, 6);
+  const r = E.computePhase(withTraits('4-4-2', 'MR', ['cuts_inside_left']), 'ataque', noCol, {});
+  assert.equal(byslot(r, 'MR').x, byslot(base, 'MR').x, 'trait da esquerda não vale na direita');
+});
+
+test('trait de avançar é anulado por "Manter posição" (embutida ou PI), como diz o manual', () => {
+  // DL Lateral (D) tem Manter posição embutido
+  const p = withTraits('4-4-2', 'DL', ['gets_forward_whenever_possible'], { role: 'full_back', duty: 'D' });
+  const base = E.computePhase(preset('4-4-2').map((x) => (x.slot === 'DL' ? { ...x, duty: 'D' } : x)), 'ataque', noCol, {});
+  const res = E.computePhase(p, 'ataque', noCol, {});
+  assert.equal(byslot(res, 'DL').y, byslot(base, 'DL').y);
+  assert.deepEqual(byslot(res, 'DL').traits, []);
+  assert.ok(E.validate(p, data).warnings.some((w) => w.includes('sem efeito')));
+});
+
+test('"Recua para buscar a bola" baixa o atacante; "Não se move para os corredores" remove a zona de corredor', () => {
+  const p = preset('4-3-3-dm-wide').map((x) => (x.slot === 'STC' ? { ...x, traits: ['comes_deep', 'does_not_move_into_channels'] } : { ...x }));
+  const base = E.computePhase(preset('4-3-3-dm-wide'), 'saindo', noCol, {});
+  const res = E.computePhase(p, 'saindo', noCol, {});
+  assert.equal(byslot(base, 'STC').y - byslot(res, 'STC').y, 6);
+  assert.equal(byslot(res, 'STC').zone.rx, byslot(res, 'STC').zone.ry, 'só a zona circular do deambular');
 });

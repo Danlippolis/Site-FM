@@ -98,9 +98,18 @@
       if (role && role.requiresBack3 && cbCount !== 3) {
         warnings.push(p.slot + ': ' + role.label + ' só faz sentido numa linha de 3 zagueiros.');
       }
-      if (!formations.slots[p.slot] || !p.instructions || !p.instructions.length) return;
+      if (!formations.slots[p.slot]) return;
       var pis = (data.playerInstructions || {}).instructions || {};
-      var r = resolvePlayerInstructions(p, slotInfo(formations, p.slot), pis, roles);
+      var info = slotInfo(formations, p.slot);
+      if (p.traits && p.traits.length) {
+        var tdefs = (data.playerTraits || {}).traits || {};
+        var applied = resolvePlayerInstructions(p, info, pis, roles).applied;
+        var t = resolveTraits(p, info, tdefs, applied.concat(lockedFor(roles, p)));
+        t.unknown.forEach(function (k) { warnings.push(p.slot + ': característica desconhecida "' + k + '".'); });
+        t.ignored.forEach(function (i) { warnings.push(p.slot + ': "' + tdefs[i.key].label + '" sem efeito — ' + i.reason + '.'); });
+      }
+      if (!p.instructions || !p.instructions.length) return;
+      var r = resolvePlayerInstructions(p, info, pis, roles);
       r.unknown.forEach(function (k) { warnings.push(p.slot + ': instrução individual desconhecida "' + k + '".'); });
       r.ignored.forEach(function (i) { warnings.push(p.slot + ': "' + pis[i.key].label + '" ignorada — ' + i.reason + '.'); });
     });
@@ -207,6 +216,30 @@
     return { applied: applied, ignored: ignored, unknown: unknown };
   }
 
+  // ---------- características do jogador (Player Traits) ----------
+
+  /**
+   * Características ativas: disponíveis no slot, sem conflito entre si e não anuladas por
+   * uma instrução individual/embutida listada em overriddenBy (o manual: "can be overridden by Player Instructions").
+   */
+  function resolveTraits(p, info, defs, activePIs) {
+    var applied = [], ignored = [], unknown = [];
+    (p.traits || []).forEach(function (k) {
+      var def = defs[k];
+      if (!def) { unknown.push(k); return; }
+      var av = piAvailability(def, p, info);
+      if (!av.ok) { ignored.push({ key: k, reason: av.reason }); return; }
+      var over = (def.overriddenBy || []).filter(function (x) { return activePIs.indexOf(x) >= 0; })[0];
+      if (over) { ignored.push({ key: k, reason: 'uma instrução (individual ou embutida na função) prevalece', overriddenBy: over }); return; }
+      var clash = applied.filter(function (a) {
+        return (def.excludes || []).indexOf(a) >= 0 || (defs[a].excludes || []).indexOf(k) >= 0;
+      })[0];
+      if (clash) { ignored.push({ key: k, reason: 'conflita com "' + defs[clash].label + '"' }); return; }
+      applied.push(k);
+    });
+    return { applied: applied, ignored: ignored, unknown: unknown };
+  }
+
   // ---------- efeitos especiais ----------
 
   function centreBacks(list) {
@@ -303,6 +336,7 @@
     var withBall = phase !== 'defendendo';
     var nums = numberPlayers(players, formations);
     var pis = (data.playerInstructions || {}).instructions || {};
+    var tdefs = (data.playerTraits || {}).traits || {};
     var defaultLineY = formations.phases.defendendo.y.D;
     var defLineWithBall = eng.defLineWithBallFactor == null ? 1 : eng.defLineWithBallFactor;
 
@@ -319,6 +353,7 @@
         dx: 0, dy: 0, inside: 0, outside: 0, latShift: 0, rule: null,
         instructions: resolvePlayerInstructions(p, info, pis, roles).applied,
         locked: lockedFor(roles, p).slice(),
+        traits: [],
         zone: null, touch: null, effDuty: p.duty
       };
     });
@@ -350,23 +385,28 @@
     // 2b. instruções individuais: somam deltas por fase (dx espelhado; inside/outside relativos ao centro).
     //     As embutidas na função só contribuem com zonas (deambular/corredores): o deslocamento delas
     //     já está nas regras da função em roles.json.
+    //     Características do jogador (traits) entram do mesmo jeito, depois das instruções.
     list.forEach(function (p) {
       var wideLane = p.lane === 'L' || p.lane === 'R';
-      p.instructions.forEach(function (k) {
-        var eff = pis[k].phases && pis[k].phases[phase];
+      var src = players[p.index];
+      p.traits = resolveTraits(src, slotInfo(formations, p.slot), tdefs, p.instructions.concat(p.locked)).applied;
+      var noChannels = p.traits.some(function (k) { return tdefs[k].suppressChannels; });
+      var moves = p.instructions.map(function (k) { return pis[k]; }).concat(p.traits.map(function (k) { return tdefs[k]; }));
+      moves.forEach(function (def) {
+        var eff = def.phases && def.phases[phase];
         if (!eff) return;
         if (eff.dx && p.side !== 'C') p.dx += p.side === 'R' ? -eff.dx : eff.dx;
         if (eff.dy) p.dy += eff.dy;
         if (eff.inside && p.side !== 'C') p.inside += eff.inside;
         if (eff.touchline != null && wideLane) p.touch = eff.touchline;
-        else if (eff.wideInside && wideLane) p.inside += eff.wideInside;
-        else if (eff.outside && p.side !== 'C') p.outside += eff.outside;
+        else if (eff.wideInside && wideLane) { if (!noChannels) p.inside += eff.wideInside; }
+        else if (eff.outside && p.side !== 'C' && !(noChannels && eff.centerSpread)) p.outside += eff.outside;
       });
-      p.instructions.concat(p.locked).forEach(function (k) {
-        var eff = pis[k] && pis[k].phases && pis[k].phases[phase];
+      p.locked.map(function (k) { return pis[k]; }).concat(moves).forEach(function (def) {
+        var eff = def && def.phases && def.phases[phase];
         if (!eff) return;
         if (eff.roam) addZone(p, eff.roam, eff.roam);
-        if (eff.centerSpread && p.side === 'C') addZone(p, eff.centerSpread, eff.centerSpreadY || 4);
+        if (eff.centerSpread && p.side === 'C' && !noChannels) addZone(p, eff.centerSpread, eff.centerSpreadY || 4);
       });
     });
 
@@ -538,6 +578,7 @@
     slotInfo: slotInfo, slotOrder: slotOrder, numberPlayers: numberPlayers, rolesForSlot: rolesForSlot,
     validate: validate, resolveInstructions: resolveInstructions, effectiveDuty: effectiveDuty,
     piAvailability: piAvailability, resolvePlayerInstructions: resolvePlayerInstructions, lockedFor: lockedFor,
+    resolveTraits: resolveTraits,
     computePhase: computePhase, computeAll: computeAll, computeMatch: computeMatch,
     computeOpponentPhase: computeOpponentPhase, opponentStyle: opponentStyle, applyOffside: applyOffside,
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,

@@ -140,6 +140,7 @@ select {
 .pi-box .check small { display: block; color: var(--muted); font-size: 11.5px; }
 .pi-group { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 6px 0 2px; }
 .pi-group:first-child { margin-top: 0; }
+.pi-box .check small.warn-note { color: var(--warn); }
 .btn.small { min-height: 28px; padding: 3px 10px; font-size: 12px; margin-top: 6px; }
 .prow select { font-size: 12.5px; padding: 4px 6px; min-height: 30px; width: 100%; }
 
@@ -316,6 +317,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
   <script type="application/json" id="data-instructions">{"mentality":{"label":"Mentalidade","en":"Mentality","default":3,"options":[{"label":"Muito Defensiva","en":"Very Defensive","dy":-8},{"label":"Defensiva","en":"Defensive","dy":-5},{"label":"Cautelosa","en":"Cautious","dy":-2},{"label":"Equilibrada","en":"Balanced","dy":0},{"label":"Positiva","en":"Positive","dy":2},{"label":"Ofensiva","en":"Attacking","dy":5},{"label":"Muito Ofensiva","en":"Very Attacking","dy":8}]},"defensiveLine":{"label":"Linha defensiva","en":"Defensive Line","default":2,"options":[{"label":"Muito mais baixa","en":"Much Deeper","y":15},{"label":"Mais baixa","en":"Deeper","y":20},{"label":"Padrão","en":"Standard","y":25},{"label":"Mais alta","en":"Higher","y":30},{"label":"Muito mais alta","en":"Much Higher","y":35}]},"lineOfEngagement":{"label":"Linha de pressão","en":"Line of Engagement","default":1,"options":[{"label":"Mais baixa","en":"Lower","dy":-8},{"label":"Padrão","en":"Standard","dy":0},{"label":"Mais alta","en":"Higher","dy":8}]},"widthInPossession":{"label":"Largura com bola","en":"Attacking Width","default":2,"options":[{"label":"Bem estreita","en":"Much Narrower","factor":0.8},{"label":"Estreita","en":"Narrower","factor":0.9},{"label":"Padrão","en":"Standard","factor":1},{"label":"Larga","en":"Wider","factor":1.08},{"label":"Bem larga","en":"Much Wider","factor":1.15}]},"defensiveWidth":{"label":"Largura defensiva","en":"Defensive Width","default":1,"options":[{"label":"Mais estreita","en":"Narrower","factor":0.65},{"label":"Padrão","en":"Standard","factor":0.75},{"label":"Mais larga","en":"Wider","factor":0.85}]},"flags":{"dlp_drop":{"label":"Construtor Recuado (D) no meio-defensivo recua entre os DCs","default":false}},"engine":{"collisionMinDist":6,"collisionIterations":5,"collisionAspect":[0.68,1.05],"clamp":[2,98],"insideDefault":8,"autoDutyByMentality":["D","D","S","S","S","A","A"],"defLineWithBallFactor":1}}</script>
   <script type="application/json" id="data-player-instructions">{"groups":{"com_bola":"Com a bola","sem_bola":"Sem a bola"},"instructions":{"get_further_forward":{"label":"Avançar mais","en":"Get Further Forward","group":"com_bola","excludes":["hold_position"],"notBands":["GK"],"phases":{"saindo":{"dy":3},"ataque":{"dy":6}}},"hold_position":{"label":"Manter posição","en":"Hold Position","group":"com_bola","excludes":["get_further_forward","roam_from_position"],"notBands":["GK"],"phases":{"saindo":{"dy":-2},"ataque":{"dy":-8}}},"roam_from_position":{"label":"Deambular (sair da posição)","en":"Roam From Position","group":"com_bola","excludes":["hold_position"],"notBands":["GK","D"],"phases":{"saindo":{"roam":6},"ataque":{"roam":8}}},"stay_wider":{"label":"Abrir mais","en":"Stay Wider","group":"com_bola","excludes":["sit_narrower"],"notBands":["GK"],"sides":["L","R"],"phases":{"saindo":{"outside":4,"touchline":5},"ataque":{"outside":6,"touchline":4}},"note":"Abertos (DL/DR, WB, ML/MR, AML/AMR) colam na linha lateral; os demais abrem um pouco."},"sit_narrower":{"label":"Fechar mais (jogar por dentro)","en":"Sit Narrower","group":"com_bola","excludes":["stay_wider"],"notBands":["GK"],"sides":["L","R"],"phases":{"saindo":{"inside":4},"ataque":{"inside":7}}},"cut_inside":{"label":"Cortar para dentro com a bola","en":"Cut Inside With Ball","group":"com_bola","excludes":["run_wide"],"lanes":["L","R"],"notBands":["GK"],"phases":{"ataque":{"inside":5}}},"run_wide":{"label":"Correr pela lateral com a bola","en":"Run Wide With Ball","group":"com_bola","excludes":["cut_inside"],"lanes":["L","R"],"notBands":["GK"],"phases":{"ataque":{"outside":4}}},"move_into_channels":{"label":"Mover-se para os corredores","en":"Move Into Channels","group":"com_bola","bands":["M","AM","ST"],"phases":{"saindo":{"outside":4,"centerSpread":10,"wideInside":4},"ataque":{"outside":8,"centerSpread":14,"wideInside":6}},"note":"Centrais (CL/CR) abrem para o corredor; no slot central vira zona horizontal (os dois lados); abertos fecham para o corredor por dentro."},"cross_from_byline":{"label":"Cruzar da linha de fundo","en":"Cross From Byline","group":"com_bola","excludes":["cross_from_deep"],"lanes":["L","R"],"notBands":["GK"],"phases":{"ataque":{"dy":3}}},"cross_from_deep":{"label":"Cruzar de trás","en":"Cross From Deep","group":"com_bola","excludes":["cross_from_byline"],"lanes":["L","R"],"notBands":["GK"],"phases":{"ataque":{"dy":-5}}},"close_down_more":{"label":"Pressionar com mais urgência","en":"Trigger Press More","group":"sem_bola","excludes":["close_down_less"],"notBands":["GK"],"phases":{"defendendo":{"dy":3}}},"close_down_less":{"label":"Pressionar com menos urgência","en":"Trigger Press Less","group":"sem_bola","excludes":["close_down_more"],"notBands":["GK"],"phases":{"defendendo":{"dy":-3}}}}}</script>
   <script type="application/json" id="data-opponent">{"phaseMap":{"defendendo":{"phase":"ataque","label":"com a bola, progredindo"},"saindo":{"phase":"defendendo","label":"pressionando nossa saída"},"ataque":{"phase":"defendendo","label":"bloco baixo"}},"offside":true,"default":{"enabled":false,"presetId":"4-4-2","styleId":"equilibrado"},"styles":[{"id":"equilibrado","label":"Equilibrado","inspiredBy":"Balanced","desc":"Sem extremos: bloco médio, sobe um pouco para pressionar e recua um pouco quando atacado.","ti":{"mentality":3,"defensiveLine":2,"lineOfEngagement":1,"widthInPossession":2,"defensiveWidth":1},"shifts":{"defendendo":-10,"saindo":6,"ataque":{"lineY":16}}},{"id":"pressao_alta","label":"Pressão alta","inspiredBy":"Gegenpress","desc":"Linha alta e marcação pressão logo na nossa saída; quase não recua, mesmo com a bola no terço final.","ti":{"mentality":5,"defensiveLine":3,"lineOfEngagement":2,"widthInPossession":2,"defensiveWidth":1},"shifts":{"defendendo":-8,"saindo":16,"ataque":{"lineY":22}}},{"id":"posse","label":"Posse de bola curta","inspiredBy":"Tiki-Taka","desc":"Time compacto e por dentro com a bola; pressiona alto para recuperar rápido.","ti":{"mentality":4,"defensiveLine":3,"lineOfEngagement":2,"widthInPossession":1,"defensiveWidth":1},"shifts":{"defendendo":-6,"saindo":12,"ataque":{"lineY":20}}},{"id":"pontas","label":"Jogo pelas pontas","inspiredBy":"Wing Play","desc":"Campo bem aberto com a bola, buscando cruzamentos; bloco médio sem a bola.","ti":{"mentality":4,"defensiveLine":2,"lineOfEngagement":1,"widthInPossession":4,"defensiveWidth":1},"shifts":{"defendendo":-10,"saindo":6,"ataque":{"lineY":16}}},{"id":"direto","label":"Jogo direto","inspiredBy":"Route One","desc":"Bola longa para os atacantes; o meio participa pouco e o time fica mais esticado.","ti":{"mentality":4,"defensiveLine":2,"lineOfEngagement":1,"widthInPossession":3,"defensiveWidth":1},"shifts":{"defendendo":-12,"saindo":4,"ataque":{"lineY":16}}},{"id":"contra_ataque","label":"Contra-ataque","inspiredBy":"Fluid/Direct Counter-Attack","desc":"Bloco médio-baixo esperando o erro para sair rápido; espaço atrás da nossa linha.","ti":{"mentality":2,"defensiveLine":1,"lineOfEngagement":0,"widthInPossession":3,"defensiveWidth":0},"shifts":{"defendendo":-14,"saindo":-2,"ataque":{"lineY":13}}},{"id":"bloco_baixo","label":"Bloco baixo (retranca)","inspiredBy":"Catenaccio / Park the Bus","desc":"Linhas baixas e fechadas perto da própria área; pouca gente no ataque.","ti":{"mentality":1,"defensiveLine":0,"lineOfEngagement":0,"widthInPossession":2,"defensiveWidth":0},"shifts":{"defendendo":-16,"saindo":-6,"ataque":{"lineY":10}}}],"shiftsNote":"Número = desloca o bloco (sem o goleiro) em y, no referencial do adversário. {\"lineY\": n} = posiciona a linha de defensores dele em y n (perto da própria área) e o resto do bloco acompanha."}</script>
+  <script type="application/json" id="data-player-traits">{"source":"Definições: manual oficial do FM23, seção Players → Player Traits. Efeitos numéricos: estimativas para calibrar.","traits":{"gets_forward_whenever_possible":{"label":"Avança sempre que possível","en":"Gets Forward Whenever Possible","official":"Increases the frequency with which a player makes forward runs, adjusting for team mentality.","notBands":["GK"],"excludes":["stays_back"],"overriddenBy":["hold_position"],"phases":{"saindo":{"dy":2},"ataque":{"dy":5}}},"gets_into_opposition_area":{"label":"Entra na área adversária","en":"Gets Into Opposition Area","official":"Mostly governs how often a player makes forward runs but can be overridden by Player Instructions.","notBands":["GK"],"excludes":["stays_back"],"overriddenBy":["hold_position"],"phases":{"ataque":{"dy":4}}},"arrives_late":{"label":"Chega atrasado na área adversária","en":"Arrives Late In Opponents' Area","official":"Increases the frequency with which a player makes forward runs, adjusting for team mentality.","bands":["DM","M","AM"],"excludes":["stays_back"],"overriddenBy":["hold_position"],"phases":{"ataque":{"dy":4}}},"stays_back":{"label":"Fica sempre atrás","en":"Stays Back At All Times","official":"The player does not make forward runs, adjusted for team mentality.","notBands":["GK"],"excludes":["gets_forward_whenever_possible","gets_into_opposition_area","arrives_late"],"overriddenBy":["get_further_forward","roam_from_position"],"phases":{"saindo":{"dy":-3},"ataque":{"dy":-8}}},"makes_runs_in_behind":{"label":"Corre nas costas da defesa","en":"Makes Runs In Behind","official":"Increases the frequency with which a player looks to make runs in behind.","bands":["M","AM","ST"],"excludes":["comes_deep"],"phases":{"saindo":{"dy":3},"ataque":{"dy":3}}},"comes_deep":{"label":"Recua para buscar a bola","en":"Comes Deep To Get Ball","official":"Increases the frequency of a forward player dropping into midfield to get possession against a team playing with a deep defensive line.","bands":["AM","ST"],"excludes":["makes_runs_in_behind"],"phases":{"saindo":{"dy":-6},"ataque":{"dy":-5}}},"moves_into_channels":{"label":"Move-se para os corredores","en":"Moves Into Channels","official":"Increases the frequency with which central players move into the space between their position and a wide attacking position; also allows wide players in certain roles to move inside into that space.","bands":["M","AM","ST"],"excludes":["does_not_move_into_channels"],"phases":{"saindo":{"outside":3,"centerSpread":8,"wideInside":3},"ataque":{"outside":6,"centerSpread":12,"wideInside":5}}},"does_not_move_into_channels":{"label":"Não se move para os corredores","en":"Does Not Move Into Channels","official":"The player does not move from central areas into space between them and the wide positions; wide players similarly do not look to come inside to operate in that same space.","notBands":["GK"],"excludes":["moves_into_channels"],"suppressChannels":true,"phases":{}},"cuts_inside_both":{"label":"Corta para dentro pelas duas pontas","en":"Cuts Inside From Both Wings","official":"Increases the frequency with which a player looks to attack central areas from a nominal wider starting position.","lanes":["L","R"],"notBands":["GK"],"excludes":["hugs_line","cuts_inside_left","cuts_inside_right"],"phases":{"saindo":{"inside":2},"ataque":{"inside":6}},"overriddenBy":["run_wide"]},"cuts_inside_left":{"label":"Corta para dentro pela esquerda","en":"Cuts Inside From Left Wing","official":"Increases the chances of a player looking to move inside from the left wing and attack in central areas.","lanes":["L"],"notBands":["GK"],"excludes":["hugs_line","cuts_inside_both"],"phases":{"saindo":{"inside":2},"ataque":{"inside":6}},"overriddenBy":["run_wide"]},"cuts_inside_right":{"label":"Corta para dentro pela direita","en":"Cuts Inside From Right Wing","official":"Increases the chances of a player looking to move inside from the right wing and attack in central areas.","lanes":["R"],"notBands":["GK"],"excludes":["hugs_line","cuts_inside_both"],"phases":{"saindo":{"inside":2},"ataque":{"inside":6}},"overriddenBy":["run_wide"]},"hugs_line":{"label":"Cola na linha lateral","en":"Hugs Line","official":"Ensures the player remains in wide areas of the pitch whenever possible.","lanes":["L","R"],"notBands":["GK"],"excludes":["cuts_inside_both","cuts_inside_left","cuts_inside_right"],"overriddenBy":["sit_narrower","cut_inside"],"phases":{"saindo":{"touchline":5},"ataque":{"touchline":4}}},"brings_ball_out_of_defence":{"label":"Sai jogando da defesa","en":"Brings Ball Out Of Defence","official":"Increases the likelihood of a defender running with the ball into midfield positions.","bands":["D"],"phases":{"saindo":{"dy":5}}},"plays_ball_with_feet":{"label":"Joga com os pés","en":"Plays Ball With Feet","official":"Goalkeeper-specific; increases the chances of a goalkeeper playing an active part in the build-up phase in possession.","bands":["GK"],"phases":{"saindo":{"dy":3}}}}}</script>
   <script>
 /*
  * FM23 Positioning Viewer — motor de posicionamento (funções puras).
@@ -417,9 +419,18 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
       if (role && role.requiresBack3 && cbCount !== 3) {
         warnings.push(p.slot + ': ' + role.label + ' só faz sentido numa linha de 3 zagueiros.');
       }
-      if (!formations.slots[p.slot] || !p.instructions || !p.instructions.length) return;
+      if (!formations.slots[p.slot]) return;
       var pis = (data.playerInstructions || {}).instructions || {};
-      var r = resolvePlayerInstructions(p, slotInfo(formations, p.slot), pis, roles);
+      var info = slotInfo(formations, p.slot);
+      if (p.traits && p.traits.length) {
+        var tdefs = (data.playerTraits || {}).traits || {};
+        var applied = resolvePlayerInstructions(p, info, pis, roles).applied;
+        var t = resolveTraits(p, info, tdefs, applied.concat(lockedFor(roles, p)));
+        t.unknown.forEach(function (k) { warnings.push(p.slot + ': característica desconhecida "' + k + '".'); });
+        t.ignored.forEach(function (i) { warnings.push(p.slot + ': "' + tdefs[i.key].label + '" sem efeito — ' + i.reason + '.'); });
+      }
+      if (!p.instructions || !p.instructions.length) return;
+      var r = resolvePlayerInstructions(p, info, pis, roles);
       r.unknown.forEach(function (k) { warnings.push(p.slot + ': instrução individual desconhecida "' + k + '".'); });
       r.ignored.forEach(function (i) { warnings.push(p.slot + ': "' + pis[i.key].label + '" ignorada — ' + i.reason + '.'); });
     });
@@ -526,6 +537,30 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     return { applied: applied, ignored: ignored, unknown: unknown };
   }
 
+  // ---------- características do jogador (Player Traits) ----------
+
+  /**
+   * Características ativas: disponíveis no slot, sem conflito entre si e não anuladas por
+   * uma instrução individual/embutida listada em overriddenBy (o manual: "can be overridden by Player Instructions").
+   */
+  function resolveTraits(p, info, defs, activePIs) {
+    var applied = [], ignored = [], unknown = [];
+    (p.traits || []).forEach(function (k) {
+      var def = defs[k];
+      if (!def) { unknown.push(k); return; }
+      var av = piAvailability(def, p, info);
+      if (!av.ok) { ignored.push({ key: k, reason: av.reason }); return; }
+      var over = (def.overriddenBy || []).filter(function (x) { return activePIs.indexOf(x) >= 0; })[0];
+      if (over) { ignored.push({ key: k, reason: 'uma instrução (individual ou embutida na função) prevalece', overriddenBy: over }); return; }
+      var clash = applied.filter(function (a) {
+        return (def.excludes || []).indexOf(a) >= 0 || (defs[a].excludes || []).indexOf(k) >= 0;
+      })[0];
+      if (clash) { ignored.push({ key: k, reason: 'conflita com "' + defs[clash].label + '"' }); return; }
+      applied.push(k);
+    });
+    return { applied: applied, ignored: ignored, unknown: unknown };
+  }
+
   // ---------- efeitos especiais ----------
 
   function centreBacks(list) {
@@ -622,6 +657,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     var withBall = phase !== 'defendendo';
     var nums = numberPlayers(players, formations);
     var pis = (data.playerInstructions || {}).instructions || {};
+    var tdefs = (data.playerTraits || {}).traits || {};
     var defaultLineY = formations.phases.defendendo.y.D;
     var defLineWithBall = eng.defLineWithBallFactor == null ? 1 : eng.defLineWithBallFactor;
 
@@ -638,6 +674,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
         dx: 0, dy: 0, inside: 0, outside: 0, latShift: 0, rule: null,
         instructions: resolvePlayerInstructions(p, info, pis, roles).applied,
         locked: lockedFor(roles, p).slice(),
+        traits: [],
         zone: null, touch: null, effDuty: p.duty
       };
     });
@@ -669,23 +706,28 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     // 2b. instruções individuais: somam deltas por fase (dx espelhado; inside/outside relativos ao centro).
     //     As embutidas na função só contribuem com zonas (deambular/corredores): o deslocamento delas
     //     já está nas regras da função em roles.json.
+    //     Características do jogador (traits) entram do mesmo jeito, depois das instruções.
     list.forEach(function (p) {
       var wideLane = p.lane === 'L' || p.lane === 'R';
-      p.instructions.forEach(function (k) {
-        var eff = pis[k].phases && pis[k].phases[phase];
+      var src = players[p.index];
+      p.traits = resolveTraits(src, slotInfo(formations, p.slot), tdefs, p.instructions.concat(p.locked)).applied;
+      var noChannels = p.traits.some(function (k) { return tdefs[k].suppressChannels; });
+      var moves = p.instructions.map(function (k) { return pis[k]; }).concat(p.traits.map(function (k) { return tdefs[k]; }));
+      moves.forEach(function (def) {
+        var eff = def.phases && def.phases[phase];
         if (!eff) return;
         if (eff.dx && p.side !== 'C') p.dx += p.side === 'R' ? -eff.dx : eff.dx;
         if (eff.dy) p.dy += eff.dy;
         if (eff.inside && p.side !== 'C') p.inside += eff.inside;
         if (eff.touchline != null && wideLane) p.touch = eff.touchline;
-        else if (eff.wideInside && wideLane) p.inside += eff.wideInside;
-        else if (eff.outside && p.side !== 'C') p.outside += eff.outside;
+        else if (eff.wideInside && wideLane) { if (!noChannels) p.inside += eff.wideInside; }
+        else if (eff.outside && p.side !== 'C' && !(noChannels && eff.centerSpread)) p.outside += eff.outside;
       });
-      p.instructions.concat(p.locked).forEach(function (k) {
-        var eff = pis[k] && pis[k].phases && pis[k].phases[phase];
+      p.locked.map(function (k) { return pis[k]; }).concat(moves).forEach(function (def) {
+        var eff = def && def.phases && def.phases[phase];
         if (!eff) return;
         if (eff.roam) addZone(p, eff.roam, eff.roam);
-        if (eff.centerSpread && p.side === 'C') addZone(p, eff.centerSpread, eff.centerSpreadY || 4);
+        if (eff.centerSpread && p.side === 'C' && !noChannels) addZone(p, eff.centerSpread, eff.centerSpreadY || 4);
       });
     });
 
@@ -857,6 +899,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     slotInfo: slotInfo, slotOrder: slotOrder, numberPlayers: numberPlayers, rolesForSlot: rolesForSlot,
     validate: validate, resolveInstructions: resolveInstructions, effectiveDuty: effectiveDuty,
     piAvailability: piAvailability, resolvePlayerInstructions: resolvePlayerInstructions, lockedFor: lockedFor,
+    resolveTraits: resolveTraits,
     computePhase: computePhase, computeAll: computeAll, computeMatch: computeMatch,
     computeOpponentPhase: computeOpponentPhase, opponentStyle: opponentStyle, applyOffside: applyOffside,
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,
@@ -950,15 +993,15 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
 
   function loadData() {
     function inline(id) { var s = document.getElementById(id); return s ? JSON.parse(s.textContent) : null; }
-    var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions'), pi = inline('data-player-instructions'), op = inline('data-opponent');
-    if (f && r && t && pi && op) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi, opponent: op });
-    var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json', 'data/player-instructions.json', 'data/opponent.json'];
+    var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions'), pi = inline('data-player-instructions'), op = inline('data-opponent'), tr = inline('data-player-traits');
+    if (f && r && t && pi && op && tr) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi, opponent: op, playerTraits: tr });
+    var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json', 'data/player-instructions.json', 'data/opponent.json', 'data/player-traits.json'];
     return Promise.all(urls.map(function (u) {
       return fetch(u, { cache: 'no-cache' }).then(function (res) {
         if (!res.ok) throw new Error(u + ': HTTP ' + res.status);
         return res.json();
       });
-    })).then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3], opponent: a[4] }; });
+    })).then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3], opponent: a[4], playerTraits: a[5] }; });
   }
 
   function isRolesObj(o) {
@@ -1010,11 +1053,21 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
   function piDefs() { return (data.playerInstructions && data.playerInstructions.instructions) || {}; }
 
   /** Remove instruções individuais que não valem para o slot/função atuais. */
+  function traitDefs() { return (data.playerTraits && data.playerTraits.traits) || {}; }
+
   function prunePIs(p) {
-    if (!p.instructions || !data.formations.slots[p.slot]) return p;
+    if (!data.formations.slots[p.slot]) return p;
     var info = E.slotInfo(data.formations, p.slot);
-    var kept = E.resolvePlayerInstructions(p, info, piDefs(), data.roles).applied;
-    if (kept.length) p.instructions = kept; else delete p.instructions;
+    if (p.instructions) {
+      var kept = E.resolvePlayerInstructions(p, info, piDefs(), data.roles).applied;
+      if (kept.length) p.instructions = kept; else delete p.instructions;
+    }
+    if (p.traits) {
+      // características que não existem neste slot saem; as só anuladas por instrução ficam (são do jogador)
+      var td = traitDefs();
+      var keep = p.traits.filter(function (k) { return td[k] && E.piAvailability(td[k], p, info).ok; });
+      if (keep.length) p.traits = keep; else delete p.traits;
+    }
     return p;
   }
 
@@ -1124,6 +1177,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
           players: obj.players.map(function (p) {
             var q = { slot: p.slot, role: p.role, duty: p.duty };
             if (Array.isArray(p.instructions) && p.instructions.length) q.instructions = p.instructions.filter(function (k) { return typeof k === 'string'; });
+            if (Array.isArray(p.traits) && p.traits.length) q.traits = p.traits.filter(function (k) { return typeof k === 'string'; });
             return q;
           }),
           ti: Object.assign(defaultTI(), obj.ti || {}),
@@ -1343,7 +1397,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
       t.textContent = label;
       t.setAttribute('font-size', abbrFont(label.length));
       g.querySelector('.no').textContent = cp.num;
-      g.querySelector('.pi-dot').style.display = cp.instructions.length ? '' : 'none';
+      g.querySelector('.pi-dot').style.display = cp.instructions.length || cp.traits.length ? '' : 'none';
       g.querySelector('title').textContent = playerTitle(cp) + ' · x ' + fmt(cp.x) + ', y ' + fmt(cp.y);
     });
     players.querySelectorAll('g.pl').forEach(function (g) {
@@ -1430,6 +1484,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
       txt += ' · regra: ' + keys.map(function (k) { return k + ' ' + (Array.isArray(cp.rule[k]) ? cp.rule[k].join('+') : cp.rule[k]); }).join(', ');
     }
     if (cp.instructions.length) txt += ' · instruções: ' + piLabels(cp.instructions);
+    if (cp.traits.length) txt += ' · características: ' + cp.traits.map(function (k) { return traitDefs()[k].label; }).join(', ');
     info.appendChild(document.createTextNode(txt));
     if (r && r.desc) info.appendChild(el('span', { class: 'desc' }, r.desc));
   }
@@ -1588,11 +1643,11 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
       ds.addEventListener('change', function () { p.duty = ds.value; prunePIs(p); renderAll(); });
       row.appendChild(ds);
 
-      var n = (p.instructions || []).length, open = ui.piOpen === p.slot;
+      var n = (p.instructions || []).length + (p.traits || []).length, open = ui.piOpen === p.slot;
       var pb = el('button', {
         class: 'pi-btn' + (n ? ' has' : '') + (open ? ' open' : ''), type: 'button',
         'aria-expanded': String(open), 'aria-label': 'Instruções individuais ' + p.slot,
-        title: n ? 'Instruções: ' + piLabels(p.instructions) : 'Adicionar instruções individuais'
+        title: n ? 'Instruções e características: ' + piLabels((p.instructions || []).concat()) + ((p.traits || []).length ? ' · ' + p.traits.map(function (k) { return (traitDefs()[k] || { label: k }).label; }).join(', ') : '') : 'Instruções individuais e características do jogador'
       }, n ? 'PI ' + n : 'PI');
       pb.addEventListener('click', function () { ui.piOpen = open ? null : p.slot; renderPlayerList(); });
       row.appendChild(pb);
@@ -1624,12 +1679,52 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
         box.appendChild(lab);
       });
     });
-    if (current.length) {
-      var clr = el('button', { class: 'btn small', type: 'button' }, 'Limpar instruções');
-      clr.addEventListener('click', function () { delete p.instructions; renderAll(); });
+    renderTraitsSection(box, p, info);
+    if (current.length || (p.traits || []).length) {
+      var clr = el('button', { class: 'btn small', type: 'button' }, 'Limpar instruções e características');
+      clr.addEventListener('click', function () { delete p.instructions; delete p.traits; renderAll(); });
       box.appendChild(clr);
     }
     return box;
+  }
+
+  /** Seção "Características do jogador" (Player Traits do manual do FM23) dentro do painel PI. */
+  function renderTraitsSection(box, p, info) {
+    var defs = traitDefs(), keys = Object.keys(defs);
+    if (!keys.length) return;
+    box.appendChild(el('div', { class: 'pi-group' }, 'Características do jogador (traits)'));
+    var active = E.resolvePlayerInstructions(p, info, piDefs(), data.roles).applied.concat(E.lockedFor(data.roles, p));
+    var res = E.resolveTraits(p, info, defs, active);
+    var why = {};
+    res.ignored.forEach(function (i) { why[i.key] = i.reason; });
+    var current = p.traits || [];
+    keys.forEach(function (k) {
+      var def = defs[k], av = E.piAvailability(def, p, info);
+      var on = current.indexOf(k) >= 0;
+      var lab = el('label', { class: 'check' + (av.ok ? '' : ' disabled'), title: def.official || def.en });
+      var cb = el('input', { type: 'checkbox' });
+      cb.checked = on;
+      cb.disabled = !av.ok;
+      cb.addEventListener('change', function () { toggleTrait(p, k, cb.checked); });
+      lab.appendChild(cb);
+      var txt = el('span', { class: 'pi-text' }, def.label + ' (' + def.en + ')');
+      if (!av.ok) txt.appendChild(el('small', null, av.reason));
+      else if (on && why[k]) txt.appendChild(el('small', { class: 'warn-note' }, 'sem efeito: ' + why[k]));
+      lab.appendChild(txt);
+      box.appendChild(lab);
+    });
+  }
+
+  function toggleTrait(p, key, on) {
+    var defs = traitDefs(), list = (p.traits || []).filter(function (k) { return k !== key; });
+    if (on) {
+      list = list.filter(function (k) {
+        return (defs[key].excludes || []).indexOf(k) < 0 && ((defs[k] || {}).excludes || []).indexOf(key) < 0;
+      });
+      list.push(key);
+    }
+    if (list.length) p.traits = list; else delete p.traits;
+    renderAll();
   }
 
   /** Liga/desliga uma PI; ao ligar, desliga as mutuamente exclusivas (como no jogo). */

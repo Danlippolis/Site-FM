@@ -132,6 +132,7 @@ select {
 .pi-box .check small { display: block; color: var(--muted); font-size: 11.5px; }
 .pi-group { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 6px 0 2px; }
 .pi-group:first-child { margin-top: 0; }
+.pi-box .check small.warn-note { color: var(--warn); }
 .btn.small { min-height: 28px; padding: 3px 10px; font-size: 12px; margin-top: 6px; }
 .prow select { font-size: 12.5px; padding: 4px 6px; min-height: 30px; width: 100%; }
 

@@ -47,6 +47,7 @@
 
       <section class="card">
         <h2>Visualização</h2>
+        <label class="check"><input type="checkbox" id="optShape"> Mostrar linhas de estrutura e medidas</label>
         <label class="check"><input type="checkbox" id="optGhost"> Mostrar posição base (fantasma) e seta</label>
         <label class="check"><input type="checkbox" id="optEdit"> Modo editar regra (arrastar jogador grava override)</label>
       </section>
@@ -69,6 +70,11 @@
 
     <main class="main">
       <div class="main-bar">
+        <div class="groups" role="group" aria-label="Fases exibidas" id="groups">
+          <button class="tab" data-group="sem">Sem a bola</button>
+          <button class="tab" data-group="com">Com a bola</button>
+          <button class="tab" data-group="todas">Todas</button>
+        </div>
         <div class="tabs" role="tablist" id="tabs"></div>
         <button class="btn primary" id="animate">▶ Animar</button>
       </div>

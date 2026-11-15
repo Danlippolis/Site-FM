@@ -12,7 +12,8 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var PHASES = ['defendendo', 'saindo', 'ataque'];
+  // sem a bola (pressão alta, bloco médio, bloco baixo) e com a bola (saída, progressão, ataque)
+  var PHASES = ['pressao', 'defendendo', 'bloco_baixo', 'saindo', 'progressao', 'ataque'];
   var BAND_ORDER = ['GK', 'D', 'DM', 'M', 'AM', 'ST'];
   var LANE_ORDER = ['L', 'CL', 'C', 'CR', 'R'];
   var CENTRAL_LANES = ['CL', 'C', 'CR'];
@@ -327,13 +328,79 @@
    * As instruções vêm depois do override para que mentalidade/linha/largura
    * continuem valendo para jogadores com posição absoluta na regra.
    */
+  function isWithBall(formations, phase) {
+    var ph = formations.phases[phase];
+    return ph && ph.withBall != null ? !!ph.withBall : phase !== 'defendendo';
+  }
+
+  /**
+   * Fase derivada de outra(s) (data.formations.phases[fase].derive):
+   *  - blend: mistura posição a posição duas fases já calculadas (ex.: progressão = entre saída e ataque);
+   *  - from: desloca uma fase por faixa, ancora a linha D, estreita e soma o efeito de pressão.
+   * Regras de função com a chave desta fase entram como deslocamento extra (dx espelhado, dy).
+   */
+  function computeDerived(players, phase, data, tiState) {
+    var formations = data.formations, roles = data.roles;
+    var ph = formations.phases[phase], d = ph.derive;
+    var eng = data.instructions.engine || {};
+    var ti = resolveInstructions(data.instructions, tiState);
+    var list;
+    if (d.blend) {
+      var A = computePhase(players, d.blend[0], data, tiState).players;
+      var B = computePhase(players, d.blend[1], data, tiState).players;
+      var t = d.t == null ? 0.5 : d.t;
+      list = B.map(function (pb, i) {
+        var pa = A[i], p = Object.assign({}, pb);
+        p.x = pa.x + (pb.x - pa.x) * t;
+        p.y = pa.y + (pb.y - pa.y) * t;
+        p.zone = pb.zone || pa.zone;
+        p.offside = false;
+        return p;
+      });
+    } else {
+      list = computePhase(players, d.from, data, tiState).players.map(function (p) { return Object.assign({}, p, { offside: false }); });
+      var anchor = 0;
+      if (d.lineY != null) {
+        var defs = list.filter(function (p) { return p.band === 'D'; });
+        if (!defs.length) defs = list.filter(function (p) { return p.band !== 'GK'; });
+        anchor = d.lineY - Math.min.apply(null, defs.map(function (p) { return p.y; }));
+      }
+      list.forEach(function (p) {
+        if (p.band === 'GK') { p.y += (d.shiftByBand && d.shiftByBand.GK) || 0; return; }
+        p.y += anchor + ((d.shiftByBand && d.shiftByBand[p.band]) || 0);
+        if (d.widthScale) p.x = 50 + (p.x - 50) * d.widthScale;
+        if (d.press) {
+          var keys = (p.instructions || []).concat(p.locked || []);
+          if (keys.indexOf('close_down_more') >= 0) p.y += d.press.more || 0;
+          if (keys.indexOf('close_down_less') >= 0) p.y += d.press.less || 0;
+        }
+      });
+    }
+    list.forEach(function (p) {
+      p.derivedDx = 0; p.derivedDy = 0;
+      var rule = getRule(roles, p, phase, ti.flags, p.effDuty);
+      if (!rule) return;
+      p.rule = rule;
+      if (rule.dx && p.side !== 'C') { p.derivedDx = rule.dx; p.x += p.side === 'R' ? -rule.dx : rule.dx; }
+      if (rule.dy) { p.derivedDy = rule.dy; p.y += rule.dy; }
+    });
+    resolveCollisions(list, eng.collisionMinDist, eng.collisionIterations, eng.collisionAspect);
+    var lo = (eng.clamp || [2, 98])[0], hi = (eng.clamp || [2, 98])[1];
+    list.forEach(function (p) {
+      p.x = Math.round(clamp(p.x, lo, hi) * 10) / 10;
+      p.y = Math.round(clamp(p.y, lo, hi) * 10) / 10;
+    });
+    return { phase: phase, players: list, ball: ph.ball || null, warnings: [], derived: true };
+  }
+
   function computePhase(players, phase, data, tiState) {
     var formations = data.formations, roles = data.roles, instructions = data.instructions;
     var ph = formations.phases[phase];
     if (!ph) throw new Error('Fase desconhecida: ' + phase);
+    if (ph.derive) return computeDerived(players, phase, data, tiState);
     var eng = instructions.engine || {};
     var ti = resolveInstructions(instructions, tiState);
-    var withBall = phase !== 'defendendo';
+    var withBall = isWithBall(formations, phase);
     var nums = numberPlayers(players, formations);
     var pis = (data.playerInstructions || {}).instructions || {};
     var tdefs = (data.playerTraits || {}).traits || {};
@@ -533,7 +600,7 @@
       var ours = out[ph].players, theirs = o.players;
       if (data.opponent.offside) {
         // nós defendendo: eles atacam para baixo; nas fases com bola, nós atacamos para cima
-        var weAttack = ph !== 'defendendo';
+        var weAttack = isWithBall(data.formations, ph);
         var attackers = weAttack ? ours : theirs, defenders = weAttack ? theirs : ours;
         if (applyOffside(attackers, defenders, weAttack)) {
           resolveCollisions(attackers, eng.collisionMinDist, eng.collisionIterations, eng.collisionAspect);
@@ -564,6 +631,80 @@
     return out;
   }
 
+  /** Para fases derivadas: converte a posição arrastada em deslocamento extra (dx no referencial esquerdo, dy). */
+  function deltaFromPosition(cp, fx, fy) {
+    var out = { dy: Math.round((fy - cp.y + (cp.derivedDy || 0)) * 10) / 10 };
+    if (cp.side !== 'C') {
+      var dx = fx - cp.x;
+      if (cp.side === 'R') dx = -dx;
+      out.dx = Math.round((dx + (cp.derivedDx || 0)) * 10) / 10;
+    }
+    return out;
+  }
+
+  // ---------- estrutura do time (linhas) e medidas ----------
+
+  /**
+   * Agrupa os jogadores de linha em "linhas" do time:
+   *  1. semente = faixa do slot (D, DM, M, AM, ST), quebrada onde houver um buraco >= split em y;
+   *  2. linhas vizinhas se juntam quando o jogador mais próximo de cada uma está a < join em y;
+   *  3. no máximo maxLines linhas (junta as mais próximas).
+   * Devolve as linhas (de trás para frente), a forma (ex.: "3-2-5") e medidas em metros (campo 68 × 105).
+   * attackingDown: adversário (ataca para baixo) — ordena e mede a partir do gol dele.
+   */
+  function teamShape(players, opts) {
+    opts = opts || {};
+    var split = opts.split == null ? 8 : opts.split, join = opts.join == null ? 4 : opts.join, maxLines = opts.maxLines || 5;
+    var down = !!opts.attackingDown;
+    var out = players.filter(function (p) { return p.band !== 'GK'; });
+    if (!out.length) return { lines: [], shape: '', metrics: null };
+    var groups = [];
+    ['D', 'DM', 'M', 'AM', 'ST'].forEach(function (b) {
+      var g = out.filter(function (p) { return p.band === b; }).sort(function (a, c) { return a.y - c.y; });
+      var cur = [];
+      g.forEach(function (p) {
+        if (cur.length && p.y - cur[cur.length - 1].y >= split) { groups.push(cur); cur = []; }
+        cur.push(p);
+      });
+      if (cur.length) groups.push(cur);
+    });
+    function mean(g) { return g.reduce(function (t, p) { return t + p.y; }, 0) / g.length; }
+    function lo(g) { return Math.min.apply(null, g.map(function (p) { return p.y; })); }
+    function hi(g) { return Math.max.apply(null, g.map(function (p) { return p.y; })); }
+    function byMean(a, b) { return mean(a) - mean(b); }
+    groups.sort(byMean);
+    var changed = true;
+    while (changed) {
+      changed = false;
+      for (var i = 1; i < groups.length; i++) {
+        if (lo(groups[i]) - hi(groups[i - 1]) < join) {
+          groups[i - 1] = groups[i - 1].concat(groups[i]); groups.splice(i, 1); changed = true; break;
+        }
+      }
+      if (!changed && groups.length > maxLines) {
+        var bi = 1;
+        for (var k = 2; k < groups.length; k++) {
+          if (lo(groups[k]) - hi(groups[k - 1]) < lo(groups[bi]) - hi(groups[bi - 1])) bi = k;
+        }
+        groups[bi - 1] = groups[bi - 1].concat(groups[bi]); groups.splice(bi, 1); changed = true;
+      }
+      groups.sort(byMean);
+    }
+    if (down) groups.reverse();
+    var lines = groups.map(function (g) { return g.slice().sort(function (a, b) { return a.x - b.x; }); });
+    var xs = out.map(function (p) { return p.x; }), ys = out.map(function (p) { return p.y; });
+    return {
+      lines: lines,
+      shape: lines.map(function (l) { return l.length; }).join('-'),
+      metrics: {
+        length: Math.round((Math.max.apply(null, ys) - Math.min.apply(null, ys)) * 1.05),
+        width: Math.round((Math.max.apply(null, xs) - Math.min.apply(null, xs)) * 0.68),
+        // altura da última linha medida a partir do próprio gol (o adversário ataca para baixo)
+        lastLine: Math.round((down ? 100 - Math.max.apply(null, ys) : Math.min.apply(null, ys)) * 1.05)
+      }
+    };
+  }
+
   /** Retorna uma cópia de roles com o override gravado em role/duty/fase. */
   function applyOverride(roles, roleKey, duty, phase, patch) {
     var next = JSON.parse(JSON.stringify(roles));
@@ -582,6 +723,7 @@
     computePhase: computePhase, computeAll: computeAll, computeMatch: computeMatch,
     computeOpponentPhase: computeOpponentPhase, opponentStyle: opponentStyle, applyOffside: applyOffside,
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,
-    overrideFromPosition: overrideFromPosition, applyOverride: applyOverride
+    overrideFromPosition: overrideFromPosition, applyOverride: applyOverride,
+    deltaFromPosition: deltaFromPosition, teamShape: teamShape, isWithBall: isWithBall
   };
 });

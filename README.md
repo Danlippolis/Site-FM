@@ -15,6 +15,34 @@ Site de uma página que desenha a posição aproximada dos 11 jogadores em 3 fas
 
 `index.html` aberto direto do disco (`file://`) não consegue ler os JSON (o navegador bloqueia `fetch` local) — use o servidor ou o `dist/`.
 
+## Fases
+
+São **6 fases**, organizadas por onde está a bola:
+
+| Sem a bola | Com a bola |
+|---|---|
+| **Pressão alta** — adversário saindo no terço dele | **Saída de bola** — bola com GR/zagueiros |
+| **Bloco médio** — bola no meio-campo (chave `defendendo`) | **Progressão** — bola no meio-campo |
+| **Bloco baixo** — adversário no nosso terço final | **No ataque** — bola no terço final |
+
+Bloco médio, Saída e Ataque são as fases-base (tabela por faixa + regras das funções). As outras três são **derivadas** (`derive` em `formations.json`):
+- **Progressão** = mistura da Saída com o Ataque (`t` 0.45);
+- **Pressão alta** = Bloco médio deslocado para frente por faixa (atacantes sobem mais que a defesa), com +5 para quem tem "pressionar com mais urgência" (embutido ou instrução) e −5 para quem tem "com menos urgência";
+- **Bloco baixo** = Bloco médio com a linha de defesa ancorada perto da área (y 14), um pouco mais estreito.
+
+Regras de função com a chave de uma fase derivada (`pressao`, `bloco_baixo`, `progressao`) entram como deslocamento extra (`dx`, `dy`); é o que o modo editar regra grava nessas fases. Transições (logo depois de perder/ganhar a bola) ficaram de fora: a posição depende de onde a bola foi perdida.
+
+No desktop, o seletor **Sem a bola / Com a bola / Todas** escolhe os campos exibidos; no celular, as 6 fases ficam em abas.
+
+## Estrutura e medidas
+
+Com **Mostrar linhas de estrutura e medidas** (Visualização), cada campo liga os jogadores de cada linha do time (linha branca; a do adversário, tracejada escura) e mostra:
+- **Estrutura** — a forma em linhas, de trás para frente (ex.: 4-2-3-1 sem a bola, 2-4-3-1 na saída);
+- **comprimento** do bloco (do jogador de linha mais recuado ao mais avançado), **largura** e **altura da última linha** a partir do próprio gol, em metros (campo 68 × 105);
+- com o adversário ligado, a forma e o comprimento dele.
+
+As linhas partem da faixa do slot (defesa, volantes, meio, meia ofensivo, ataque), quebram onde houver um buraco de 8 ou mais em y e se juntam quando ficam a menos de 4 (máximo 5 linhas) — `teamShape` no motor. Por isso um volante que fica a 5 da defesa aparece como linha própria, e um lateral que sobe ao ataque entra na linha de cima.
+
 ## Estrutura
 
 ```

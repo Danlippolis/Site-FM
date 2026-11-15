@@ -11,16 +11,11 @@
   // Campo desenhado em "metros": 68 × 105, com margem P. x/y normalizados 0–100 são escalados.
   var P = 2.5, SX = 0.68, SY = 1.05, VW = 68 + 2 * P, VH = 105 + 2 * P, R = 2.9;
 
-  var PHASE_HINT = {
-    defendendo: 'sem a bola, bloco organizado',
-    saindo: 'bola com GR/zagueiros',
-    ataque: 'bola no terço final'
-  };
   var BAND_LABEL = { GK: 'Goleiro', D: 'Defesa', DM: 'Meio-defensivo / alas', M: 'Meio', AM: 'Meia ofensivo', ST: 'Ataque' };
 
   var data = null, baseRoles = null, lastComputed = null;
   var state = null;
-  var ui = { ghost: false, edit: false, tab: 'defendendo', collapsed: false, selectedSlot: null, piOpen: null, info: {} };
+  var ui = { ghost: false, shapes: true, edit: false, tab: 'saindo', group: 'todas', collapsed: false, selectedSlot: null, piOpen: null, info: {} };
   var anim = { on: false, step: 0, timer: null };
   var drag = null;
 
@@ -178,7 +173,15 @@
     return p;
   }
 
-  function saveState() { lsSet(LS_STATE, state); lsSet(LS_UI, { ghost: ui.ghost, tab: ui.tab, collapsed: ui.collapsed }); }
+  function saveState() { lsSet(LS_STATE, state); lsSet(LS_UI, { ghost: ui.ghost, shapes: ui.shapes, tab: ui.tab, group: ui.group, collapsed: ui.collapsed }); }
+
+  /** Fases do grupo escolhido (desktop): sem a bola, com a bola ou todas. */
+  function groupPhases() {
+    var g = data.formations.phaseGroups || {};
+    if (ui.group === 'sem' && g.sem) return g.sem;
+    if (ui.group === 'com' && g.com) return g.com;
+    return E.PHASES;
+  }
 
   // ---------- montagem estática ----------
 
@@ -206,8 +209,9 @@
 
       var card = el('section', { class: 'field-card', 'data-phase': ph });
       var h = el('h3', null, label);
-      h.appendChild(el('span', null, PHASE_HINT[ph] + ' · ataca ↑'));
+      h.appendChild(el('span', null, (data.formations.phases[ph].hint || '') + ' · ataca ↑'));
       card.appendChild(h);
+      card.appendChild(el('p', { class: 'shape-line', id: 'shape-' + ph }));
       card.appendChild(el('p', { class: 'opp-line', id: 'oppline-' + ph }));
       var svg = svgEl('svg', { class: 'pitch', id: 'pitch-' + ph, role: 'img', 'aria-label': 'Campo — ' + label });
       svg.dataset.phase = ph;
@@ -232,8 +236,19 @@
     legend.appendChild(el('span', null, '• ponto branco = jogador com instruções individuais'));
     legend.appendChild(el('span', null, '◌ área sombreada = zona de deambulação'));
     legend.appendChild(el('span', null, '▢ quadrado claro = adversário (ataca para baixo)'));
+    legend.appendChild(el('span', null, '— linhas brancas = linhas do time (estrutura)'));
     legend.appendChild(el('span', null, 'Linhas tracejadas = terços do campo'));
 
+    document.querySelectorAll('#groups .tab').forEach(function (b) {
+      b.addEventListener('click', function () {
+        ui.group = b.dataset.group;
+        if (groupPhases().indexOf(ui.tab) < 0) ui.tab = groupPhases()[0];
+        syncTabs(); saveState();
+        if (anim.on) { toggleAnim(); toggleAnim(); }
+      });
+    });
+    $('optShape').checked = ui.shapes;
+    $('optShape').addEventListener('change', function (e) { ui.shapes = e.target.checked; renderFields(); saveState(); });
     $('optGhost').checked = ui.ghost;
     $('optGhost').addEventListener('change', function (e) { ui.ghost = e.target.checked; renderFields(); saveState(); });
     $('optEdit').addEventListener('change', function (e) {
@@ -371,8 +386,13 @@
   }
 
   function syncTabs() {
+    var shown = groupPhases();
+    document.querySelectorAll('#groups .tab').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.group === ui.group)); });
     document.querySelectorAll('#tabs .tab').forEach(function (t) { t.setAttribute('aria-selected', String(t.dataset.phase === ui.tab)); });
-    document.querySelectorAll('#fields .field-card').forEach(function (c) { c.classList.toggle('active', c.dataset.phase === ui.tab); });
+    document.querySelectorAll('#fields .field-card').forEach(function (c) {
+      c.classList.toggle('active', c.dataset.phase === ui.tab);
+      c.classList.toggle('out-group', shown.indexOf(c.dataset.phase) < 0);
+    });
   }
 
   // ---------- campo SVG ----------
@@ -409,6 +429,7 @@
     svgEl('rect', { x: cx - 3.66, y: bot, width: 7.32, height: 1.6, class: 'ln' }, g);
 
     svgEl('g', { class: 'zones' }, svg);
+    svgEl('g', { class: 'shapes' }, svg);
     svgEl('g', { class: 'ghosts' }, svg);
     svgEl('g', { class: 'ball-layer' }, svg);
     svgEl('g', { class: 'opps' }, svg);
@@ -429,6 +450,20 @@
     var ghosts = svg.querySelector('.ghosts');
     var ballLayer = svg.querySelector('.ball-layer');
     var zones = svg.querySelector('.zones');
+    var shapes = svg.querySelector('.shapes');
+
+    // linhas de estrutura: liga os jogadores de cada linha do time (e do adversário, mais discreto)
+    shapes.textContent = '';
+    if (opts.shapes) {
+      [[result.players, false], [result.opponent ? result.opponent.players : null, true]].forEach(function (t) {
+        if (!t[0]) return;
+        E.teamShape(t[0], { attackingDown: t[1] }).lines.forEach(function (line) {
+          if (line.length < 2) return;
+          var pts = line.map(function (p) { var c = toSvg(p.x, p.y); return c[0].toFixed(2) + ',' + c[1].toFixed(2); }).join(' ');
+          svgEl('polyline', { points: pts, class: t[1] ? 'shape-line-opp' : 'shape-line-us' }, shapes);
+        });
+      });
+    }
 
     // zona de deambulação (Roam): área em que o jogador circula, não um ponto fixo
     zones.textContent = '';
@@ -618,7 +653,8 @@
     var cp = computedFor(d.svg, d.index);
     var n = fromSvg(d.pos[0], d.pos[1]);
     var fx = E.clamp(n[0], 2, 98), fy = E.clamp(n[1], 2, 98);
-    var ov = E.overrideFromPosition(cp, fx, fy);
+    var derived = !!data.formations.phases[d.phase].derive;
+    var ov = derived ? E.deltaFromPosition(cp, fx, fy) : E.overrideFromPosition(cp, fx, fy);
     data.roles = E.applyOverride(data.roles, cp.role, cp.duty, d.phase, ov);
     lsSet(LS_ROLES, data.roles);
     renderAll();
@@ -626,7 +662,8 @@
     var after = computedFor(d.svg, d.index);
     var r = data.roles[cp.role];
     var msg = 'Regra salva: ' + r.abbr + '-' + cp.duty + ' · ' + data.formations.phases[d.phase].label + ' → ' +
-      (ov.x != null ? 'x ' + fmt(ov.x) + ', ' : '') + 'y ' + fmt(ov.y) + ' (vale para todo ' + r.abbr + '-' + cp.duty + ').';
+      (derived ? (ov.dx != null ? 'dx ' + fmt(ov.dx) + ', ' : '') + 'dy ' + fmt(ov.dy) + ' (deslocamento extra desta fase)'
+               : (ov.x != null ? 'x ' + fmt(ov.x) + ', ' : '') + 'y ' + fmt(ov.y)) + ' (vale para todo ' + r.abbr + '-' + cp.duty + ').';
     if (cp.side === 'C') msg += ' Slot central: só o y é gravado.';
     if (after && Math.hypot(after.x - fx, after.y - fy) > 1.5) msg += ' Atenção: um efeito ou a colisão alterou a posição final.';
     toast(msg, 6000);
@@ -850,7 +887,19 @@
     E.PHASES.forEach(function (ph) {
       var svg = $('pitch-' + ph);
       svg.classList.toggle('editing', ui.edit);
-      renderPitch(svg, lastComputed[ph], { ghost: ui.ghost });
+      renderPitch(svg, lastComputed[ph], { ghost: ui.ghost, shapes: ui.shapes });
+      var sl = $('shape-' + ph);
+      if (sl) {
+        var sh = E.teamShape(lastComputed[ph].players), m = sh.metrics;
+        var txt = 'Estrutura ' + sh.shape + ' · comprimento ' + m.length + ' m · largura ' + m.width + ' m · última linha a ' + m.lastLine + ' m do gol';
+        var o = lastComputed[ph].opponent;
+        if (o) {
+          var so = E.teamShape(o.players, { attackingDown: true });
+          txt += ' — adversário ' + so.shape + ', ' + so.metrics.length + ' m';
+        }
+        sl.textContent = txt;
+        sl.hidden = !ui.shapes;
+      }
     });
     if (anim.on) renderAnimStep();
     // reescreve os detalhes do jogador selecionado com os valores novos
@@ -883,11 +932,14 @@
   // ---------- animação ----------
 
   function renderAnimStep() {
-    var ph = E.PHASES[anim.step];
+    var phs = groupPhases(), ph = phs[anim.step % phs.length];
     var svg = $('animSvg');
     svg.dataset.phase = ph;
-    renderPitch(svg, lastComputed[ph], { ghost: false });
-    document.querySelectorAll('#animSteps span').forEach(function (s) { s.classList.toggle('on', s.dataset.phase === ph); });
+    renderPitch(svg, lastComputed[ph], { ghost: false, shapes: ui.shapes });
+    document.querySelectorAll('#animSteps span').forEach(function (s) {
+      s.classList.toggle('on', s.dataset.phase === ph);
+      s.hidden = phs.indexOf(s.dataset.phase) < 0;
+    });
   }
 
   function toggleAnim() {
@@ -900,7 +952,7 @@
     if (anim.on) {
       anim.step = 0;
       renderAnimStep();
-      anim.timer = setInterval(function () { anim.step = (anim.step + 1) % E.PHASES.length; renderAnimStep(); }, 2000);
+      anim.timer = setInterval(function () { anim.step = (anim.step + 1) % groupPhases().length; renderAnimStep(); }, 2000);
     }
   }
 
@@ -928,6 +980,8 @@
       ui.ghost = !!savedUi.ghost;
       ui.collapsed = !!savedUi.collapsed;
       if (E.PHASES.indexOf(savedUi.tab) >= 0) ui.tab = savedUi.tab;
+      if (['sem', 'com', 'todas'].indexOf(savedUi.group) >= 0) ui.group = savedUi.group;
+      if (savedUi.shapes === false) ui.shapes = false;
 
       var saved = lsGet(LS_STATE);
       if (saved && Array.isArray(saved.players) && E.validate(saved.players, data).ok) {

@@ -326,9 +326,18 @@
     "label": "Construtor Avançado",
     "en": "Advanced Playmaker",
     "abbr": "AP",
-    "desc": "Busca espaço entre o meio e a defesa adversária. A faz uma corrida atrasada contra a defesa.",
+    "desc": "Busca espaço entre o meio e a defesa adversária e recua para receber e criar. S fica entre as linhas; A faz uma corrida atrasada contra a defesa.",
     "slots": ["MCL", "MC", "MCR", "AMCL", "AMC", "AMCR", "AML", "AMR"],
-    "duties": { "S": {"ataque": {"dy": 2}}, "A": {"ataque": {"dy": 6}} }
+    "duties": {
+      "S": {
+        "saindo": { "byBand": { "AM": {"dy": -6}, "M": {"dy": -2} } },
+        "ataque": {"dy": 2}
+      },
+      "A": {
+        "saindo": { "byBand": { "AM": {"dy": -3}, "M": {"dy": 0} } },
+        "ataque": {"dy": 6}
+      }
+    }
   },
   "mezzala": {
     "label": "Mezzala",
@@ -446,7 +455,10 @@
     "abbr": "AM",
     "desc": "Joga à frente do meio. S fica nos bolsões para ligar o jogo; A também aparece na área.",
     "slots": ["AMCL", "AMC", "AMCR"],
-    "duties": { "S": {"ataque": {"dy": -4}}, "A": {"locked": ["get_further_forward"], "ataque": {"dy": 6}} }
+    "duties": {
+      "S": { "saindo": {"dy": -1}, "ataque": {"dy": -4} },
+      "A": { "locked": ["get_further_forward"], "saindo": {"dy": 4}, "ataque": {"dy": 6} }
+    }
   },
   "shadow_striker": {
     "label": "Segundo Atacante",

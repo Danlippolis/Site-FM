@@ -59,7 +59,7 @@
         "pressao": 0,
         "defendendo": 0,
         "bloco_baixo": 0,
-        "saindo": 4,
+        "saindo": 2,
         "progressao": 2,
         "ataque": { "lineY": 18 }
       },
@@ -92,7 +92,7 @@
         "pressao": 0,
         "defendendo": 0,
         "bloco_baixo": 0,
-        "saindo": 4,
+        "saindo": 2,
         "progressao": 3,
         "ataque": { "lineY": 20 }
       },
@@ -125,7 +125,7 @@
         "pressao": 0,
         "defendendo": 2,
         "bloco_baixo": 0,
-        "saindo": 6,
+        "saindo": 3,
         "progressao": 3,
         "ataque": { "lineY": 20 }
       },
@@ -158,7 +158,7 @@
         "pressao": 0,
         "defendendo": 2,
         "bloco_baixo": 2,
-        "saindo": 8,
+        "saindo": 4,
         "progressao": 4,
         "ataque": { "lineY": 22 }
       },
@@ -257,7 +257,7 @@
         "pressao": 0,
         "defendendo": -4,
         "bloco_baixo": -4,
-        "saindo": -10,
+        "saindo": -8,
         "progressao": -4,
         "ataque": { "lineY": 13 }
       },
@@ -290,7 +290,7 @@
         "pressao": 0,
         "defendendo": -6,
         "bloco_baixo": -8,
-        "saindo": -16,
+        "saindo": -12,
         "progressao": -8,
         "ataque": { "lineY": 10 }
       },

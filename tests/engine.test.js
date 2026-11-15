@@ -637,3 +637,20 @@ test('saída de bola: com linha alta os volantes sobem junto e ficam à frente d
     for (const dm of ['DMCL', 'DMCR']) assert.ok(byslot(r, dm).y - cb >= 7, `linha ${dl}: ${dm} ${byslot(r, dm).y} vs zagueiros ${cb}`);
   }
 });
+
+test('pressão realista: quem pressiona não passa da última linha de quem tem a bola (nem marca o goleiro)', () => {
+  for (const st of data.opponent.styles) {
+    const m = E.computeMatch(preset('4-2-3-1-dm-wide'), data, { defensiveLine: 3 }, oppOf('4-3-3-dm-wide', st.id));
+    for (const ph of E.PHASES) {
+      const ours = m[ph].players.filter((p) => p.band !== 'GK'), theirs = m[ph].opponent.players.filter((p) => p.band !== 'GK');
+      if (E.isWithBall(data.formations, ph)) {
+        const lim = Math.min(...ours.map((p) => p.y)) - 3 - 1.5;
+        for (const p of theirs) assert.ok(p.y >= lim, `${st.id}/${ph}: adversário ${p.slot} em ${p.y} < ${lim}`);
+      } else {
+        const lim = Math.max(...theirs.map((p) => p.y)) + 3 + 1.5;
+        for (const p of ours) assert.ok(p.y <= lim, `${st.id}/${ph}: nosso ${p.slot} em ${p.y} > ${lim}`);
+      }
+      for (const p of ours.concat(theirs)) assert.ok(p.y >= 7.9 && p.y <= 92.1, `${st.id}/${ph}: ${p.slot} colado num gol (${p.y})`);
+    }
+  }
+});

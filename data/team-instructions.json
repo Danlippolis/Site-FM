@@ -67,6 +67,8 @@
     "clamp": [2, 98],
     "insideDefault": 8,
     "autoDutyByMentality": ["D", "D", "S", "S", "S", "A", "A"],
-    "defLineWithBallFactor": 1
+    "defLineWithBallFactor": 1,
+    "pressMargin": 0,
+    "outfieldMinY": 8
   }
 }

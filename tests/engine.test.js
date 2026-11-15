@@ -341,12 +341,14 @@ test('estilo muda a altura do bloco: pressão alta pressiona mais a saída que o
 test('impedimento: ninguém passa do último defensor rival no campo adversário', () => {
   for (const style of data.opponent.styles.map((s) => s.id)) {
     const m = E.computeMatch(preset('4-2-3-1-dm-wide'), data, {}, oppOf('4-4-2', style));
-    for (const ph of ['saindo', 'ataque']) {
+    for (const ph of E.PHASES.filter((f) => E.isWithBall(data.formations, f))) {
       const line = Math.max(50, ...m[ph].opponent.players.filter((p) => p.band !== 'GK').map((p) => p.y));
       for (const p of m[ph].players) if (p.band !== 'GK') assert.ok(p.y <= line + 0.11, `${style}/${ph}/${p.slot} ${p.y} > ${line}`);
     }
-    const lineD = Math.min(50, ...m.defendendo.players.filter((p) => p.band !== 'GK').map((p) => p.y));
-    for (const p of m.defendendo.opponent.players) if (p.band !== 'GK') assert.ok(p.y >= lineD - 0.11, `${style}/def/${p.slot}`);
+    for (const ph of E.PHASES.filter((f) => !E.isWithBall(data.formations, f))) {
+      const lineD = Math.min(50, ...m[ph].players.filter((p) => p.band !== 'GK').map((p) => p.y));
+      for (const p of m[ph].opponent.players) if (p.band !== 'GK') assert.ok(p.y >= lineD - 0.11, `${style}/${ph}/${p.slot}`);
+    }
   }
 });
 
@@ -425,4 +427,67 @@ test('glossário do FM23: a zona de corredor do centroavante chega ao espaço en
   const p = preset('4-3-3-dm-wide').map((x) => (x.slot === 'STC' ? { ...x, role: 'target_forward', duty: 'S', instructions: ['move_into_channels'] } : { ...x }));
   const st = byslot(E.computePhase(p, 'ataque', data, {}), 'STC');
   assert.ok(st.x - st.zone.rx <= 33 && st.x + st.zone.rx >= 67, `${st.x} ± ${st.zone.rx}`);
+});
+
+// ---------- 6 fases e estrutura ----------
+
+const avgY = (res, band) => { const ps = res.players.filter((p) => p.band === band); return ps.reduce((t, p) => t + p.y, 0) / ps.length; };
+
+test('6 fases, 3 sem bola e 3 com bola, todas com 11 jogadores', () => {
+  assert.equal(E.PHASES.length, 6);
+  assert.deepEqual(E.PHASES.filter((f) => E.isWithBall(data.formations, f)), ['saindo', 'progressao', 'ataque']);
+  const all = E.computeAll(preset('4-2-3-1-dm-wide'), data, {});
+  for (const ph of E.PHASES) assert.equal(all[ph].players.length, 11, ph);
+});
+
+test('sem a bola: pressão alta > bloco médio > bloco baixo, por faixa; bloco baixo com a linha perto da área', () => {
+  const all = E.computeAll(preset('4-4-2'), noCol, {});
+  for (const b of ['D', 'M', 'ST']) {
+    assert.ok(avgY(all.pressao, b) > avgY(all.defendendo, b) + 5, `pressão ${b}`);
+    assert.ok(avgY(all.defendendo, b) > avgY(all.bloco_baixo, b) + 5, `bloco baixo ${b}`);
+  }
+  assert.ok(Math.abs(Math.min(...all.bloco_baixo.players.filter((p) => p.band === 'D').map((p) => p.y)) - 14) < 0.5);
+});
+
+test('progressão fica entre a saída e o ataque', () => {
+  const all = E.computeAll(preset('4-3-3-dm-wide'), noCol, {});
+  for (const b of ['D', 'M', 'ST']) {
+    assert.ok(avgY(all.progressao, b) > avgY(all.saindo, b) && avgY(all.progressao, b) < avgY(all.ataque, b), b);
+  }
+});
+
+test('na pressão alta, quem tem "pressionar mais" embutido sobe e quem tem "pressionar menos" fica', () => {
+  const p = preset('4-4-2').map((x) => (x.slot === 'STCL' ? { ...x, role: 'pressing_forward', duty: 'S' } : x.slot === 'STCR' ? { ...x, role: 'trequartista', duty: 'A' } : { ...x }));
+  const r = E.computePhase(p, 'pressao', noCol, {}), d = E.computePhase(p, 'defendendo', noCol, {});
+  const up = (s) => byslot(r, s).y - byslot(d, s).y;
+  assert.ok(up('STCL') - up('STCR') >= 9, `${up('STCL')} vs ${up('STCR')}`);
+});
+
+test('modo edição em fase derivada grava deslocamento e reproduz a posição arrastada', () => {
+  const p = preset('4-2-3-1-dm-wide');
+  const cp = byslot(E.computePhase(p, 'progressao', noCol, {}), 'AMR');
+  const patch = E.deltaFromPosition(cp, cp.x - 5, cp.y + 4);
+  const roles = E.applyOverride(data.roles, cp.role, cp.duty, 'progressao', patch);
+  const cp2 = byslot(E.computePhase(p, 'progressao', { ...noCol, roles }, {}), 'AMR');
+  assert.ok(Math.abs(cp2.x - (cp.x - 5)) < 0.2 && Math.abs(cp2.y - (cp.y + 4)) < 0.2, `${cp2.x},${cp2.y}`);
+});
+
+test('estrutura: 4-4-2, 4-2-3-1 e 4-1-4-1 aparecem como tais no bloco médio; medidas em metros', () => {
+  assert.equal(E.teamShape(E.computePhase(preset('4-1-4-1-dm-wide'), 'defendendo', data, {}).players).shape, '4-1-4-1');
+  assert.equal(E.teamShape(E.computePhase(preset('4-4-2'), 'defendendo', data, {}).players).shape, '4-4-2');
+  const sh = E.teamShape(E.computePhase(preset('4-2-3-1-dm-wide'), 'defendendo', data, {}).players);
+  assert.equal(sh.shape, '4-2-3-1');
+  assert.ok(sh.metrics.length > 20 && sh.metrics.length < 60 && sh.metrics.width > 30 && sh.metrics.width <= 68);
+});
+
+test('estrutura do adversário (ataca para baixo) mede a última linha a partir do gol dele', () => {
+  const m = E.computeMatch(preset('4-4-2'), data, {}, oppOf('4-4-2', 'equilibrado'));
+  // na nossa progressão o adversário está em bloco médio
+  const sh = E.teamShape(m.progressao.opponent.players, { attackingDown: true });
+  assert.equal(sh.shape, '4-4-2');
+  assert.ok(sh.metrics.lastLine > 10 && sh.metrics.lastLine < 50, String(sh.metrics.lastLine));
+});
+
+test('estrutura com a bola mostra o escalonamento (4-2-3-1 vira 2-4-3-1 na saída)', () => {
+  assert.equal(E.teamShape(E.computePhase(preset('4-2-3-1-dm-wide'), 'saindo', data, {}).players).shape, '2-4-3-1');
 });

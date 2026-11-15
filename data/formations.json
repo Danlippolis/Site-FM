@@ -2,71 +2,114 @@
   "laneX": { "L": 8, "CL": 35, "C": 50, "CR": 65, "R": 92 },
   "stLaneX": { "CL": 40, "C": 50, "CR": 60 },
   "bandY": { "GK": 4, "D": 22, "DM": 34, "M": 48, "AM": 64, "ST": 78 },
-
   "slots": {
-    "GK":   { "band": "GK", "lane": "C" },
-    "DL":   { "band": "D",  "lane": "L" },
-    "DCL":  { "band": "D",  "lane": "CL" },
-    "DC":   { "band": "D",  "lane": "C" },
-    "DCR":  { "band": "D",  "lane": "CR" },
-    "DR":   { "band": "D",  "lane": "R" },
-    "WBL":  { "band": "DM", "lane": "L" },
+    "GK": { "band": "GK", "lane": "C" },
+    "DL": { "band": "D", "lane": "L" },
+    "DCL": { "band": "D", "lane": "CL" },
+    "DC": { "band": "D", "lane": "C" },
+    "DCR": { "band": "D", "lane": "CR" },
+    "DR": { "band": "D", "lane": "R" },
+    "WBL": { "band": "DM", "lane": "L" },
     "DMCL": { "band": "DM", "lane": "CL" },
-    "DMC":  { "band": "DM", "lane": "C" },
+    "DMC": { "band": "DM", "lane": "C" },
     "DMCR": { "band": "DM", "lane": "CR" },
-    "WBR":  { "band": "DM", "lane": "R" },
-    "ML":   { "band": "M",  "lane": "L" },
-    "MCL":  { "band": "M",  "lane": "CL" },
-    "MC":   { "band": "M",  "lane": "C" },
-    "MCR":  { "band": "M",  "lane": "CR" },
-    "MR":   { "band": "M",  "lane": "R" },
-    "AML":  { "band": "AM", "lane": "L" },
+    "WBR": { "band": "DM", "lane": "R" },
+    "ML": { "band": "M", "lane": "L" },
+    "MCL": { "band": "M", "lane": "CL" },
+    "MC": { "band": "M", "lane": "C" },
+    "MCR": { "band": "M", "lane": "CR" },
+    "MR": { "band": "M", "lane": "R" },
+    "AML": { "band": "AM", "lane": "L" },
     "AMCL": { "band": "AM", "lane": "CL" },
-    "AMC":  { "band": "AM", "lane": "C" },
+    "AMC": { "band": "AM", "lane": "C" },
     "AMCR": { "band": "AM", "lane": "CR" },
-    "AMR":  { "band": "AM", "lane": "R" },
+    "AMR": { "band": "AM", "lane": "R" },
     "STCL": { "band": "ST", "lane": "CL" },
-    "STC":  { "band": "ST", "lane": "C" },
+    "STC": { "band": "ST", "lane": "C" },
     "STCR": { "band": "ST", "lane": "CR" }
   },
-
   "phases": {
+    "pressao": {
+      "label": "Pressão alta",
+      "withBall": false,
+      "hint": "adversário saindo com a bola no terço dele",
+      "derive": {
+        "from": "defendendo",
+        "shiftByBand": { "GK": 4, "D": 11, "DM": 13, "M": 16, "AM": 20, "ST": 19 },
+        "press": { "more": 5, "less": -5 }
+      },
+      "ball": { "x": 46, "y": 86 }
+    },
     "defendendo": {
-      "label": "Defendendo",
+      "label": "Bloco médio",
       "y": { "GK": 4, "D": 25, "DM": 33, "M": 42, "AM": 50, "ST": 56 },
-      "width": 0.75
+      "width": 0.75,
+      "withBall": false,
+      "hint": "sem a bola, bola no meio-campo",
+      "ball": { "x": 50, "y": 52 }
+    },
+    "bloco_baixo": {
+      "label": "Bloco baixo",
+      "withBall": false,
+      "hint": "adversário no nosso terço final",
+      "derive": { "from": "defendendo", "lineY": 14, "shiftByBand": {"AM": -2, "ST": -4}, "widthScale": 0.9 },
+      "ball": { "x": 50, "y": 20 }
     },
     "saindo": {
-      "label": "Saindo com a bola",
+      "label": "Saída de bola",
       "y": { "GK": 4, "D": 15, "DM": 28, "M": 42, "AM": 56, "ST": 70 },
       "width": 1.05,
       "cbSplit": { "2": [32, 68], "3": [25, 50, 75] },
-      "ball": { "x": 54, "y": 6 }
+      "ball": { "x": 54, "y": 6 },
+      "withBall": true,
+      "hint": "bola com GR/zagueiros"
+    },
+    "progressao": {
+      "label": "Progressão",
+      "withBall": true,
+      "hint": "bola no meio-campo",
+      "derive": { "blend": ["saindo", "ataque"], "t": 0.45 },
+      "ball": { "x": 50, "y": 50 }
     },
     "ataque": {
       "label": "No ataque",
       "y": { "GK": 10, "D": 45, "DM": 55, "M": 66, "AM": 78, "ST": 88 },
       "width": 1.0,
-      "ball": { "x": 50, "y": 80 }
+      "ball": { "x": 50, "y": 80 },
+      "withBall": true,
+      "hint": "bola no terço final"
     }
   },
-
   "defaultRoles": {
-    "GK":   ["goalkeeper", "D"],
-    "DL":   ["full_back", "S"],   "DR":   ["full_back", "S"],
-    "DCL":  ["central_defender", "D"], "DC": ["central_defender", "D"], "DCR": ["central_defender", "D"],
-    "WBL":  ["wing_back", "S"],   "WBR":  ["wing_back", "S"],
-    "DMCL": ["defensive_midfielder", "S"], "DMC": ["defensive_midfielder", "D"], "DMCR": ["defensive_midfielder", "S"],
-    "ML":   ["wide_midfielder", "S"], "MR": ["wide_midfielder", "S"],
-    "MCL":  ["central_midfielder", "S"], "MC": ["central_midfielder", "S"], "MCR": ["central_midfielder", "S"],
-    "AML":  ["winger", "A"], "AMR": ["winger", "A"],
-    "AMCL": ["attacking_midfielder", "S"], "AMC": ["attacking_midfielder", "S"], "AMCR": ["attacking_midfielder", "S"],
-    "STCL": ["advanced_forward", "A"], "STC": ["advanced_forward", "A"], "STCR": ["advanced_forward", "A"]
+    "GK": ["goalkeeper", "D"],
+    "DL": ["full_back", "S"],
+    "DR": ["full_back", "S"],
+    "DCL": ["central_defender", "D"],
+    "DC": ["central_defender", "D"],
+    "DCR": ["central_defender", "D"],
+    "WBL": ["wing_back", "S"],
+    "WBR": ["wing_back", "S"],
+    "DMCL": ["defensive_midfielder", "S"],
+    "DMC": ["defensive_midfielder", "D"],
+    "DMCR": ["defensive_midfielder", "S"],
+    "ML": ["wide_midfielder", "S"],
+    "MR": ["wide_midfielder", "S"],
+    "MCL": ["central_midfielder", "S"],
+    "MC": ["central_midfielder", "S"],
+    "MCR": ["central_midfielder", "S"],
+    "AML": ["winger", "A"],
+    "AMR": ["winger", "A"],
+    "AMCL": ["attacking_midfielder", "S"],
+    "AMC": ["attacking_midfielder", "S"],
+    "AMCR": ["attacking_midfielder", "S"],
+    "STCL": ["advanced_forward", "A"],
+    "STC": ["advanced_forward", "A"],
+    "STCR": ["advanced_forward", "A"]
   },
-
   "presets": [
     {
-      "id": "4-4-2", "label": "4-4-2",
+      "id": "4-4-2",
+      "label": "4-4-2",
       "players": [
         { "slot": "GK", "role": "goalkeeper", "duty": "D" },
         { "slot": "DL", "role": "full_back", "duty": "S" },
@@ -82,7 +125,8 @@
       ]
     },
     {
-      "id": "4-2-3-1-wide", "label": "4-2-3-1 Wide (MC + AM aberto)",
+      "id": "4-2-3-1-wide",
+      "label": "4-2-3-1 Wide (MC + AM aberto)",
       "players": [
         { "slot": "GK", "role": "goalkeeper", "duty": "D" },
         { "slot": "DL", "role": "full_back", "duty": "S" },
@@ -98,7 +142,8 @@
       ]
     },
     {
-      "id": "4-2-3-1-dm-wide", "label": "4-2-3-1 DM Wide",
+      "id": "4-2-3-1-dm-wide",
+      "label": "4-2-3-1 DM Wide",
       "players": [
         { "slot": "GK", "role": "sweeper_keeper", "duty": "S" },
         { "slot": "DL", "role": "inverted_wing_back", "duty": "S" },
@@ -114,7 +159,8 @@
       ]
     },
     {
-      "id": "4-3-3-dm-wide", "label": "4-3-3 DM Wide",
+      "id": "4-3-3-dm-wide",
+      "label": "4-3-3 DM Wide",
       "players": [
         { "slot": "GK", "role": "sweeper_keeper", "duty": "S" },
         { "slot": "DL", "role": "full_back", "duty": "S" },
@@ -130,7 +176,8 @@
       ]
     },
     {
-      "id": "4-1-4-1-dm-wide", "label": "4-1-4-1 DM Wide",
+      "id": "4-1-4-1-dm-wide",
+      "label": "4-1-4-1 DM Wide",
       "players": [
         { "slot": "GK", "role": "goalkeeper", "duty": "D" },
         { "slot": "DL", "role": "full_back", "duty": "S" },
@@ -146,7 +193,8 @@
       ]
     },
     {
-      "id": "4-4-1-1", "label": "4-4-1-1",
+      "id": "4-4-1-1",
+      "label": "4-4-1-1",
       "players": [
         { "slot": "GK", "role": "goalkeeper", "duty": "D" },
         { "slot": "DL", "role": "full_back", "duty": "S" },
@@ -162,7 +210,8 @@
       ]
     },
     {
-      "id": "3-5-2-wb", "label": "3-5-2 com alas (WBL/WBR)",
+      "id": "3-5-2-wb",
+      "label": "3-5-2 com alas (WBL/WBR)",
       "players": [
         { "slot": "GK", "role": "goalkeeper", "duty": "D" },
         { "slot": "DCL", "role": "wide_centre_back", "duty": "S" },
@@ -178,7 +227,8 @@
       ]
     },
     {
-      "id": "3-4-3", "label": "3-4-3",
+      "id": "3-4-3",
+      "label": "3-4-3",
       "players": [
         { "slot": "GK", "role": "goalkeeper", "duty": "D" },
         { "slot": "DCL", "role": "central_defender", "duty": "D" },
@@ -194,7 +244,8 @@
       ]
     },
     {
-      "id": "5-2-1-2-wb", "label": "5-2-1-2 WB",
+      "id": "5-2-1-2-wb",
+      "label": "5-2-1-2 WB",
       "players": [
         { "slot": "GK", "role": "goalkeeper", "duty": "D" },
         { "slot": "WBL", "role": "wing_back", "duty": "S" },
@@ -210,7 +261,8 @@
       ]
     },
     {
-      "id": "4-3-1-2-diamond", "label": "4-3-1-2 losango",
+      "id": "4-3-1-2-diamond",
+      "label": "4-3-1-2 losango",
       "players": [
         { "slot": "GK", "role": "goalkeeper", "duty": "D" },
         { "slot": "DL", "role": "wing_back", "duty": "S" },
@@ -226,5 +278,7 @@
       ]
     }
   ],
-  "defaultPreset": "4-2-3-1-dm-wide"
+  "defaultPreset": "4-2-3-1-dm-wide",
+  "phaseGroups": { "sem": ["pressao", "defendendo", "bloco_baixo"], "com": ["saindo", "progressao", "ataque"] },
+  "phasesNote": "Fases com \"derive\" são calculadas a partir de outras: \"blend\" mistura duas fases (t = 0 → primeira, 1 → segunda); \"from\" desloca uma fase por faixa (shiftByBand), ancora a linha D (lineY), estreita (widthScale) e soma \"press\" para quem tem pressão embutida/instruída. Regras de função com a chave da fase derivada entram como deslocamento extra (dx/dy)."
 }

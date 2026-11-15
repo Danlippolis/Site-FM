@@ -149,6 +149,10 @@ select {
 .tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
 
 .fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.fields .field-card.out-group { display: none; }
+.groups { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 3px; }
+.groups .tab[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.main-bar { flex-wrap: wrap; }
 .field-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px; box-shadow: var(--shadow); min-width: 0; }
 .field-card h3 { margin: 0 0 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .field-card h3 span { font-size: 11.5px; color: var(--muted); font-weight: 500; }
@@ -182,7 +186,10 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
 .pitch .oc { fill: #f3f4f6; stroke: #111827; stroke-width: .3; }
 .pitch .oab { fill: #111827; font-weight: 800; text-anchor: middle; dominant-baseline: central; letter-spacing: -.03em; pointer-events: none; }
 .opp-line { margin: -4px 0 8px; font-size: 12px; color: var(--muted); }
+.shape-line { margin: -4px 0 6px; font-size: 12px; color: var(--text); font-variant-numeric: tabular-nums; }
 .opp-form.off { opacity: .55; }
+.pitch .shape-line-us { fill: none; stroke: rgba(255, 255, 255, .55); stroke-width: .35; stroke-linejoin: round; }
+.pitch .shape-line-opp { fill: none; stroke: rgba(17, 24, 39, .45); stroke-width: .3; stroke-dasharray: 1 .6; stroke-linejoin: round; }
 .pitch .pi-dot { fill: #fff; stroke: #0f1512; stroke-width: .2; }
 .pitch .pl.hl .pc { stroke: #ffeb3b; stroke-width: .55; }
 
@@ -207,7 +214,10 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
 
 /* Abaixo de 1280px os 3 campos lado a lado ficam pequenos demais: vira abas. */
 @media (max-width: 1279px) {
-  .tabs { display: flex; }
+  .tabs { display: flex; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+  .tabs .tab { white-space: nowrap; }
+  .groups { display: none; }
+  .fields .field-card.out-group.active { display: block; }
   .fields { grid-template-columns: minmax(0, 1fr); max-width: 560px; }
   .fields .field-card:not(.active) { display: none; }
   .layout.collapsed .fields { margin: 0 auto; }

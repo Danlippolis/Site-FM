@@ -533,3 +533,33 @@ test('sugestão melhora uma tática desequilibrada (todos em Defender)', () => {
   const sug = E.suggestRoles(p, data, {}, { maxChanges: 5 });
   assert.ok(sug.changes.length > 0 && sug.after.score - sug.before.score > 5, `${sug.before.score} → ${sug.after.score}`);
 });
+
+// ---------- funções do adversário por estilo ----------
+
+test('funções típicas de cada estilo são válidas em todas as formações', () => {
+  for (const st of data.opponent.styles) {
+    for (const pr of data.formations.presets) {
+      const ps = E.styleRoles(pr.players, data, st.id);
+      assert.deepEqual(E.validate(ps, data).errors, [], `${st.id}/${pr.id}`);
+      assert.deepEqual(ps.map((p) => p.slot), pr.players.map((p) => p.slot));
+    }
+  }
+});
+
+test('Atacar pelas alas põe extremos nas pontas; Gegenpress põe atacantes de pressão; Tiki-Taka usa falso 9', () => {
+  const wing = E.styleRoles(preset('4-4-2'), data, 'pontas');
+  assert.equal(wing.find((p) => p.slot === 'ML').role, 'winger');
+  assert.equal(wing.find((p) => p.slot === 'MR').role, 'winger');
+  const gp = E.styleRoles(preset('4-4-2'), data, 'pressao_alta');
+  assert.ok(gp.filter((p) => p.role === 'pressing_forward').length === 2);
+  const tk = E.styleRoles(preset('4-3-3-dm-wide'), data, 'posse');
+  assert.equal(tk.find((p) => p.slot === 'STC').role, 'false_nine');
+});
+
+test('o adversário usa as funções informadas (ex.: Atacante de Pressão sobe mais na pressão que um Matador)', () => {
+  const base = preset('4-4-2');
+  const a = E.computeMatch(base, data, {}, { enabled: true, styleId: 'equilibrado', players: base.map((p) => (p.slot.startsWith('ST') ? { ...p, role: 'pressing_forward', duty: 'D' } : p)) });
+  const b = E.computeMatch(base, data, {}, { enabled: true, styleId: 'equilibrado', players: base.map((p) => (p.slot.startsWith('ST') ? { ...p, role: 'poacher', duty: 'A' } : p)) });
+  const stY = (m) => Math.min(...m.saindo.opponent.players.filter((p) => p.band === 'ST').map((p) => p.y));
+  assert.notEqual(stY(a), stY(b));
+});

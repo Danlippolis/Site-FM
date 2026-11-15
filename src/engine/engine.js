@@ -541,6 +541,36 @@
   }
 
   /**
+   * Funções típicas de um estilo de jogo aplicadas a uma formação (data.opponent.styles[].roles):
+   * por grupo de slots, a lista é usada em sequência (esquerda → direita). Funções inválidas para
+   * o slot ficam como estavam na formação.
+   */
+  function styleRoles(players, data, styleId) {
+    var style = opponentStyle(data, styleId), groups = (data.opponent && data.opponent.roleGroups) || {};
+    var formations = data.formations, roles = data.roles;
+    if (!style || !style.roles) return players.map(function (p) { return Object.assign({}, p); });
+    var groupOf = {};
+    Object.keys(groups).forEach(function (g) { groups[g].forEach(function (slot) { groupOf[slot] = g; }); });
+    var used = {};
+    return players.slice()
+      .map(function (p, i) { return { p: p, i: i }; })
+      .sort(function (a, b) { return slotOrder(formations, a.p.slot) - slotOrder(formations, b.p.slot); })
+      .map(function (o) {
+        var p = Object.assign({}, o.p), g = groupOf[p.slot], list = g && style.roles[g];
+        if (list && list.length) {
+          var k = used[g] || 0; used[g] = k + 1;
+          var pick = list[k % list.length].split('-'), rk = pick[0], dk = pick[1];
+          var r = roles[rk];
+          if (r && r.slots.indexOf(p.slot) >= 0 && r.duties[dk]) { p.role = rk; p.duty = dk; }
+        }
+        delete p.instructions; delete p.traits;
+        return { p: p, i: o.i };
+      })
+      .sort(function (a, b) { return a.i - b.i; })
+      .map(function (o) { return o.p; });
+  }
+
+  /**
    * Impedimento: quem ataca não passa do último defensor de linha rival (ignora o goleiro),
    * e a regra só vale no campo adversário. Mexe só nos atacantes. Retorna quantos foram contidos.
    */
@@ -833,6 +863,7 @@
     resolveTraits: resolveTraits,
     computePhase: computePhase, computeAll: computeAll, computeMatch: computeMatch,
     computeOpponentPhase: computeOpponentPhase, opponentStyle: opponentStyle, applyOffside: applyOffside,
+    styleRoles: styleRoles,
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,
     overrideFromPosition: overrideFromPosition, applyOverride: applyOverride,
     deltaFromPosition: deltaFromPosition, teamShape: teamShape, isWithBall: isWithBall,

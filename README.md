@@ -139,11 +139,13 @@ Seção **Adversário** no painel: liga/desliga, formação (qualquer atalho, co
 | Saindo com a bola | pressionando nossa saída | fase "defendendo" dele, adiantada/recuada pelo estilo (`shifts.saindo`) |
 | No ataque | bloco baixo | fase "defendendo" dele com a linha de defensores ancorada perto da própria área (`shifts.ataque.lineY`) |
 
-Cada **estilo** é um conjunto de instruções de equipe (mentalidade, linhas, larguras) mais esses deslocamentos. Estilos incluídos, inspirados nos modelos táticos do jogo: Equilibrado, Pressão alta (Gegenpress), Posse de bola curta (Tiki-Taka), Jogo pelas pontas (Wing Play), Jogo direto (Route One), Contra-ataque e Bloco baixo (retranca). Os números são estimativas minhas; edite `data/opponent.json` para calibrar ou criar estilos.
+Cada **estilo** é um conjunto de instruções de equipe (mentalidade, linhas, larguras), os deslocamentos acima e as **funções típicas** dos jogadores. Estilos incluídos, inspirados nos modelos táticos do jogo: Equilibrado, Controle de bola (Control Possession), Tiki-Taka, Tiki-Taka vertical, Gegenpress, Atacar pelas alas (Wing Play), Jogo direto (Route One), Contra-ataque e Bloco baixo (retranca).
+
+**Funções do adversário:** trocar a formação ou o estilo aplica as funções típicas do estilo (`roles` por grupo de slots em `data/opponent.json`; ex.: Atacar pelas alas → extremos e alas de ataque; Gegenpress → atacantes de pressão e recuperadores; Tiki-Taka → laterais invertidos, Half-Back, Mezzala e Falso 9). Em **Funções dos jogadores adversários** dá para ajustar função e tarefa jogador a jogador; "Voltar às funções típicas do estilo" desfaz. As escolhas de funções e os números dos estilos são aproximações minhas.
 
 **Impedimento** (`offside: true`): quem ataca não passa do último defensor de linha rival (o goleiro não conta), e só no campo adversário. Com o adversário ligado, isso pode conter os **nossos** atacantes na linha dele nas fases com bola — o tooltip avisa "contido pela linha de impedimento". Com o adversário desligado, nosso time não muda.
 
-Limitações: o adversário usa as funções do atalho de formação (sem editar função por jogador nem instruções individuais dele) e não reage à posição exata dos nossos jogadores além do impedimento.
+Limitações: o adversário não tem instruções individuais nem características, e não reage à posição exata dos nossos jogadores além do impedimento.
 
 ## Fontes
 

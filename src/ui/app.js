@@ -128,8 +128,19 @@
   function oppConfig() {
     var o = state.opp || {};
     if (!o.enabled) return null;
-    var pr = presetById(o.presetId);
-    return { enabled: true, styleId: o.styleId, players: clone(pr.players).map(function (p) { return fixRole(p); }) };
+    ensureOppPlayers();
+    return { enabled: true, styleId: o.styleId, players: clone(o.players) };
+  }
+
+  /** Funções do adversário: as editadas pelo usuário, ou as típicas do estilo aplicadas à formação. */
+  function ensureOppPlayers() {
+    var o = state.opp;
+    if (Array.isArray(o.players) && o.players.length === 11 && E.validate(o.players, data).ok) return;
+    resetOppPlayers();
+  }
+  function resetOppPlayers() {
+    var o = state.opp, pr = presetById(o.presetId);
+    o.players = E.styleRoles(clone(pr.players).map(function (p) { return fixRole(p); }), data, o.styleId);
   }
 
   function validRoleFor(slot, role, duty) {
@@ -355,22 +366,69 @@
     var lf = el('label', null, 'Formação do adversário');
     var fs = el('select', { id: 'oppPreset' });
     data.formations.presets.forEach(function (p) { fs.appendChild(el('option', { value: p.id }, p.label)); });
-    fs.addEventListener('change', function () { state.opp.presetId = fs.value; renderAll(); });
+    fs.addEventListener('change', function () { state.opp.presetId = fs.value; resetOppPlayers(); renderAll(); syncOppForm(); });
     lf.appendChild(fs); form.appendChild(lf);
 
     var ls = el('label', null, 'Estilo de jogo do adversário');
     var ss = el('select', { id: 'oppStyle' });
-    cfg.styles.forEach(function (st) { ss.appendChild(el('option', { value: st.id }, st.label + (st.inspiredBy ? ' (' + st.inspiredBy + ')' : ''))); });
-    ss.addEventListener('change', function () { state.opp.styleId = ss.value; renderAll(); syncOppForm(); });
+    cfg.styles.forEach(function (st) {
+      var extra = st.inspiredBy && st.inspiredBy !== st.label ? ' (' + st.inspiredBy + ')' : '';
+      ss.appendChild(el('option', { value: st.id }, st.label + extra));
+    });
+    ss.addEventListener('change', function () { state.opp.styleId = ss.value; resetOppPlayers(); renderAll(); syncOppForm(); });
     ls.appendChild(ss); form.appendChild(ls);
     form.appendChild(el('p', { class: 'hint', id: 'oppDesc' }));
 
+    var det = el('details', { class: 'opp-roles' });
+    det.appendChild(el('summary', null, 'Funções dos jogadores adversários'));
+    det.appendChild(el('p', { class: 'hint' }, 'Trocar a formação ou o estilo aplica as funções típicas do estilo. Depois disso, ajuste jogador a jogador.'));
+    det.appendChild(el('div', { class: 'player-list', id: 'oppPlayers' }));
+    var rb = el('button', { class: 'btn small', type: 'button' }, 'Voltar às funções típicas do estilo');
+    rb.addEventListener('click', function () { resetOppPlayers(); renderAll(); syncOppForm(); toast('Funções típicas do estilo aplicadas ao adversário.'); });
+    det.appendChild(rb);
+    form.appendChild(det);
+
     $('oppEnabled').addEventListener('change', function (e) { state.opp.enabled = e.target.checked; renderAll(); syncOppForm(); });
+  }
+
+  function renderOppPlayers() {
+    var list = $('oppPlayers');
+    if (!list) return;
+    ensureOppPlayers();
+    list.textContent = '';
+    var f = data.formations, ps = state.opp.players;
+    ps.map(function (p, i) { return i; })
+      .sort(function (a, b) { return E.slotOrder(f, ps[a].slot) - E.slotOrder(f, ps[b].slot); })
+      .forEach(function (i) {
+        var p = ps[i];
+        var row = el('div', { class: 'prow opp-row' });
+        row.appendChild(el('span', { class: 'num opp-num' }, ''));
+        row.appendChild(el('span', { class: 'slotname' }, p.slot));
+        var rs = el('select', { 'aria-label': 'Função adversário ' + p.slot });
+        E.rolesForSlot(data.roles, p.slot)
+          .sort(function (a, b) { return data.roles[a].label.localeCompare(data.roles[b].label, 'pt-BR'); })
+          .forEach(function (k) { var r = data.roles[k]; rs.appendChild(el('option', { value: k }, r.label + ' (' + r.en + ')')); });
+        rs.value = p.role;
+        rs.addEventListener('change', function () {
+          p.role = rs.value;
+          if (!data.roles[p.role].duties[p.duty]) p.duty = Object.keys(data.roles[p.role].duties)[0];
+          renderAll(); renderOppPlayers();
+        });
+        row.appendChild(rs);
+        var ds = el('select', { 'aria-label': 'Tarefa adversário ' + p.slot });
+        Object.keys(data.roles[p.role].duties).forEach(function (d) { ds.appendChild(el('option', { value: d }, (E.DUTIES[d] || { label: d }).label)); });
+        ds.value = p.duty;
+        ds.addEventListener('change', function () { p.duty = ds.value; renderAll(); });
+        row.appendChild(ds);
+        row.appendChild(el('span'));
+        list.appendChild(row);
+      });
   }
 
   function syncOppForm() {
     if (!data.opponent) return;
     var o = state.opp;
+    renderOppPlayers();
     $('oppEnabled').checked = !!o.enabled;
     $('oppPreset').value = o.presetId;
     $('oppStyle').value = o.styleId;

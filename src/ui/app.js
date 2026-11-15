@@ -110,6 +110,7 @@
       defensiveLine: ins.defensiveLine.default,
       lineOfEngagement: ins.lineOfEngagement.default,
       widthInPossession: ins.widthInPossession.default,
+      defensiveWidth: ins.defensiveWidth ? ins.defensiveWidth.default : undefined,
       flags: flags
     };
   }
@@ -135,7 +136,7 @@
   function prunePIs(p) {
     if (!p.instructions || !data.formations.slots[p.slot]) return p;
     var info = E.slotInfo(data.formations, p.slot);
-    var kept = E.resolvePlayerInstructions(p, info, piDefs()).applied;
+    var kept = E.resolvePlayerInstructions(p, info, piDefs(), data.roles).applied;
     if (kept.length) p.instructions = kept; else delete p.instructions;
     return p;
   }
@@ -285,8 +286,9 @@
 
   function buildTIForm() {
     var form = $('tiForm'), ins = data.instructions;
-    ['mentality', 'defensiveLine', 'lineOfEngagement', 'widthInPossession'].forEach(function (key) {
+    ['mentality', 'defensiveLine', 'lineOfEngagement', 'widthInPossession', 'defensiveWidth'].forEach(function (key) {
       var def = ins[key];
+      if (!def) return;
       var lab = el('label', null, def.label + ' (' + def.en + ')');
       var s = el('select', { 'data-key': key });
       def.options.forEach(function (o, i) { s.appendChild(el('option', { value: String(i) }, o.label + (o.en ? ' (' + o.en + ')' : ''))); });
@@ -372,9 +374,9 @@
     // zona de deambulação (Roam): área em que o jogador circula, não um ponto fixo
     zones.textContent = '';
     result.players.forEach(function (cp) {
-      if (!cp.roam) return;
+      if (!cp.zone) return;
       var c = toSvg(cp.x, cp.y);
-      var z = svgEl('ellipse', { cx: c[0], cy: c[1], rx: cp.roam * SX, ry: cp.roam * SY, class: 'zone' }, zones);
+      var z = svgEl('ellipse', { cx: c[0], cy: c[1], rx: cp.zone.rx * SX, ry: cp.zone.ry * SY, class: 'zone' }, zones);
       z.style.stroke = 'var(--b-' + cp.band + ')';
       z.style.fill = 'var(--b-' + cp.band + ')';
     });
@@ -453,7 +455,8 @@
     var txt = ' ' + (r ? r.label + ' (' + r.en + ')' : cp.role) + ' — ' + d.label;
     if (cp.effDuty && cp.effDuty !== cp.duty) txt += ' → ' + (E.DUTIES[cp.effDuty] || { label: cp.effDuty }).label + ' (pela mentalidade)';
     txt += ' · x ' + fmt(cp.x) + ', y ' + fmt(cp.y);
-    if (cp.roam) txt += ' · deambula num raio de ~' + fmt(cp.roam);
+    if (cp.zone) txt += cp.zone.rx > cp.zone.ry ? ' · circula pelos corredores (±' + fmt(cp.zone.rx) + ' na largura)' : ' · deambula num raio de ~' + fmt(cp.zone.rx);
+    if (cp.locked && cp.locked.length) txt += ' · embutidas na função: ' + piLabels(cp.locked);
     if (cp.rule) {
       var keys = Object.keys(cp.rule).filter(function (k) { return k !== 'if' && k !== 'onlyBands'; });
       txt += ' · regra: ' + keys.map(function (k) { return k + ' ' + (Array.isArray(cp.rule[k]) ? cp.rule[k].join('+') : cp.rule[k]); }).join(', ');
@@ -614,7 +617,7 @@
         ds.appendChild(el('option', { value: d }, (E.DUTIES[d] || { label: d }).label));
       });
       ds.value = p.duty;
-      ds.addEventListener('change', function () { p.duty = ds.value; renderAll(); });
+      ds.addEventListener('change', function () { p.duty = ds.value; prunePIs(p); renderAll(); });
       row.appendChild(ds);
 
       var n = (p.instructions || []).length, open = ui.piOpen === p.slot;
@@ -640,10 +643,10 @@
       if (!keys.length) return;
       box.appendChild(el('div', { class: 'pi-group' }, groups[gk]));
       keys.forEach(function (k) {
-        var def = defs[k], av = E.piAvailability(def, p, info);
-        var lab = el('label', { class: 'check' + (av.ok ? '' : ' disabled'), title: av.ok ? def.en : av.reason });
+        var def = defs[k], av = E.piAvailability(def, p, info, data.roles, k);
+        var lab = el('label', { class: 'check' + (av.ok ? '' : ' disabled') + (av.locked ? ' locked' : ''), title: def.note || def.en });
         var cb = el('input', { type: 'checkbox' });
-        cb.checked = current.indexOf(k) >= 0;
+        cb.checked = current.indexOf(k) >= 0 || !!av.locked;
         cb.disabled = !av.ok;
         cb.addEventListener('change', function () { togglePI(p, k, cb.checked); });
         lab.appendChild(cb);

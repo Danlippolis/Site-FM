@@ -23,8 +23,8 @@ src/engine/engine.js     pipeline, efeitos, colisão — funções puras (browse
 src/ui/app.js            interface (vanilla JS + SVG)
 src/ui/styles.css
 data/formations.json     grade de slots, transformações por fase, atalhos de formação
-data/roles.json          funções, slots válidos, tarefas e regras por fase
-data/team-instructions.json  mentalidade, linha defensiva, linha de pressão, largura, parâmetros do motor
+data/roles.json          funções, slots válidos, tarefas, regras por fase e instruções embutidas
+data/team-instructions.json  mentalidade, linha defensiva, linha de pressão, larguras com/sem bola, parâmetros do motor
 data/player-instructions.json  instruções individuais (PIs): disponibilidade, exclusões e efeito por fase
 scripts/build.js         gera dist/fm23-viewer.html (tudo embutido)
 tests/engine.test.js     11 jogadores, validação, clamp, espelhamento, efeitos, colisão, inversa do modo edição
@@ -38,40 +38,45 @@ tests/engine.test.js     11 jogadores, validação, clamp, espelhamento, efeitos
 
 ## Instruções individuais (PIs)
 
-Botão **PI** ao lado de cada jogador abre as instruções disponíveis para aquele slot/função. Marcar uma instrução desmarca a oposta (ex.: Avançar mais × Manter posição), como no jogo. Jogadores com PIs ganham um ponto branco no campo e as instruções aparecem no tooltip.
+Botão **PI** ao lado de cada jogador abre as instruções disponíveis para aquele slot/função/tarefa. Marcar uma instrução desmarca a oposta (ex.: Avançar mais × Manter posição), como no jogo. As instruções **embutidas na função** aparecem marcadas e travadas, e as que conflitam com elas ficam indisponíveis. Jogadores com PIs ganham um ponto branco no campo.
 
 | Instrução | Efeito inicial |
 |---|---|
 | Avançar mais (Get Further Forward) | saindo dy +3, ataque dy +6 |
-| Deambular / sair da posição (Roam From Position) | zona de raio 6 / 8 (saindo / ataque); não para GK nem defensores |
 | Manter posição (Hold Position) | saindo dy −2, ataque dy −8 |
-| Abrir mais (Stay Wider) | para fora 4 / 6 (saindo / ataque) |
+| Deambular / sair da posição (Roam From Position) | zona de raio 6 / 8 (saindo / ataque); não para GK nem defensores |
+| Abrir mais (Stay Wider) | jogador aberto (DL/DR, alas, ML/MR, AML/AMR) cola na linha lateral (x 5 / 4); os demais abrem 4 / 6 |
 | Fechar mais (Sit Narrower) | para dentro 4 / 7 |
 | Cortar para dentro com a bola (Cut Inside With Ball) | ataque: para dentro 5 |
 | Correr pela lateral com a bola (Run Wide With Ball) | ataque: para fora 4 |
-| Mover-se para os corredores (Move Into Channels) | para fora 4 / 8 (só AM/ST em CL/CR) |
+| Mover-se para os corredores (Move Into Channels) | meio, meia e ataque. CL/CR: para fora 4 / 8. Slot central: zona horizontal de ±10 / ±14 (os dois corredores). Abertos: para dentro 4 / 6 |
 | Cruzar da linha de fundo / Cruzar de trás | ataque dy +3 / −5 |
-| Pressionar mais / menos (Close Down More/Less) | defendendo dy +3 / −3 |
+| Pressionar com mais / menos urgência (Trigger Press More/Less) | defendendo dy +3 / −3 |
 
-Formato em `data/player-instructions.json`: `phases.<fase>` aceita `dx`, `dy`, `inside` (rumo ao centro, nunca cruza o meio) e `outside`. Disponibilidade por `bands`, `notBands`, `lanes`, `sides`, `excludeRoles`; exclusão mútua por `excludes`. As PIs entram como deltas depois da regra da função, então o modo editar regra continua gravando só a parte da função.
+Formato em `data/player-instructions.json`: `phases.<fase>` aceita `dx`, `dy`, `inside` (rumo ao centro, nunca cruza o meio), `outside`, `roam`, `touchline`, `centerSpread` e `wideInside`. Disponibilidade por `bands`, `notBands`, `lanes`, `sides`; exclusão mútua por `excludes`. As PIs entram como deltas depois da regra da função, então o modo editar regra continua gravando só a parte da função.
 
-**A confirmar no jogo:** os valores são estimativas minhas; a disponibilidade por função é aproximada (ex.: no FM algumas PIs ficam travadas por função); os nomes em português são traduções minhas, não necessariamente os da localização oficial. Traits continuam fora do escopo.
+### Instruções embutidas (`locked`)
 
-## Deambular (Roam From Position)
+Cada tarefa em `roles.json` pode ter `"locked": [...]` com as instruções que a função já traz no jogo. Elas:
+- bloqueiam a mesma instrução e a oposta no painel PI;
+- geram a **zona** de Deambular/corredores (o deslocamento delas já está nas regras de posição da função, então não é aplicado de novo).
 
-Deambular não tem posição fixa: o jogador circula para achar espaço. Por isso o site desenha uma **zona** (elipse tracejada) em volta da posição média, só nas fases com bola, em vez de mover o ponto.
-- Embutido na função (campo `roam` em `roles.json`): Trequartista (10), Construtor Móvel (8), Raumdeuter (8), Regista (6), Atacante Completo (6) e Líbero (A) no ataque (6).
-- Como instrução individual: raio 6 na saída e 8 no ataque. Exclui "Manter posição" e fica indisponível para as funções que já deambulam.
+Deambular vem embutido em 15 combinações: Regista, Construtor Móvel, Box-to-Box, Mezzala (S/A), Ala Completo (S/A), Ala Invertido (S/A), Construtor Aberto (S/A), Trequartista, Raumdeuter, Segundo Atacante, Atacante Recuado (S/A), Avançado, Atacante Completo (S/A) e Atacante de Pressão (A).
 
-## Base da pesquisa
+## Fontes
 
-As descrições (`desc`) e as regras das funções que a spec deixou vazias vêm de leitura qualitativa, principalmente do [guia de funções do FMScout](https://www.fmscout.com/a-guide-to-player-roles-in-football-manager.html) (atualizado para o FM22) e do [guia de pares e combinações](https://www.fmscout.com/a-tactical-guide-pairs-and-combinations.html). **Nenhuma fonte pública dá coordenadas**: a descrição ("recua um pouco", "sobe para pressionar") foi convertida por mim em números, que servem de ponto de partida para calibrar. O fórum da Sports Interactive, o FMInside e o Passion4FM bloqueiam acesso automatizado e não foram lidos.
+1. **Manual oficial do FM23, seção Tactics** (Sports Interactive; PDF enviado pelo usuário). Confirmou:
+   - a formação na tela é a forma **defensiva** sem a bola;
+   - a mentalidade muda a tarefa **Automático** (`engine.autoDutyByMentality`: Muito Defensiva/Defensiva → D, Cautelosa a Positiva → S, Ofensiva/Muito Ofensiva → A; os cortes são estimativa minha);
+   - cada PI é um **modificador** da instrução já definida pela função+tarefa;
+   - a **linha defensiva** também define a altura dos defensores **com a bola** (`engine.defLineWithBallFactor`);
+   - existe **Largura defensiva** (Defensive Width) — adicionada com 3 níveis (fatores 0.65 / 0.75 / 0.85; o número de níveis é estimativa);
+   - "Abrir mais" leva os abertos "as close to the touchline as possible"; "Mover-se para os corredores" vale para jogadores centrais e deixa abertos (ex.: Raumdeuter) fecharem por dentro;
+   - no FM23 o nome é **Trigger Press**, não Close Down.
+2. **Tabela de funções do [Rate My Tactic](https://ratemytactic.web.app/en)** (ferramenta da comunidade, era FM24 — mesmas funções do FM23). Base para as instruções embutidas por função+tarefa, para incluir o **Lateral Invertido** e o **Stopper do Zagueiro Simples**. Usada como referência; os dados deles não estão copiados no repositório.
+3. **[Guia de funções do FMScout](https://www.fmscout.com/a-guide-to-player-roles-in-football-manager.html)** (FM22) e **[guia de pares e combinações](https://www.fmscout.com/a-tactical-guide-pairs-and-combinations.html)**: descrições (`desc`) e regras das funções que a spec deixou vazias.
 
-Pontos que a pesquisa mudou ou levantou:
-- **Stopper / Cobertura** dos zagueiros agora têm efeito: Stopper sobe 3 sem a bola; Cobertura recua 3.
-- **Automático** (laterais, alas, médio centro, médio ala) segue a mentalidade, como o guia descreve: Muito Defensiva e Defensiva → D; Cautelosa a Positiva → S; Ofensiva e Muito Ofensiva → A (`engine.autoDutyByMentality`). O mapeamento exato é estimativa minha.
-- **Half-Back:** as fontes divergem. O guia de funções diz que ele vira um zagueiro a mais com a bola (o que a spec usa); o guia de pares, mais antigo, diz que recua entre os zagueiros quando o time perde a bola. Mantive a spec.
-- **Regista, Construtor Móvel, Trequartista, Raumdeuter e Atacante Completo** são descritos com liberdade posicional. Só o Trequartista tem fonte afirmando que o Deambular é travado na função; para os outros é inferência.
+**Nenhuma fonte dá coordenadas.** As descrições ("recua um pouco", "sobe para pressionar") foram convertidas por mim em números, que servem de ponto de partida para calibrar. O fórum da SI, o FMInside, o Passion4FM e o sortitoutsi bloqueiam acesso automatizado e não foram lidos.
 
 ## Decisões que diferem/complementam a spec
 
@@ -81,14 +86,17 @@ Pontos que a pesquisa mudou ou levantou:
 4. **Construtor Recuado (D)** dividindo os DCs é uma flag nas instruções de equipe (só para DLP na faixa DM).
 5. **Tarefas dos zagueiros** usam códigos próprios: `D` Defender, `St` Stopper, `Co` Cobertura (o `S` da spec colidia com Apoio). Outros: `S` Apoio, `A` Ataque, `Au` Automático.
 6. **4-2-3-1** aparece em duas versões: *Wide* (MCL/MCR) e *DM Wide* (DMCL/DMCR). **4-3-1-2 losango** usa DMC + MCL + MCR + AMC.
-7. Na fase **Defendendo** a linha defensiva move todo o bloco exceto o goleiro.
+7. Na fase **Defendendo** a linha defensiva move todo o bloco exceto o goleiro; nas fases com bola, move só a linha D.
+8. **Lateral Invertido** (fora da spec): vira terceiro zagueiro na construção (x 20, y 15) e o efeito `ifb_back_three` desliza os DCs 10 para o outro lado.
+9. **Zagueiro Simples** ganhou a tarefa Stopper (fora da spec).
 
 ## A confirmar no jogo
 
-- Zagueiro Simples (No-Nonsense CB): a spec lista D/Co; acho que no FM23 ele também tem Stopper — não incluí.
-- Líbero: slots e tarefas (marcado com ⚠ no seletor).
-- Lateral Invertido (Inverted Full-Back, D): não está na spec e não incluí.
-- Todos os valores numéricos são os iniciais da spec; funções sem linha na tabela começam sem ajuste.
+- **Líbero:** o Rate My Tactic dá tarefas Defender/Apoio; o FMScout (FM22) e a spec dão Apoio/Ataque. Mantive Apoio/Ataque (⚠ no seletor).
+- **Half-Back:** as fontes divergem sobre quando ele recua entre os zagueiros; mantive a spec (com a bola).
+- Lateral Invertido junto com Half-Back na construção gera uma linha de 4 atrás; o efeito combinado ainda não foi calibrado.
+- Os nomes em português das instruções são traduções minhas.
+- Todos os valores numéricos são pontos de partida; calibre com o modo editar regra.
 
 ## Fora do escopo (v1)
 

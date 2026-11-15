@@ -12,6 +12,8 @@ const data = {
 const preset = (id) => data.formations.presets.find((p) => p.id === id).players;
 const byslot = (res, slot) => res.players.find((p) => p.slot === slot);
 const neutralTI = {};
+// mesmos dados sem colisão, para medir um efeito isolado
+const noCol = { ...data, instructions: { ...data.instructions, engine: { ...data.instructions.engine, collisionMinDist: 0 } } };
 
 test('todos os atalhos são válidos e têm 11 jogadores', () => {
   for (const p of data.formations.presets) {
@@ -162,11 +164,11 @@ const withPI = (presetId, slot, instructions) =>
   preset(presetId).map((x) => (x.slot === slot ? { ...x, instructions } : { ...x }));
 
 test('PI "Avançar mais" sobe o jogador só nas fases com bola', () => {
-  const base = E.computeAll(preset('4-4-2'), data, {});
-  const pi = E.computeAll(withPI('4-4-2', 'MCL', ['get_further_forward']), data, {});
-  assert.equal(byslot(pi.ataque, 'MCL').y - byslot(base.ataque, 'MCL').y, 6);
-  assert.equal(byslot(pi.saindo, 'MCL').y - byslot(base.saindo, 'MCL').y, 3);
-  assert.equal(byslot(pi.defendendo, 'MCL').y, byslot(base.defendendo, 'MCL').y);
+  const base = E.computeAll(preset('4-4-2'), noCol, {});
+  const pi = E.computeAll(withPI('4-4-2', 'ML', ['get_further_forward']), noCol, {});
+  assert.equal(byslot(pi.ataque, 'ML').y - byslot(base.ataque, 'ML').y, 6);
+  assert.equal(byslot(pi.saindo, 'ML').y - byslot(base.saindo, 'ML').y, 3);
+  assert.equal(byslot(pi.defendendo, 'ML').y, byslot(base.defendendo, 'ML').y);
 });
 
 test('PI "Fechar mais" é espelhada: esquerda vai para a direita e vice-versa', () => {
@@ -190,30 +192,32 @@ test('PI "para dentro" nunca cruza o meio do campo', () => {
 
 test('PI indisponível ou conflitante é ignorada e gera aviso', () => {
   const p = withPI('4-4-2', 'GK', ['get_further_forward']);
-  p.find((x) => x.slot === 'MCL').instructions = ['get_further_forward', 'hold_position'];
+  p.find((x) => x.slot === 'MCR').instructions = ['get_further_forward', 'hold_position'];
   const v = E.validate(p, data);
   assert.equal(v.ok, true);
   assert.equal(v.warnings.length, 2);
   const res = E.computePhase(p, 'ataque', data, {});
   assert.deepEqual(byslot(res, 'GK').instructions, []);
-  assert.deepEqual(byslot(res, 'MCL').instructions, ['get_further_forward']);
+  assert.deepEqual(byslot(res, 'MCR').instructions, ['get_further_forward']);
 });
 
 test('PI já embutida na função fica indisponível (Atacante Interior + Cortar para dentro)', () => {
   const pis = data.playerInstructions.instructions;
   const info = E.slotInfo(data.formations, 'AML');
-  assert.equal(E.piAvailability(pis.cut_inside, { role: 'inside_forward' }, info).ok, false);
-  assert.equal(E.piAvailability(pis.cut_inside, { role: 'winger' }, info).ok, true);
+  const av = (key, role, duty) => E.piAvailability(pis[key], { role, duty }, info, data.roles, key).ok;
+  assert.equal(av('cut_inside', 'inside_forward', 'A'), false);
+  assert.equal(av('cut_inside', 'winger', 'A'), false, 'Extremo já corre pela lateral (oposto)');
+  assert.equal(av('cut_inside', 'advanced_playmaker', 'S'), true);
 });
 
 test('modo edição continua inverso exato com PIs laterais ativas', () => {
-  const p = withPI('4-2-3-1-dm-wide', 'AMR', ['run_wide', 'get_further_forward']);
+  const p = withPI('4-4-2', 'DR', ['sit_narrower', 'get_further_forward']);
   const res = E.computePhase(p, 'ataque', data, { widthInPossession: 1 });
-  const amr = byslot(res, 'AMR');
-  const ov = E.overrideFromPosition(amr, 75, 70);
-  const roles = E.applyOverride(data.roles, amr.role, amr.duty, 'ataque', ov);
-  const amr2 = byslot(E.computePhase(p, 'ataque', { ...data, roles }, { widthInPossession: 1 }), 'AMR');
-  assert.ok(Math.abs(amr2.x - 75) < 0.3 && Math.abs(amr2.y - 70) < 0.3, `${amr2.x},${amr2.y}`);
+  const dr = byslot(res, 'DR');
+  const ov = E.overrideFromPosition(dr, 80, 60);
+  const roles = E.applyOverride(data.roles, dr.role, dr.duty, 'ataque', ov);
+  const dr2 = byslot(E.computePhase(p, 'ataque', { ...data, roles }, { widthInPossession: 1 }), 'DR');
+  assert.ok(Math.abs(dr2.x - 80) < 0.3 && Math.abs(dr2.y - 60) < 0.3, `${dr2.x},${dr2.y}`);
 });
 
 // ---------- pesquisa de funções: Automático, deambular, descrições ----------
@@ -237,11 +241,68 @@ test('deambular: zona só nas fases com bola; embutido no Trequartista; PI para 
   const p = preset('4-2-3-1-dm-wide').map((x) => (x.slot === 'AMC' ? { ...x, role: 'trequartista', duty: 'A' } : { ...x }));
   p.find((x) => x.slot === 'DMCL').instructions = ['roam_from_position'];
   const all = E.computeAll(p, data, {});
-  assert.equal(byslot(all.defendendo, 'AMC').roam, 0);
-  assert.equal(byslot(all.ataque, 'AMC').roam, 10);
-  assert.equal(byslot(all.ataque, 'DMCL').roam, 8);
-  assert.equal(byslot(all.saindo, 'DMCL').roam, 6);
-  const pis = data.playerInstructions.instructions;
+  assert.equal(byslot(all.defendendo, 'AMC').zone, null);
+  assert.equal(byslot(all.ataque, 'AMC').zone.rx, 8);
+  assert.equal(byslot(all.ataque, 'DMCL').zone.rx, 8);
+  assert.equal(byslot(all.saindo, 'DMCL').zone.rx, 6);
   const info = E.slotInfo(data.formations, 'AMC');
-  assert.equal(E.piAvailability(pis.roam_from_position, { role: 'trequartista' }, info).ok, false);
+  const pis = data.playerInstructions.instructions;
+  assert.equal(E.piAvailability(pis.roam_from_position, { role: 'trequartista', duty: 'A' }, info, data.roles, 'roam_from_position').ok, false);
+  assert.equal(E.piAvailability(pis.roam_from_position, { role: 'enganche', duty: 'S' }, info, data.roles, 'roam_from_position').ok, false, 'Enganche tem Manter posição embutido');
+});
+
+// ---------- manual oficial do FM23 + instruções embutidas ----------
+
+test('toda instrução embutida (locked) existe em player-instructions.json', () => {
+  const pis = data.playerInstructions.instructions;
+  for (const [k, r] of Object.entries(data.roles))
+    for (const [d, rules] of Object.entries(r.duties))
+      for (const l of rules.locked || []) assert.ok(pis[l], `${k}-${d}: ${l}`);
+});
+
+test('linha defensiva também sobe/desce os defensores com a bola', () => {
+  const p = preset('4-4-2');
+  const std = E.computePhase(p, 'ataque', noCol, {});
+  const high = E.computePhase(p, 'ataque', noCol, { defensiveLine: 4 });
+  assert.equal(byslot(high, 'DCL').y - byslot(std, 'DCL').y, 10);
+  assert.equal(byslot(high, 'MCL').y, byslot(std, 'MCL').y);
+});
+
+test('largura defensiva abre/fecha o bloco só sem a bola', () => {
+  const p = preset('4-4-2');
+  const narrow = E.computePhase(p, 'defendendo', data, { defensiveWidth: 0 });
+  const wide = E.computePhase(p, 'defendendo', data, { defensiveWidth: 2 });
+  assert.ok(byslot(wide, 'DL').x < byslot(narrow, 'DL').x);
+  assert.equal(E.computePhase(p, 'ataque', data, { defensiveWidth: 0 }).players[1].x,
+               E.computePhase(p, 'ataque', data, { defensiveWidth: 2 }).players[1].x);
+});
+
+test('"Abrir mais" cola o jogador aberto na linha lateral (espelhado)', () => {
+  const p = preset('4-4-2').map((x) => (x.slot === 'ML' || x.slot === 'DR' ? { ...x, instructions: ['stay_wider'] } : { ...x }));
+  const res = E.computePhase(p, 'ataque', data, { widthInPossession: 0 });
+  assert.equal(byslot(res, 'ML').x, 4);
+  assert.equal(byslot(res, 'DR').x, 96);
+});
+
+test('"Mover-se para os corredores": zona horizontal no centroavante central; fecha por dentro no aberto', () => {
+  const p = preset('4-2-3-1-wide').map((x) => ({ ...x }));
+  Object.assign(p.find((x) => x.slot === 'STC'), { role: 'target_forward', duty: 'S', instructions: ['move_into_channels'] });
+  Object.assign(p.find((x) => x.slot === 'AMR'), { role: 'winger', duty: 'S', instructions: ['move_into_channels'] });
+  const base = E.computePhase(preset('4-2-3-1-wide').map((x) => (x.slot === 'AMR' ? { ...x, role: 'winger', duty: 'S' } : x)), 'ataque', data, {});
+  const res = E.computePhase(p, 'ataque', data, {});
+  assert.deepEqual(byslot(res, 'STC').zone, { rx: 14, ry: 4 });
+  assert.ok(byslot(res, 'AMR').x < byslot(base, 'AMR').x);
+});
+
+test('Lateral Invertido vira terceiro zagueiro na construção e empurra os DCs', () => {
+  const p = preset('4-4-2').map((x) => (x.slot === 'DL' ? { ...x, role: 'inverted_full_back', duty: 'D' } : { ...x }));
+  assert.equal(E.validate(p, data).ok, true);
+  const res = E.computePhase(p, 'saindo', data, {});
+  assert.equal(byslot(res, 'DL').x, 20);
+  assert.equal(byslot(res, 'DCL').x, 42);
+  assert.equal(byslot(res, 'DCR').x, 78);
+});
+
+test('Zagueiro Simples tem tarefa Stopper', () => {
+  assert.ok(data.roles.no_nonsense_cb.duties.St);
 });

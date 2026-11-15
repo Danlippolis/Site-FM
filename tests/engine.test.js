@@ -357,3 +357,13 @@ test('no nosso ataque, a linha do adversário fica perto da própria área em qu
     assert.ok(Math.abs(avg - (100 - style.shifts.ataque.lineY)) < 3, `${style.id}: ${avg}`);
   }
 });
+
+test('DLP (S) no volante fica à frente dos zagueiros no ataque; no meio-campo, um pouco atrás dos meias', () => {
+  const p = preset('4-2-3-1-dm-wide');
+  const res = E.computePhase(p, 'ataque', noCol, {});
+  const dlp = byslot(res, 'DMCR'), cb = byslot(res, 'DCR');
+  assert.ok(dlp.y - cb.y >= 12, `DLP ${dlp.y} vs DC ${cb.y}`);
+  const p2 = preset('4-2-3-1-wide');
+  const r2 = E.computePhase(p2, 'ataque', noCol, {});
+  assert.ok(byslot(r2, 'MCL').y < byslot(r2, 'MCR').y, 'DLP no MC abaixo do Box-to-Box');
+});

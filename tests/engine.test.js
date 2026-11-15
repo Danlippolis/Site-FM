@@ -97,8 +97,9 @@ test('saída de bola: 2 DCs em 32/68 e 3 DCs em 25/50/75 (sem efeitos)', () => {
   assert.deepEqual(['DCL', 'DC', 'DCR'].map((s) => byslot(r3, s).x), [25, 50, 75]);
 });
 
-test('fullback_hold: Ala Invertido à esquerda abre o DC esquerdo em 5', () => {
-  const res = E.computePhase(preset('4-2-3-1-dm-wide'), 'saindo', data, neutralTI);
+test('fullback_hold: Ala Invertido à esquerda abre o DC esquerdo em 5 (com o DMCL livre)', () => {
+  const p = preset('4-3-3-dm-wide').map((x) => (x.slot === 'DL' ? { ...x, role: 'inverted_wing_back', duty: 'S' } : x.slot === 'DMC' ? { ...x, role: 'defensive_midfielder', duty: 'D' } : { ...x }));
+  const res = E.computePhase(p, 'saindo', data, neutralTI);
   assert.equal(byslot(res, 'DCL').x, 27);
   assert.equal(byslot(res, 'DCR').x, 68);
 });
@@ -498,7 +499,7 @@ test('índice de equilíbrio fica entre 0 e 100 e tem os 7 critérios', () => {
   for (const pr of data.formations.presets) {
     const ev = E.evaluateBalance(pr.players, data, {});
     assert.ok(ev.score >= 0 && ev.score <= 100, pr.id);
-    assert.equal(ev.parts.length, 7);
+    assert.equal(ev.parts.length, 8);
   }
 });
 
@@ -562,4 +563,65 @@ test('o adversário usa as funções informadas (ex.: Atacante de Pressão sobe 
   const b = E.computeMatch(base, data, {}, { enabled: true, styleId: 'equilibrado', players: base.map((p) => (p.slot.startsWith('ST') ? { ...p, role: 'poacher', duty: 'A' } : p)) });
   const stY = (m) => Math.min(...m.saindo.opponent.players.filter((p) => p.band === 'ST').map((p) => p.y));
   assert.notEqual(stY(a), stY(b));
+});
+
+// ---------- sugestão considerando o adversário ----------
+
+test('com adversário, o índice ganha 5 critérios contra ele e continua entre 0 e 100', () => {
+  const opp = oppOf('4-4-2', 'pressao_alta');
+  const cache = E.opponentCache(data, opp, E.OPP_PHASES);
+  const ev = E.evaluateBalance(preset('4-2-3-1-dm-wide'), data, {}, cache);
+  assert.equal(ev.parts.length, 14);
+  assert.equal(ev.parts.filter((p) => p.vsOpp).length, 6);
+  assert.ok(ev.score >= 0 && ev.score <= 100 && ev.vsOpponent);
+});
+
+test('sugestão contra o adversário: não piora, é válida e pode diferir da sugestão sem adversário', () => {
+  const p = preset('4-2-3-1-dm-wide');
+  const plain = E.suggestRoles(p, data, {}, { maxChanges: 4 });
+  const results = data.opponent.styles.map((st) => E.suggestRoles(p, data, {}, { maxChanges: 4, opponent: oppOf('4-4-2', st.id) }));
+  for (const r of results) {
+    assert.ok(r.after.score >= r.before.score);
+    assert.deepEqual(E.validate(r.players, data).errors, []);
+  }
+  const key = (r) => r.changes.map((c) => c.slot + c.to.role + c.to.duty).join('|');
+  assert.ok(results.some((r) => key(r) !== key(plain)), 'o adversário deveria mudar a sugestão em pelo menos um estilo');
+});
+
+// ---------- documentação extra: FM-Arena, Book of Roles, guias de pressão/defesa/atacantes ----------
+
+test('Ala Invertido só inverte com o slot de volante do seu lado livre (FM23); senão age como Ala', () => {
+  // 4-3-3 DM Wide: DMCL livre → inverte
+  const a = preset('4-3-3-dm-wide').map((x) => (x.slot === 'DL' ? { ...x, role: 'inverted_wing_back', duty: 'S' } : { ...x }));
+  const ra = byslot(E.computePhase(a, 'ataque', noCol, {}), 'DL');
+  // 4-2-3-1 DM Wide: DMCL ocupado → age como Ala (Apoio)
+  const b = preset('4-2-3-1-dm-wide');
+  const rb = byslot(E.computePhase(b, 'ataque', noCol, {}), 'DL');
+  assert.ok(ra.x > 30, `inverte: ${ra.x}`);
+  assert.ok(rb.x < 15 && rb.fallback === 'wing_back', `não inverte: ${rb.x}`);
+});
+
+test('Zagueiro com Bola conduz na saída (sobe mais que o Zagueiro Central)', () => {
+  const r = E.computePhase(preset('4-2-3-1-dm-wide'), 'saindo', noCol, {});
+  assert.ok(byslot(r, 'DCR').y - byslot(r, 'DCL').y >= 2.5);
+});
+
+test('pressão alta: 4-2-3-1 pressiona em 4-4-2 (meia central ao lado do centroavante)', () => {
+  const r = E.computePhase(preset('4-2-3-1-dm-wide'), 'pressao', data, {});
+  assert.equal(E.teamShape(r.players).shape, '4-4-2');
+});
+
+test('zona à frente da defesa: um volante protege; sem ninguém ali o critério zera', () => {
+  const z = (pl) => E.evaluateBalance(pl, data, {}).parts.find((p) => p.key === 'zona').score;
+  assert.ok(z(preset('4-1-4-1-dm-wide')) >= 0.8);
+  assert.equal(z(preset('3-4-3')), 0, '3-4-3 sem ninguém por dentro logo à frente da defesa');
+});
+
+test('atacante adequado: contra bloco baixo pontua o Pivô, contra Gegenpress pontua o Avançado', () => {
+  const p = preset('4-2-3-1-dm-wide');
+  const score = (pl, st) => E.evaluateBalance(pl, data, {}, E.opponentCache(data, oppOf('4-4-2', st), E.OPP_PHASES)).parts.find((q) => q.key === 'atacante').score;
+  const tf = p.map((x) => (x.slot === 'STC' ? { ...x, role: 'target_forward', duty: 'S' } : x));
+  assert.equal(score(p, 'pressao_alta'), 1);
+  assert.equal(score(p, 'bloco_baixo'), 0);
+  assert.equal(score(tf, 'bloco_baixo'), 1);
 });

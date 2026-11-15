@@ -36,7 +36,8 @@
       "derive": {
         "from": "defendendo",
         "shiftByBand": { "GK": 4, "D": 11, "DM": 13, "M": 16, "AM": 20, "ST": 19 },
-        "press": { "more": 5, "less": -5 }
+        "press": { "more": 5, "less": -5 },
+        "pressShape": { "partnerGap": 2, "partnerX": 10, "wideAboveMid": 2 }
       },
       "ball": { "x": 46, "y": 86 }
     },

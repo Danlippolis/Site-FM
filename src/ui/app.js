@@ -669,6 +669,7 @@
     if (cp.zone) txt += cp.zone.rx > cp.zone.ry ? ' · circula pelos corredores (±' + fmt(cp.zone.rx) + ' na largura)' : ' · deambula num raio de ~' + fmt(cp.zone.rx);
     if (cp.locked && cp.locked.length) txt += ' · embutidas na função: ' + piLabels(cp.locked);
     if (cp.offside) txt += ' · contido pela linha de impedimento do adversário';
+    if (cp.fallback) txt += ' · sem slot de volante livre ao lado: age como ' + (data.roles[cp.fallback] ? data.roles[cp.fallback].label : cp.fallback) + ' (comportamento do FM23)';
     if (cp.rule) {
       var keys = Object.keys(cp.rule).filter(function (k) { return k !== 'if' && k !== 'onlyBands' && k !== 'locked'; });
       txt += ' · regra: ' + keys.map(function (k) { return k + ' ' + (Array.isArray(cp.rule[k]) ? cp.rule[k].join('+') : cp.rule[k]); }).join(', ');
@@ -939,11 +940,17 @@
     return (role ? role.label : r) + ' (' + (E.DUTIES[d] || { label: d }).label + ')';
   }
 
+  function oppLabel() {
+    var st = E.opponentStyle(data, state.opp.styleId);
+    return presetById(state.opp.presetId).label + (st ? ' ' + st.label : '');
+  }
+
   function renderBalanceLine() {
     var line = $('balanceLine');
     if (!E.validate(state.players, data).ok) { line.textContent = ''; return; }
-    var ev = E.evaluateBalance(state.players, data, state.ti);
-    line.textContent = 'Equilíbrio da tática: ' + Math.round(ev.score) + '/100';
+    var opp = oppConfig();
+    var ev = E.evaluateBalance(state.players, data, state.ti, opp ? E.opponentCache(data, opp, E.OPP_PHASES) : null);
+    line.textContent = 'Equilíbrio da tática: ' + Math.round(ev.score) + '/100' + (opp ? ' contra o adversário (' + oppLabel() + ')' : '');
     line.title = ev.parts.map(function (p) { return p.label + ': ' + Math.round(p.score * 100) + '% — ' + p.detail; }).join('\n');
   }
 
@@ -952,7 +959,9 @@
     box.hidden = false;
     box.textContent = 'Calculando…';
     setTimeout(function () {
-      ui.suggestion = E.suggestRoles(state.players, data, state.ti, { maxChanges: 6 });
+      var opp = oppConfig();
+      ui.suggestion = E.suggestRoles(state.players, data, state.ti, { maxChanges: 6, opponent: opp });
+      ui.suggestion.oppLabel = opp ? oppLabel() : null;
       ui.suggestion.base = clone(state.players);
       renderSuggestion();
     }, 20);
@@ -964,7 +973,10 @@
     if (!sug) { box.hidden = true; return; }
     box.hidden = false;
     var head = el('div', { class: 'sg-head' });
-    head.appendChild(el('b', null, 'Equilíbrio ' + Math.round(sug.before.score) + ' → ' + Math.round(sug.after.score)));
+    var title = el('div');
+    title.appendChild(el('b', null, 'Equilíbrio ' + Math.round(sug.before.score) + ' → ' + Math.round(sug.after.score)));
+    title.appendChild(el('small', { class: 'sg-ctx' }, sug.oppLabel ? 'considerando o adversário: ' + sug.oppLabel : 'sem adversário (ligue-o na seção Adversário para considerá-lo)'));
+    head.appendChild(title);
     var close = el('button', { class: 'icon-btn sg-close', type: 'button', 'aria-label': 'Fechar sugestões' }, '×');
     close.addEventListener('click', function () { ui.suggestion = null; renderSuggestion(); });
     head.appendChild(close);
@@ -972,6 +984,7 @@
 
     var table = el('div', { class: 'sg-parts' });
     sug.before.parts.forEach(function (p, i) {
+      if (p.vsOpp && !(i > 0 && sug.before.parts[i - 1].vsOpp)) table.appendChild(el('div', { class: 'pi-group' }, 'Contra o adversário'));
       var a = Math.round(p.score * 100), b = Math.round(sug.after.parts[i].score * 100);
       var row = el('div', { class: 'sg-part' + (b > a ? ' up' : b < a ? ' down' : '') , title: sug.after.parts[i].detail });
       row.appendChild(el('span', null, p.label));
@@ -1017,7 +1030,8 @@
     });
     row.appendChild(apply);
     box.appendChild(row);
-    box.appendChild(el('p', { class: 'hint' }, 'O índice é heurístico: mede corredores ocupados e presença na área no ataque, proteção atrás da bola, linhas de passe na saída, compactação sem a bola, jogadores empilhados e tarefas (referência 3 D · 4 S · 3 A do manual). Confira no jogo.'));
+    box.appendChild(el('p', { class: 'hint' }, 'O índice é heurístico: mede corredores ocupados e presença na área no ataque, proteção atrás da bola, linhas de passe na saída, compactação sem a bola, jogadores empilhados e tarefas (referência 3 D · 4 S · 3 A do manual)' +
+      (sug.oppLabel ? '; contra o adversário, também jogadores entre as linhas dele, superioridade nas pontas, jogadores livres, atacantes dele vigiados e não amontoar na linha dele' : '') + '. Confira no jogo.'));
   }
 
   function showUndo() {

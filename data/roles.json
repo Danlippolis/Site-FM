@@ -39,15 +39,16 @@
     "label": "Zagueiro com Bola",
     "en": "Ball-Playing Defender",
     "abbr": "BPD",
-    "desc": "Zagueiro que constrói com passes longos e verticais. Posição igual à do zagueiro central em cada tarefa.",
+    "desc": "Zagueiro que constrói: desde o FM20 sai jogando com a bola por padrão e conduz até o meio antes de passar. Sem a bola, igual ao zagueiro central.",
     "slots": ["DCL", "DC", "DCR"],
     "duties": {
-      "D": { "locked": ["hold_position"] },
-      "St": { "locked": ["hold_position", "close_down_more"], "defendendo": {"dy": 3} },
+      "D": { "locked": ["hold_position"], "saindo": {"dy": 3} },
+      "St": { "locked": ["hold_position", "close_down_more"], "defendendo": {"dy": 3}, "saindo": {"dy": 3} },
       "Co": {
         "locked": ["hold_position", "close_down_less"],
         "defendendo": { "dy": -3 },
-        "ataque": { "dy": -3 }
+        "ataque": { "dy": -3 },
+        "saindo": { "dy": 2 }
       }
     }
   },
@@ -172,7 +173,7 @@
     "label": "Ala Invertido",
     "en": "Inverted Wing-Back",
     "abbr": "IWB",
-    "desc": "Alinha como lateral e fecha para dentro com a bola. S vira opção de passe no meio; A avança por dentro. Sem companheiros à frente, sobe mais.",
+    "desc": "Alinha como lateral e fecha para dentro com a bola. S vira opção de passe no meio; A avança por dentro. No FM23 só inverte se o slot de volante do seu lado estiver livre; senão, age como Ala.",
     "slots": ["DL", "DR", "WBL", "WBR"],
     "duties": {
       "D": {
@@ -190,7 +191,8 @@
         "ataque": { "x": 35, "y": 70 }
       },
       "Au": {}
-    }
+    },
+    "needsFreeSlot": { "L": ["DMCL"], "R": ["DMCR"], "fallbackRole": "wing_back" }
   },
   "no_nonsense_fb": {
     "label": "Lateral Simples",

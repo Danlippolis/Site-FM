@@ -10,7 +10,21 @@ const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 const safeScript = (s) => s.replace(/<\/script/gi, '<\\/script');
 const json = (p) => JSON.stringify(JSON.parse(read(p))).replace(/</g, '\\u003c');
 
-let html = read('index.html');
+// Versão = hash do conteúdo. Carimbada no index.html (dev/GitHub Pages) nas URLs de CSS, JS e JSON,
+// para o navegador nunca misturar arquivos antigos (em cache) com novos depois de uma atualização.
+const crypto = require('crypto');
+const SOURCES = ['src/engine/engine.js', 'src/ui/app.js', 'src/ui/styles.css', 'data/formations.json', 'data/roles.json',
+  'data/team-instructions.json', 'data/player-instructions.json', 'data/opponent.json', 'data/player-traits.json'];
+const version = crypto.createHash('sha1').update(SOURCES.map(read).join('\n')).digest('hex').slice(0, 10);
+let index = read('index.html')
+  .replace(/(href="src\/ui\/styles\.css)(\?v=[^"]*)?"/, `$1?v=${version}"`)
+  .replace(/(src="src\/engine\/engine\.js)(\?v=[^"]*)?"/, `$1?v=${version}"`)
+  .replace(/(src="src\/ui\/app\.js)(\?v=[^"]*)?"/, `$1?v=${version}"`);
+if (/name="fm23pv-version"/.test(index)) index = index.replace(/(name="fm23pv-version" content=")[^"]*"/, `$1${version}"`);
+else index = index.replace('<meta charset="utf-8">', `<meta charset="utf-8">\n  <meta name="fm23pv-version" content="${version}">`);
+fs.writeFileSync(path.join(root, 'index.html'), index);
+
+let html = index.replace(/\?v=[0-9a-f]+"/g, '"');
 const swap = (needle, replacement) => {
   if (!html.includes(needle)) throw new Error('Marcador não encontrado em index.html: ' + needle);
   html = html.replace(needle, () => replacement);

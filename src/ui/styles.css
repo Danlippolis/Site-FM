@@ -177,7 +177,9 @@ select {
 .info b { color: var(--text); }
 .info .desc { display: block; margin-top: 4px; color: var(--text); opacity: .85; }
 
-svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch-action: none; user-select: none; }
+/* rolagem e zoom normais sobre o campo; só o modo editar regra trava o toque para arrastar jogadores */
+svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+svg.pitch.editing { touch-action: none; }
 .pitch .stripe-a { fill: var(--pitch-a); }
 .pitch .stripe-b { fill: var(--pitch-b); }
 .pitch .ln { fill: none; stroke: var(--pitch-line); stroke-width: .32; }

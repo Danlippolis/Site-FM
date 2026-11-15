@@ -81,8 +81,10 @@
     var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions'), pi = inline('data-player-instructions'), op = inline('data-opponent'), tr = inline('data-player-traits');
     if (f && r && t && pi && op && tr) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi, opponent: op, playerTraits: tr });
     var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json', 'data/player-instructions.json', 'data/opponent.json', 'data/player-traits.json'];
+    var vm = document.querySelector('meta[name="fm23pv-version"]');
+    var v = vm ? '?v=' + vm.content : '';
     return Promise.all(urls.map(function (u) {
-      return fetch(u, { cache: 'no-cache' }).then(function (res) {
+      return fetch(u + v, { cache: 'no-cache' }).then(function (res) {
         if (!res.ok) throw new Error(u + ': HTTP ' + res.status);
         return res.json();
       });
@@ -458,9 +460,13 @@
       [[result.players, false], [result.opponent ? result.opponent.players : null, true]].forEach(function (t) {
         if (!t[0]) return;
         E.teamShape(t[0], { attackingDown: t[1] }).lines.forEach(function (line) {
-          if (line.length < 2) return;
-          var pts = line.map(function (p) { var c = toSvg(p.x, p.y); return c[0].toFixed(2) + ',' + c[1].toFixed(2); }).join(' ');
-          svgEl('polyline', { points: pts, class: t[1] ? 'shape-line-opp' : 'shape-line-us' }, shapes);
+          // liga só vizinhos (por x) que estão quase na mesma altura: evita zigue-zague em linhas escalonadas
+          for (var i = 1; i < line.length; i++) {
+            var a = line[i - 1], b = line[i];
+            if (Math.abs(a.y - b.y) > 5) continue;
+            var ca = toSvg(a.x, a.y), cb = toSvg(b.x, b.y);
+            svgEl('line', { x1: ca[0], y1: ca[1], x2: cb[0], y2: cb[1], class: t[1] ? 'shape-line-opp' : 'shape-line-us' }, shapes);
+          }
         });
       });
     }

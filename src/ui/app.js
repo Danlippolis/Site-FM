@@ -20,7 +20,7 @@
 
   var data = null, baseRoles = null, lastComputed = null;
   var state = null;
-  var ui = { ghost: false, edit: false, tab: 'defendendo', collapsed: false, selectedSlot: null, piOpen: null };
+  var ui = { ghost: false, edit: false, tab: 'defendendo', collapsed: false, selectedSlot: null, piOpen: null, info: {} };
   var anim = { on: false, step: 0, timer: null };
   var drag = null;
 
@@ -513,11 +513,17 @@
   }
 
   function onOppHover(e) {
-    var g = e.currentTarget, svg = g.ownerSVGElement, ph = svg.dataset.phase;
+    var g = e.currentTarget;
+    showOppInfo(g.ownerSVGElement, Number(g.dataset.i));
+  }
+
+  function showOppInfo(svg, index) {
+    var ph = svg.dataset.phase;
     var opp = lastComputed && lastComputed[ph] && lastComputed[ph].opponent;
-    var cp = opp && opp.players[Number(g.dataset.i)];
+    var cp = opp && opp.players[index];
     var info = $('info-' + ph);
     if (!cp || !info) return;
+    ui.info[ph] = { team: 'opp', index: index };
     var r = data.roles[cp.role], d = E.DUTIES[cp.duty] || { label: cp.duty };
     info.textContent = '';
     info.appendChild(el('b', null, 'Adversário · ' + cp.slot));
@@ -532,12 +538,17 @@
 
   function onPlayerHover(e) {
     var g = e.currentTarget, svg = g.ownerSVGElement;
-    var cp = computedFor(svg, Number(g.dataset.i));
-    if (!cp) return;
     svg.querySelectorAll('g.pl.hl').forEach(function (x) { x.classList.remove('hl'); });
     g.classList.add('hl');
+    showPlayerInfo(svg, Number(g.dataset.i));
+  }
+
+  /** Texto de detalhes do jogador; guardado em ui.info para ser atualizado quando a tática muda. */
+  function showPlayerInfo(svg, index) {
+    var cp = computedFor(svg, index);
     var info = $('info-' + svg.dataset.phase);
-    if (!info) return;
+    if (!cp || !info) return;
+    ui.info[svg.dataset.phase] = { team: 'us', index: index };
     info.textContent = '';
     info.appendChild(el('b', null, cp.num + ' · ' + cp.slot));
     var r = data.roles[cp.role], d = E.DUTIES[cp.duty] || { label: cp.duty, en: cp.duty };
@@ -548,7 +559,7 @@
     if (cp.locked && cp.locked.length) txt += ' · embutidas na função: ' + piLabels(cp.locked);
     if (cp.offside) txt += ' · contido pela linha de impedimento do adversário';
     if (cp.rule) {
-      var keys = Object.keys(cp.rule).filter(function (k) { return k !== 'if' && k !== 'onlyBands'; });
+      var keys = Object.keys(cp.rule).filter(function (k) { return k !== 'if' && k !== 'onlyBands' && k !== 'locked'; });
       txt += ' · regra: ' + keys.map(function (k) { return k + ' ' + (Array.isArray(cp.rule[k]) ? cp.rule[k].join('+') : cp.rule[k]); }).join(', ');
     }
     if (cp.instructions.length) txt += ' · instruções: ' + piLabels(cp.instructions);
@@ -790,6 +801,14 @@
       renderPitch(svg, lastComputed[ph], { ghost: ui.ghost });
     });
     if (anim.on) renderAnimStep();
+    // reescreve os detalhes do jogador selecionado com os valores novos
+    E.PHASES.forEach(function (ph) {
+      var sel = ui.info[ph], svg = $('pitch-' + ph);
+      if (!sel || !svg) return;
+      if (sel.team === 'opp') {
+        if (lastComputed[ph].opponent) showOppInfo(svg, sel.index); else { ui.info[ph] = null; $('info-' + ph).textContent = 'Passe o mouse ou toque num jogador para ver detalhes.'; }
+      } else showPlayerInfo(svg, sel.index);
+    });
   }
 
   function renderAll() {

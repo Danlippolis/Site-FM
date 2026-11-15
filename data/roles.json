@@ -219,9 +219,13 @@
       "D": {
         "locked": ["hold_position", "close_down_less"],
         "saindo": { "if": "dlp_drop", "onlyBands": ["DM"], "x": 50, "y": 15, "effects": ["split_cbs_wide"] },
-        "ataque": { "dy": -6 }
+        "ataque": { "byBand": { "DM": {"dy": -1}, "M": {"dy": -6} } }
       },
-      "S": { "locked": ["hold_position"], "saindo": {"dy": -1}, "ataque": {"dy": -3} }
+      "S": {
+        "locked": ["hold_position"],
+        "saindo": {"dy": -1},
+        "ataque": { "byBand": { "DM": {"dy": 5}, "M": {"dy": -3} } }
+      }
     }
   },
   "anchor": {

@@ -157,9 +157,24 @@
     return role.duties[d] ? d : 'Au';
   }
 
-  function getRule(roles, p, phase, flags, duty) {
-    var role = roles[p.role];
-    var dutyRules = role && role.duties && role.duties[duty || p.duty];
+  /**
+   * Função que precisa de um slot livre ao lado para ter o comportamento próprio (ex.: no FM23 o
+   * Ala Invertido só fecha para dentro com o slot de volante do seu lado livre). Sem ele, usa as
+   * regras de fallbackRole na mesma tarefa. Devolve a chave da função cujas regras valem.
+   */
+  function ruleRole(roles, p, occupied) {
+    var role = roles[p.role], need = role && role.needsFreeSlot;
+    if (!need || !occupied) return p.role;
+    var slots = need[p.side] || [];
+    var blocked = slots.some(function (s) { return occupied[s]; });
+    if (!blocked) return p.role;
+    p.fallback = need.fallbackRole;
+    return need.fallbackRole && roles[need.fallbackRole] ? need.fallbackRole : p.role;
+  }
+
+  function getRule(roles, p, phase, flags, duty, occupied) {
+    var role = roles[ruleRole(roles, p, occupied)];
+    var dutyRules = role && role.duties && (role.duties[duty || p.duty] || role.duties[p.duty]);
     var rule = dutyRules && dutyRules[phase];
     if (!rule) return null;
     if (rule.if && !flags[rule.if]) return null;
@@ -339,6 +354,25 @@
    *  - from: desloca uma fase por faixa, ancora a linha D, estreita e soma o efeito de pressão.
    * Regras de função com a chave desta fase entram como deslocamento extra (dx espelhado, dy).
    */
+  /**
+   * Estrutura de pressão (FMScout, "How to press in FM": um 4-2-3-1 tende a pressionar em 4-4-2):
+   * com um centroavante só e um meia central, o meia sobe ao lado dele; os meias abertos recuam
+   * para a linha do meio-campo.
+   */
+  function applyPressShape(list, cfg) {
+    var st = list.filter(function (p) { return p.band === 'ST'; });
+    var amc = list.filter(function (p) { return p.band === 'AM' && p.side === 'C' || p.band === 'AM' && (p.lane === 'CL' || p.lane === 'CR'); });
+    if (st.length !== 1 || amc.length !== 1) return;
+    var s = st[0], a = amc[0];
+    a.y = s.y - (cfg.partnerGap || 4);
+    a.x = s.x + (s.x <= 50 ? 1 : -1) * (cfg.partnerX || 10);
+    var mids = list.filter(function (p) { return p.band === 'DM' || p.band === 'M'; });
+    var lineY = mids.length ? mids.reduce(function (t, p) { return t + p.y; }, 0) / mids.length : null;
+    list.forEach(function (p) {
+      if (p.band === 'AM' && (p.lane === 'L' || p.lane === 'R')) p.y = lineY != null ? lineY + (cfg.wideAboveMid || 4) : p.y - 8;
+    });
+  }
+
   function computeDerived(players, phase, data, tiState) {
     var formations = data.formations, roles = data.roles;
     var ph = formations.phases[phase], d = ph.derive;
@@ -375,10 +409,13 @@
           if (keys.indexOf('close_down_less') >= 0) p.y += d.press.less || 0;
         }
       });
+      if (d.pressShape) applyPressShape(list, d.pressShape);
     }
+    var occD = {};
+    players.forEach(function (p) { occD[p.slot] = true; });
     list.forEach(function (p) {
       p.derivedDx = 0; p.derivedDy = 0;
-      var rule = getRule(roles, p, phase, ti.flags, p.effDuty);
+      var rule = getRule(roles, p, phase, ti.flags, p.effDuty, occD);
       if (!rule) return;
       p.rule = rule;
       if (rule.dx && p.side !== 'C') { p.derivedDx = rule.dx; p.x += p.side === 'R' ? -rule.dx : rule.dx; }
@@ -432,9 +469,11 @@
 
     // 2. regras de função + tarefa (x escrito para o lado esquerdo, espelhado à direita)
     var pending = [];
+    var occupied = {};
+    players.forEach(function (p) { occupied[p.slot] = true; });
     list.forEach(function (p) {
       p.effDuty = effectiveDuty(roles, p, phase, ti, eng);
-      var rule = getRule(roles, p, phase, ti.flags, p.effDuty);
+      var rule = getRule(roles, p, phase, ti.flags, p.effDuty, occupied);
       if (!rule) return;
       p.rule = rule;
       var mirror = p.side === 'R';
@@ -737,6 +776,20 @@
     add('vigiados', 'Atacantes dele vigiados', 15, (watched[0] + watched[1]) / 6,
       watched[0] + '/3 no bloco médio e ' + watched[1] + '/3 no bloco baixo com um dos nossos a até 10 m', true);
 
+    // 6) tipo de atacante x altura da linha dele (FMScout, Strikers in-depth): contra linha alta,
+    //    atacantes de ruptura; contra linha baixa/compacta, atacantes de ligação e referência
+    var style = cache.ataque && cache.ataque.style, dl = style && style.ti ? style.ti.defensiveLine : 2;
+    var RUNNERS = ['advanced_forward', 'poacher', 'pressing_forward', 'complete_forward'];
+    var LINKERS = ['deep_lying_forward', 'target_forward', 'false_nine', 'trequartista', 'complete_forward'];
+    var sts = players.filter(function (p) { return /^ST/.test(p.slot); });
+    if (sts.length && dl !== 2) {
+      var fav = dl >= 3 ? RUNNERS : LINKERS;
+      var ok = sts.filter(function (p) { return fav.indexOf(p.role) >= 0; }).length;
+      add('atacante', 'Atacante adequado à linha dele', 5, ok / sts.length,
+        (dl >= 3 ? 'linha alta dele: rendem atacantes de ruptura (Avançado, Matador…)' : 'linha baixa dele: rendem atacantes de ligação/referência (Recuado, Pivô, Falso 9…)') +
+        ' — ' + ok + ' de ' + sts.length, true);
+    }
+
     // 5) não amontoar na linha de impedimento dele
     var held = M.ataque.ours.filter(function (p) { return p.offside; }).length;
     add('linha', 'Sem amontoar na linha dele', 5, held <= 2 ? 1 : held === 3 ? 0.5 : 0,
@@ -771,6 +824,13 @@
     var dy = out(def).map(function (p) { return p.y; });
     var len = (Math.max.apply(null, dy) - Math.min.apply(null, dy)) * 1.05;
     add('compactacao', 'Compactação sem a bola', 15, band01(len, 0, 40, 0, 55), 'bloco médio com ' + Math.round(len) + ' m de comprimento (ideal até 40 m)');
+
+    // "zona de ouro" (FMScout, How to defend): alguém protegendo o espaço logo à frente da defesa, por dentro
+    var defs = out(def).filter(function (p) { return p.band === 'D'; });
+    var dline = defs.length ? defs.reduce(function (t, p) { return t + p.y; }, 0) / defs.length : 25;
+    var screen = out(def).filter(function (p) { return p.band !== 'D' && p.y >= dline + 3 && p.y <= dline + 14 && p.x >= 30 && p.x <= 70; }).length;
+    add('zona', 'Zona à frente da defesa protegida', 10, screen >= 2 ? 1 : screen === 1 ? 0.8 : 0,
+      screen + ' jogador(es) por dentro logo à frente da defesa no bloco médio (ideal 1–2)');
 
     var stacked = 0;
     [atk, bld].forEach(function (ps) {

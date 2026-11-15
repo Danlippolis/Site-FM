@@ -669,6 +669,7 @@
     if (cp.zone) txt += cp.zone.rx > cp.zone.ry ? ' · circula pelos corredores (±' + fmt(cp.zone.rx) + ' na largura)' : ' · deambula num raio de ~' + fmt(cp.zone.rx);
     if (cp.locked && cp.locked.length) txt += ' · embutidas na função: ' + piLabels(cp.locked);
     if (cp.offside) txt += ' · contido pela linha de impedimento do adversário';
+    if (cp.fallback) txt += ' · sem slot de volante livre ao lado: age como ' + (data.roles[cp.fallback] ? data.roles[cp.fallback].label : cp.fallback) + ' (comportamento do FM23)';
     if (cp.rule) {
       var keys = Object.keys(cp.rule).filter(function (k) { return k !== 'if' && k !== 'onlyBands' && k !== 'locked'; });
       txt += ' · regra: ' + keys.map(function (k) { return k + ' ' + (Array.isArray(cp.rule[k]) ? cp.rule[k].join('+') : cp.rule[k]); }).join(', ');

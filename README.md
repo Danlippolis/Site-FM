@@ -178,6 +178,13 @@ Limitações: o adversário não tem instruções individuais nem característic
 
 6. **Manual oficial do FM23: Football Glossary, Playing a Match e Your Squad** (PDFs enviados pelo usuário). O glossário define *channel* como o espaço entre zagueiro e lateral (a zona de corredor foi ampliada para alcançá-lo) e confirma a regra de impedimento usada (não há impedimento no próprio campo). "Playing a Match" confirma o comportamento do Atacante Interior com "Cortar para dentro" (sai da linha lateral para o centro com a bola). Os demais trechos não tratam de posição.
 
+7. **FMScout — Book of Roles (zagueiros e goleiros, de Rashidi), "Strikers in-depth", "How to press", "How to defend" e "FM24 Roles and Combinations"**:
+   - o **Zagueiro com Bola** sai jogando com a bola por padrão (desde o FM20) e conduz até o meio antes de passar → sobe 3 na saída (2 com Cobertura);
+   - **estrutura de pressão**: um 4-2-3-1 tende a pressionar em **4-4-2** → na Pressão alta, com um centroavante só e um meia central, o meia sobe ao lado dele e os meias abertos recuam para a linha do meio (`pressShape`);
+   - **zona à frente da defesa** ("golden zone") → critério novo no índice de equilíbrio (peso 10);
+   - **tipo de atacante x linha do adversário**: contra linha alta rendem os de ruptura (Avançado, Matador, Atacante de Pressão, Completo); contra linha baixa, os de ligação/referência (Recuado, Pivô, Falso 9, Trequartista, Completo) → critério novo contra o adversário (peso 5; neutro contra linha padrão).
+8. **Ala Invertido no FM23** — tópico do [FM-Arena](https://fm-arena.com/thread/4615-fm23-inverted-wing-backs-how-they-work/) (lido via resumo de busca; o site bloqueou o acesso direto) e relato no bug tracker oficial da SI de que os Alas Invertidos ficavam abertos no FM23: **só inverte se o slot de volante do seu lado (DMCL/DMCR) estiver livre**; senão, age como Ala na mesma tarefa (`needsFreeSlot` + `fallbackRole` em `roles.json`). Isso muda, por exemplo, o 4-2-3-1 DM Wide, em que os dois volantes ocupam esses slots.
+
 **Nenhuma fonte dá coordenadas.** As descrições ("recua um pouco", "sobe para pressionar") foram convertidas por mim em números, que servem de ponto de partida para calibrar. O fórum da SI, o FMInside, o Passion4FM e o sortitoutsi bloqueiam acesso automatizado e não foram lidos.
 
 ## Decisões que diferem/complementam a spec

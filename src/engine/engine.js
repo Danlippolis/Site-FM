@@ -417,6 +417,91 @@
     return out;
   }
 
+  // ---------- adversário ----------
+
+  function opponentStyle(data, id) {
+    var styles = (data.opponent && data.opponent.styles) || [];
+    return styles.filter(function (s) { return s.id === id; })[0] || styles[0] || null;
+  }
+
+  /**
+   * Impedimento: quem ataca não passa do último defensor de linha rival (ignora o goleiro),
+   * e a regra só vale no campo adversário. Mexe só nos atacantes. Retorna quantos foram contidos.
+   */
+  function applyOffside(attackers, defenders, attackingUp) {
+    var outfield = defenders.filter(function (p) { return p.band !== 'GK'; });
+    if (!outfield.length) return 0;
+    var n = 0;
+    if (attackingUp) {
+      var line = Math.max(50, Math.max.apply(null, outfield.map(function (p) { return p.y; })));
+      attackers.forEach(function (p) { if (p.band !== 'GK' && p.y > line) { p.y = line; p.offside = true; n++; } });
+    } else {
+      var lineD = Math.min(50, Math.min.apply(null, outfield.map(function (p) { return p.y; })));
+      attackers.forEach(function (p) { if (p.band !== 'GK' && p.y < lineD) { p.y = lineD; p.offside = true; n++; } });
+    }
+    return n;
+  }
+
+  /**
+   * Calcula o adversário em cada uma das nossas fases, com o mesmo motor:
+   * formação/funções dele + instruções de equipe do estilo, na fase correspondente
+   * (data.opponent.phaseMap), deslocado em y pelo estilo e espelhado (ataca para baixo).
+   */
+  function computeOpponentPhase(oppPlayers, ourPhase, data, styleId) {
+    var cfg = data.opponent, map = cfg.phaseMap[ourPhase];
+    var style = opponentStyle(data, styleId);
+    var res = computePhase(oppPlayers, map.phase, data, style ? style.ti : {});
+    var shift = style && style.shifts ? style.shifts[ourPhase] || 0 : 0;
+    if (typeof shift === 'object' && shift.lineY != null) {
+      // ancora a linha de defensores dele numa altura fixa (ex.: bloco baixo com a bola no nosso terço final)
+      var defs = res.players.filter(function (p) { return p.band === 'D'; });
+      var avg = defs.length ? defs.reduce(function (t, p) { return t + p.y; }, 0) / defs.length : shift.lineY;
+      shift = shift.lineY - avg;
+    }
+    var eng = data.instructions.engine || {};
+    var lo = (eng.clamp || [2, 98])[0], hi = (eng.clamp || [2, 98])[1];
+    var list = res.players.map(function (p) {
+      p.team = 'opp';
+      p.oppPhase = map.phase;
+      if (p.band !== 'GK') p.y = clamp(p.y + shift, lo, hi);
+      p.x = 100 - p.x;
+      p.y = 100 - p.y;
+      p.baseX = 100 - p.baseX;
+      p.baseY = 100 - p.baseY;
+      return p;
+    });
+    return { players: list, style: style, label: map.label };
+  }
+
+  /** Nosso time + adversário (opcional) nas 3 fases, com impedimento entre os dois. */
+  function computeMatch(players, data, tiState, opp) {
+    var out = computeAll(players, data, tiState);
+    if (!opp || !opp.enabled || !data.opponent || !opp.players) return out;
+    var eng = data.instructions.engine || {};
+    var lo = (eng.clamp || [2, 98])[0], hi = (eng.clamp || [2, 98])[1];
+    PHASES.forEach(function (ph) {
+      var o = computeOpponentPhase(opp.players, ph, data, opp.styleId);
+      var ours = out[ph].players, theirs = o.players;
+      if (data.opponent.offside) {
+        // nós defendendo: eles atacam para baixo; nas fases com bola, nós atacamos para cima
+        var weAttack = ph !== 'defendendo';
+        var attackers = weAttack ? ours : theirs, defenders = weAttack ? theirs : ours;
+        if (applyOffside(attackers, defenders, weAttack)) {
+          resolveCollisions(attackers, eng.collisionMinDist, eng.collisionIterations, eng.collisionAspect);
+          applyOffside(attackers, defenders, weAttack);
+        }
+      }
+      [ours, theirs].forEach(function (team) {
+        team.forEach(function (p) {
+          p.x = Math.round(clamp(p.x, lo, hi) * 10) / 10;
+          p.y = Math.round(clamp(p.y, lo, hi) * 10) / 10;
+        });
+      });
+      out[ph].opponent = { players: theirs, style: o.style, label: o.label };
+    });
+    return out;
+  }
+
   // ---------- calibração (modo "editar regra") ----------
 
   /** Converte uma posição final arrastada em override (x, y) da regra, já desfazendo TI, deltas e espelhamento. */
@@ -444,7 +529,8 @@
     slotInfo: slotInfo, slotOrder: slotOrder, numberPlayers: numberPlayers, rolesForSlot: rolesForSlot,
     validate: validate, resolveInstructions: resolveInstructions, effectiveDuty: effectiveDuty,
     piAvailability: piAvailability, resolvePlayerInstructions: resolvePlayerInstructions, lockedFor: lockedFor,
-    computePhase: computePhase, computeAll: computeAll,
+    computePhase: computePhase, computeAll: computeAll, computeMatch: computeMatch,
+    computeOpponentPhase: computeOpponentPhase, opponentStyle: opponentStyle, applyOffside: applyOffside,
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,
     overrideFromPosition: overrideFromPosition, applyOverride: applyOverride
   };

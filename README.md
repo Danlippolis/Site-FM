@@ -26,6 +26,7 @@ data/formations.json     grade de slots, transformações por fase, atalhos de f
 data/roles.json          funções, slots válidos, tarefas, regras por fase e instruções embutidas
 data/team-instructions.json  mentalidade, linha defensiva, linha de pressão, larguras com/sem bola, parâmetros do motor
 data/player-instructions.json  instruções individuais (PIs): disponibilidade, exclusões e efeito por fase
+data/opponent.json       adversário: correspondência de fases, estilos de jogo e impedimento
 scripts/build.js         gera dist/fm23-viewer.html (tudo embutido)
 tests/engine.test.js     11 jogadores, validação, clamp, espelhamento, efeitos, colisão, inversa do modo edição
 ```
@@ -62,6 +63,22 @@ Cada tarefa em `roles.json` pode ter `"locked": [...]` com as instruções que a
 - geram a **zona** de Deambular/corredores (o deslocamento delas já está nas regras de posição da função, então não é aplicado de novo).
 
 Deambular vem embutido em 15 combinações: Regista, Construtor Móvel, Box-to-Box, Mezzala (S/A), Ala Completo (S/A), Ala Invertido (S/A), Construtor Aberto (S/A), Trequartista, Raumdeuter, Segundo Atacante, Atacante Recuado (S/A), Avançado, Atacante Completo (S/A) e Atacante de Pressão (A).
+
+## Adversário
+
+Seção **Adversário** no painel: liga/desliga, formação (qualquer atalho, com as funções do atalho) e estilo de jogo. O adversário é calculado com o **mesmo motor** e espelhado (ataca para baixo); aparece como quadrado claro.
+
+| Nossa fase | Adversário | Como |
+|---|---|---|
+| Defendendo | com a bola, progredindo | fase "ataque" dele, recuada pelo estilo (`shifts.defendendo`) |
+| Saindo com a bola | pressionando nossa saída | fase "defendendo" dele, adiantada/recuada pelo estilo (`shifts.saindo`) |
+| No ataque | bloco baixo | fase "defendendo" dele com a linha de defensores ancorada perto da própria área (`shifts.ataque.lineY`) |
+
+Cada **estilo** é um conjunto de instruções de equipe (mentalidade, linhas, larguras) mais esses deslocamentos. Estilos incluídos, inspirados nos modelos táticos do jogo: Equilibrado, Pressão alta (Gegenpress), Posse de bola curta (Tiki-Taka), Jogo pelas pontas (Wing Play), Jogo direto (Route One), Contra-ataque e Bloco baixo (retranca). Os números são estimativas minhas; edite `data/opponent.json` para calibrar ou criar estilos.
+
+**Impedimento** (`offside: true`): quem ataca não passa do último defensor de linha rival (o goleiro não conta), e só no campo adversário. Com o adversário ligado, isso pode conter os **nossos** atacantes na linha dele nas fases com bola — o tooltip avisa "contido pela linha de impedimento". Com o adversário desligado, nosso time não muda.
+
+Limitações: o adversário usa as funções do atalho de formação (sem editar função por jogador nem instruções individuais dele) e não reage à posição exata dos nossos jogadores além do impedimento.
 
 ## Fontes
 
@@ -100,4 +117,4 @@ Deambular vem embutido em 15 combinações: Regista, Construtor Móvel, Box-to-B
 
 ## Fora do escopo (v1)
 
-Traits, lado da bola, adversário, transições, bola parada, leitura de arquivos do jogo.
+Traits, lado da bola, transições, bola parada, leitura de arquivos do jogo. Funções/instruções individuais do adversário.

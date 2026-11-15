@@ -530,8 +530,11 @@
       if (p.band === 'GK') p.tiDy = 0;
       else if (withBall) {
         // a linha defensiva também define a altura dos defensores com a bola (manual do FM23)
-        // volantes acompanham a linha de defesa, para não ficarem colados nos zagueiros com linha alta
-        p.tiDy = ti.mentalityDy + (p.band === 'D' || p.band === 'DM' ? (ti.defLineY - defaultLineY) * defLineWithBall : 0);
+        // a linha defensiva com a bola move o bloco de trás central: zagueiros e volantes (que a acompanham
+        // para não ficarem colados nos zagueiros). Laterais e alas (corredores L/R) sobem pela função e pela
+        // mentalidade, não pela altura da linha.
+        var rearCentral = (p.band === 'D' || p.band === 'DM') && p.lane !== 'L' && p.lane !== 'R';
+        p.tiDy = ti.mentalityDy + (rearCentral ? (ti.defLineY - defaultLineY) * defLineWithBall : 0);
       }
       else p.tiDy = (ti.defLineY - ph.y.D) + (p.band === 'AM' || p.band === 'ST' ? ti.loeDy : 0);
 

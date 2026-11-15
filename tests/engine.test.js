@@ -680,3 +680,12 @@ test('sem a bola: pressão alta pressiona mais; bloco baixo cobre mais', () => {
   assert.ok(sc('bloco_baixo', 'cobertura') > sc('pressao', 'cobertura'));
   assert.ok(sc('bloco_baixo', 'compactacao') >= sc('pressao', 'compactacao'));
 });
+
+test('laterais e alas não sobem com a linha defensiva (só zagueiros e volantes)', () => {
+  const P = preset('3-5-2-wb').map((x) => (x.slot === 'WBR' ? { ...x, role: 'wing_back', duty: 'A' } : x));
+  const std = E.computePhase(P, 'ataque', noCol, {}), high = E.computePhase(P, 'ataque', noCol, { defensiveLine: 3 });
+  assert.equal(byslot(high, 'WBR').y, byslot(std, 'WBR').y);
+  assert.equal(byslot(high, 'DC').y - byslot(std, 'DC').y, 5);
+  const P4 = preset('4-4-2');
+  assert.equal(byslot(E.computePhase(P4, 'ataque', noCol, { defensiveLine: 3 }), 'DL').y, byslot(E.computePhase(P4, 'ataque', noCol, {}), 'DL').y);
+});

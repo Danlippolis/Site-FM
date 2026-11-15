@@ -83,15 +83,15 @@
 
   function loadData() {
     function inline(id) { var s = document.getElementById(id); return s ? JSON.parse(s.textContent) : null; }
-    var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions'), pi = inline('data-player-instructions'), op = inline('data-opponent');
-    if (f && r && t && pi && op) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi, opponent: op });
-    var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json', 'data/player-instructions.json', 'data/opponent.json'];
+    var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions'), pi = inline('data-player-instructions'), op = inline('data-opponent'), tr = inline('data-player-traits');
+    if (f && r && t && pi && op && tr) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi, opponent: op, playerTraits: tr });
+    var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json', 'data/player-instructions.json', 'data/opponent.json', 'data/player-traits.json'];
     return Promise.all(urls.map(function (u) {
       return fetch(u, { cache: 'no-cache' }).then(function (res) {
         if (!res.ok) throw new Error(u + ': HTTP ' + res.status);
         return res.json();
       });
-    })).then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3], opponent: a[4] }; });
+    })).then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3], opponent: a[4], playerTraits: a[5] }; });
   }
 
   function isRolesObj(o) {
@@ -143,11 +143,21 @@
   function piDefs() { return (data.playerInstructions && data.playerInstructions.instructions) || {}; }
 
   /** Remove instruções individuais que não valem para o slot/função atuais. */
+  function traitDefs() { return (data.playerTraits && data.playerTraits.traits) || {}; }
+
   function prunePIs(p) {
-    if (!p.instructions || !data.formations.slots[p.slot]) return p;
+    if (!data.formations.slots[p.slot]) return p;
     var info = E.slotInfo(data.formations, p.slot);
-    var kept = E.resolvePlayerInstructions(p, info, piDefs(), data.roles).applied;
-    if (kept.length) p.instructions = kept; else delete p.instructions;
+    if (p.instructions) {
+      var kept = E.resolvePlayerInstructions(p, info, piDefs(), data.roles).applied;
+      if (kept.length) p.instructions = kept; else delete p.instructions;
+    }
+    if (p.traits) {
+      // características que não existem neste slot saem; as só anuladas por instrução ficam (são do jogador)
+      var td = traitDefs();
+      var keep = p.traits.filter(function (k) { return td[k] && E.piAvailability(td[k], p, info).ok; });
+      if (keep.length) p.traits = keep; else delete p.traits;
+    }
     return p;
   }
 
@@ -257,6 +267,7 @@
           players: obj.players.map(function (p) {
             var q = { slot: p.slot, role: p.role, duty: p.duty };
             if (Array.isArray(p.instructions) && p.instructions.length) q.instructions = p.instructions.filter(function (k) { return typeof k === 'string'; });
+            if (Array.isArray(p.traits) && p.traits.length) q.traits = p.traits.filter(function (k) { return typeof k === 'string'; });
             return q;
           }),
           ti: Object.assign(defaultTI(), obj.ti || {}),
@@ -476,7 +487,7 @@
       t.textContent = label;
       t.setAttribute('font-size', abbrFont(label.length));
       g.querySelector('.no').textContent = cp.num;
-      g.querySelector('.pi-dot').style.display = cp.instructions.length ? '' : 'none';
+      g.querySelector('.pi-dot').style.display = cp.instructions.length || cp.traits.length ? '' : 'none';
       g.querySelector('title').textContent = playerTitle(cp) + ' · x ' + fmt(cp.x) + ', y ' + fmt(cp.y);
     });
     players.querySelectorAll('g.pl').forEach(function (g) {
@@ -563,6 +574,7 @@
       txt += ' · regra: ' + keys.map(function (k) { return k + ' ' + (Array.isArray(cp.rule[k]) ? cp.rule[k].join('+') : cp.rule[k]); }).join(', ');
     }
     if (cp.instructions.length) txt += ' · instruções: ' + piLabels(cp.instructions);
+    if (cp.traits.length) txt += ' · características: ' + cp.traits.map(function (k) { return traitDefs()[k].label; }).join(', ');
     info.appendChild(document.createTextNode(txt));
     if (r && r.desc) info.appendChild(el('span', { class: 'desc' }, r.desc));
   }
@@ -721,11 +733,11 @@
       ds.addEventListener('change', function () { p.duty = ds.value; prunePIs(p); renderAll(); });
       row.appendChild(ds);
 
-      var n = (p.instructions || []).length, open = ui.piOpen === p.slot;
+      var n = (p.instructions || []).length + (p.traits || []).length, open = ui.piOpen === p.slot;
       var pb = el('button', {
         class: 'pi-btn' + (n ? ' has' : '') + (open ? ' open' : ''), type: 'button',
         'aria-expanded': String(open), 'aria-label': 'Instruções individuais ' + p.slot,
-        title: n ? 'Instruções: ' + piLabels(p.instructions) : 'Adicionar instruções individuais'
+        title: n ? 'Instruções e características: ' + piLabels((p.instructions || []).concat()) + ((p.traits || []).length ? ' · ' + p.traits.map(function (k) { return (traitDefs()[k] || { label: k }).label; }).join(', ') : '') : 'Instruções individuais e características do jogador'
       }, n ? 'PI ' + n : 'PI');
       pb.addEventListener('click', function () { ui.piOpen = open ? null : p.slot; renderPlayerList(); });
       row.appendChild(pb);
@@ -757,12 +769,52 @@
         box.appendChild(lab);
       });
     });
-    if (current.length) {
-      var clr = el('button', { class: 'btn small', type: 'button' }, 'Limpar instruções');
-      clr.addEventListener('click', function () { delete p.instructions; renderAll(); });
+    renderTraitsSection(box, p, info);
+    if (current.length || (p.traits || []).length) {
+      var clr = el('button', { class: 'btn small', type: 'button' }, 'Limpar instruções e características');
+      clr.addEventListener('click', function () { delete p.instructions; delete p.traits; renderAll(); });
       box.appendChild(clr);
     }
     return box;
+  }
+
+  /** Seção "Características do jogador" (Player Traits do manual do FM23) dentro do painel PI. */
+  function renderTraitsSection(box, p, info) {
+    var defs = traitDefs(), keys = Object.keys(defs);
+    if (!keys.length) return;
+    box.appendChild(el('div', { class: 'pi-group' }, 'Características do jogador (traits)'));
+    var active = E.resolvePlayerInstructions(p, info, piDefs(), data.roles).applied.concat(E.lockedFor(data.roles, p));
+    var res = E.resolveTraits(p, info, defs, active);
+    var why = {};
+    res.ignored.forEach(function (i) { why[i.key] = i.reason; });
+    var current = p.traits || [];
+    keys.forEach(function (k) {
+      var def = defs[k], av = E.piAvailability(def, p, info);
+      var on = current.indexOf(k) >= 0;
+      var lab = el('label', { class: 'check' + (av.ok ? '' : ' disabled'), title: def.official || def.en });
+      var cb = el('input', { type: 'checkbox' });
+      cb.checked = on;
+      cb.disabled = !av.ok;
+      cb.addEventListener('change', function () { toggleTrait(p, k, cb.checked); });
+      lab.appendChild(cb);
+      var txt = el('span', { class: 'pi-text' }, def.label + ' (' + def.en + ')');
+      if (!av.ok) txt.appendChild(el('small', null, av.reason));
+      else if (on && why[k]) txt.appendChild(el('small', { class: 'warn-note' }, 'sem efeito: ' + why[k]));
+      lab.appendChild(txt);
+      box.appendChild(lab);
+    });
+  }
+
+  function toggleTrait(p, key, on) {
+    var defs = traitDefs(), list = (p.traits || []).filter(function (k) { return k !== key; });
+    if (on) {
+      list = list.filter(function (k) {
+        return (defs[key].excludes || []).indexOf(k) < 0 && ((defs[k] || {}).excludes || []).indexOf(key) < 0;
+      });
+      list.push(key);
+    }
+    if (list.length) p.traits = list; else delete p.traits;
+    renderAll();
   }
 
   /** Liga/desliga uma PI; ao ligar, desliga as mutuamente exclusivas (como no jogo). */

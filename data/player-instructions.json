@@ -68,8 +68,8 @@
       "group": "com_bola",
       "bands": ["M", "AM", "ST"],
       "phases": {
-        "saindo": { "outside": 4, "centerSpread": 10, "wideInside": 4 },
-        "ataque": { "outside": 8, "centerSpread": 14, "wideInside": 6 }
+        "saindo": { "outside": 5, "centerSpread": 12, "wideInside": 4 },
+        "ataque": { "outside": 10, "centerSpread": 18, "wideInside": 6 }
       },
       "note": "Centrais (CL/CR) abrem para o corredor; no slot central vira zona horizontal (os dois lados); abertos fecham para o corredor por dentro."
     },

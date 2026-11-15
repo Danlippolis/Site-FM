@@ -1,0 +1,131 @@
+{
+  "source": "Definições: manual oficial do FM23, seção Players → Player Traits. Efeitos numéricos: estimativas para calibrar.",
+  "traits": {
+    "gets_forward_whenever_possible": {
+      "label": "Avança sempre que possível",
+      "en": "Gets Forward Whenever Possible",
+      "official": "Increases the frequency with which a player makes forward runs, adjusting for team mentality.",
+      "notBands": ["GK"],
+      "excludes": ["stays_back"],
+      "overriddenBy": ["hold_position"],
+      "phases": { "saindo": {"dy": 2}, "ataque": {"dy": 5} }
+    },
+    "gets_into_opposition_area": {
+      "label": "Entra na área adversária",
+      "en": "Gets Into Opposition Area",
+      "official": "Mostly governs how often a player makes forward runs but can be overridden by Player Instructions.",
+      "notBands": ["GK"],
+      "excludes": ["stays_back"],
+      "overriddenBy": ["hold_position"],
+      "phases": { "ataque": {"dy": 4} }
+    },
+    "arrives_late": {
+      "label": "Chega atrasado na área adversária",
+      "en": "Arrives Late In Opponents' Area",
+      "official": "Increases the frequency with which a player makes forward runs, adjusting for team mentality.",
+      "bands": ["DM", "M", "AM"],
+      "excludes": ["stays_back"],
+      "overriddenBy": ["hold_position"],
+      "phases": { "ataque": {"dy": 4} }
+    },
+    "stays_back": {
+      "label": "Fica sempre atrás",
+      "en": "Stays Back At All Times",
+      "official": "The player does not make forward runs, adjusted for team mentality.",
+      "notBands": ["GK"],
+      "excludes": ["gets_forward_whenever_possible", "gets_into_opposition_area", "arrives_late"],
+      "overriddenBy": ["get_further_forward", "roam_from_position"],
+      "phases": { "saindo": {"dy": -3}, "ataque": {"dy": -8} }
+    },
+    "makes_runs_in_behind": {
+      "label": "Corre nas costas da defesa",
+      "en": "Makes Runs In Behind",
+      "official": "Increases the frequency with which a player looks to make runs in behind.",
+      "bands": ["M", "AM", "ST"],
+      "excludes": ["comes_deep"],
+      "phases": { "saindo": {"dy": 3}, "ataque": {"dy": 3} }
+    },
+    "comes_deep": {
+      "label": "Recua para buscar a bola",
+      "en": "Comes Deep To Get Ball",
+      "official": "Increases the frequency of a forward player dropping into midfield to get possession against a team playing with a deep defensive line.",
+      "bands": ["AM", "ST"],
+      "excludes": ["makes_runs_in_behind"],
+      "phases": { "saindo": {"dy": -6}, "ataque": {"dy": -5} }
+    },
+    "moves_into_channels": {
+      "label": "Move-se para os corredores",
+      "en": "Moves Into Channels",
+      "official": "Increases the frequency with which central players move into the space between their position and a wide attacking position; also allows wide players in certain roles to move inside into that space.",
+      "bands": ["M", "AM", "ST"],
+      "excludes": ["does_not_move_into_channels"],
+      "phases": {
+        "saindo": { "outside": 4, "centerSpread": 10, "wideInside": 3 },
+        "ataque": { "outside": 8, "centerSpread": 16, "wideInside": 5 }
+      }
+    },
+    "does_not_move_into_channels": {
+      "label": "Não se move para os corredores",
+      "en": "Does Not Move Into Channels",
+      "official": "The player does not move from central areas into space between them and the wide positions; wide players similarly do not look to come inside to operate in that same space.",
+      "notBands": ["GK"],
+      "excludes": ["moves_into_channels"],
+      "suppressChannels": true,
+      "phases": {}
+    },
+    "cuts_inside_both": {
+      "label": "Corta para dentro pelas duas pontas",
+      "en": "Cuts Inside From Both Wings",
+      "official": "Increases the frequency with which a player looks to attack central areas from a nominal wider starting position.",
+      "lanes": ["L", "R"],
+      "notBands": ["GK"],
+      "excludes": ["hugs_line", "cuts_inside_left", "cuts_inside_right"],
+      "phases": { "saindo": {"inside": 2}, "ataque": {"inside": 6} },
+      "overriddenBy": ["run_wide"]
+    },
+    "cuts_inside_left": {
+      "label": "Corta para dentro pela esquerda",
+      "en": "Cuts Inside From Left Wing",
+      "official": "Increases the chances of a player looking to move inside from the left wing and attack in central areas.",
+      "lanes": ["L"],
+      "notBands": ["GK"],
+      "excludes": ["hugs_line", "cuts_inside_both"],
+      "phases": { "saindo": {"inside": 2}, "ataque": {"inside": 6} },
+      "overriddenBy": ["run_wide"]
+    },
+    "cuts_inside_right": {
+      "label": "Corta para dentro pela direita",
+      "en": "Cuts Inside From Right Wing",
+      "official": "Increases the chances of a player looking to move inside from the right wing and attack in central areas.",
+      "lanes": ["R"],
+      "notBands": ["GK"],
+      "excludes": ["hugs_line", "cuts_inside_both"],
+      "phases": { "saindo": {"inside": 2}, "ataque": {"inside": 6} },
+      "overriddenBy": ["run_wide"]
+    },
+    "hugs_line": {
+      "label": "Cola na linha lateral",
+      "en": "Hugs Line",
+      "official": "Ensures the player remains in wide areas of the pitch whenever possible.",
+      "lanes": ["L", "R"],
+      "notBands": ["GK"],
+      "excludes": ["cuts_inside_both", "cuts_inside_left", "cuts_inside_right"],
+      "overriddenBy": ["sit_narrower", "cut_inside"],
+      "phases": { "saindo": {"touchline": 5}, "ataque": {"touchline": 4} }
+    },
+    "brings_ball_out_of_defence": {
+      "label": "Sai jogando da defesa",
+      "en": "Brings Ball Out Of Defence",
+      "official": "Increases the likelihood of a defender running with the ball into midfield positions.",
+      "bands": ["D"],
+      "phases": { "saindo": {"dy": 5} }
+    },
+    "plays_ball_with_feet": {
+      "label": "Joga com os pés",
+      "en": "Plays Ball With Feet",
+      "official": "Goalkeeper-specific; increases the chances of a goalkeeper playing an active part in the build-up phase in possession.",
+      "bands": ["GK"],
+      "phases": { "saindo": {"dy": 3} }
+    }
+  }
+}

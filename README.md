@@ -27,6 +27,7 @@ data/roles.json          funções, slots válidos, tarefas, regras por fase e i
 data/team-instructions.json  mentalidade, linha defensiva, linha de pressão, larguras com/sem bola, parâmetros do motor
 data/player-instructions.json  instruções individuais (PIs): disponibilidade, exclusões e efeito por fase
 data/opponent.json       adversário: correspondência de fases, estilos de jogo e impedimento
+data/player-traits.json  características do jogador (traits): disponibilidade, conflitos, quem anula e efeito por fase
 scripts/build.js         gera dist/fm23-viewer.html (tudo embutido)
 tests/engine.test.js     11 jogadores, validação, clamp, espelhamento, efeitos, colisão, inversa do modo edição
 ```
@@ -50,7 +51,7 @@ Botão **PI** ao lado de cada jogador abre as instruções disponíveis para aqu
 | Fechar mais (Sit Narrower) | para dentro 4 / 7 |
 | Cortar para dentro com a bola (Cut Inside With Ball) | ataque: para dentro 5 |
 | Correr pela lateral com a bola (Run Wide With Ball) | ataque: para fora 4 |
-| Mover-se para os corredores (Move Into Channels) | meio, meia e ataque. CL/CR: para fora 4 / 8. Slot central: zona horizontal de ±10 / ±14 (os dois corredores). Abertos: para dentro 4 / 6 |
+| Mover-se para os corredores (Move Into Channels) | meio, meia e ataque. CL/CR: para fora 5 / 10. Slot central: zona horizontal de ±12 / ±18 (os dois corredores). Abertos: para dentro 4 / 6 |
 | Cruzar da linha de fundo / Cruzar de trás | ataque dy +3 / −5 |
 | Pressionar com mais / menos urgência (Trigger Press More/Less) | defendendo dy +3 / −3 |
 
@@ -63,6 +64,26 @@ Cada tarefa em `roles.json` pode ter `"locked": [...]` com as instruções que a
 - geram a **zona** de Deambular/corredores (o deslocamento delas já está nas regras de posição da função, então não é aplicado de novo).
 
 Deambular vem embutido em 15 combinações: Regista, Construtor Móvel, Box-to-Box, Mezzala (S/A), Ala Completo (S/A), Ala Invertido (S/A), Construtor Aberto (S/A), Trequartista, Raumdeuter, Segundo Atacante, Atacante Recuado (S/A), Avançado, Atacante Completo (S/A) e Atacante de Pressão (A).
+
+## Características do jogador (traits)
+
+No painel **PI** de cada jogador há a seção **Características do jogador**, com as características do manual oficial do FM23 (seção Players → Player Traits) que mudam a posição. Ficaram de fora as que não mudam a posição (chute, passe, drible, faltas etc.).
+
+| Característica | Efeito inicial |
+|---|---|
+| Avança sempre que possível (Gets Forward Whenever Possible) | saindo dy +2, ataque dy +5 |
+| Entra na área adversária (Gets Into Opposition Area) | ataque dy +4 |
+| Chega atrasado na área (Arrives Late In Opponents' Area) | ataque dy +4 (volante, meio, meia ofensivo) |
+| Fica sempre atrás (Stays Back At All Times) | saindo dy −3, ataque dy −8 |
+| Corre nas costas da defesa (Makes Runs In Behind) | saindo e ataque dy +3 (meio, meia ofensivo, ataque) |
+| Recua para buscar a bola (Comes Deep To Get Ball) | saindo dy −6, ataque dy −5 (meia ofensivo, ataque) |
+| Move-se para os corredores / Não se move para os corredores | como a instrução individual / remove a zona e o deslocamento de corredor |
+| Corta para dentro (duas pontas / esquerda / direita) | saindo para dentro 2, ataque 6; a da esquerda só vale à esquerda |
+| Cola na linha lateral (Hugs Line) | jogador aberto colado na linha lateral |
+| Sai jogando da defesa (Brings Ball Out Of Defence) | defensor sobe dy +5 na saída |
+| Joga com os pés (Plays Ball With Feet) | goleiro sobe dy +3 na saída |
+
+Como no jogo, a característica pode ser **anulada por uma instrução** (individual ou embutida na função), definida em `overriddenBy`. Exemplos: "Avança sempre que possível" num Lateral (Defender), que tem "Manter posição" embutido; "Cola na linha lateral" num Atacante Interior, que corta para dentro. O painel mostra "sem efeito" nesses casos. Os números são estimativas; o manual só define o comportamento.
 
 ## Adversário
 
@@ -93,6 +114,12 @@ Limitações: o adversário usa as funções do atalho de formação (sem editar
 2. **Tabela de funções do [Rate My Tactic](https://ratemytactic.web.app/en)** (ferramenta da comunidade, era FM24 — mesmas funções do FM23). Base para as instruções embutidas por função+tarefa, para incluir o **Lateral Invertido** e o **Stopper do Zagueiro Simples**. Usada como referência; os dados deles não estão copiados no repositório.
 3. **[Guia de funções do FMScout](https://www.fmscout.com/a-guide-to-player-roles-in-football-manager.html)** (FM22) e **[guia de pares e combinações](https://www.fmscout.com/a-tactical-guide-pairs-and-combinations.html)**: descrições (`desc`) e regras das funções que a spec deixou vazias.
 
+4. **[Guia de funções do FM23/FM24 de Seif Khaled](https://seifkhaled.me/player-roles-guide-for-football-manager-2023/)** (PDF enviado pelo usuário): lista as **instruções ocultas** de cada função (goleiros, defensores, meio-campistas). Delas vieram: o DLP vem buscar a bola na saída ("collect the ball more"), o Box-to-Box volta mais ("track back more"), o Construtor Avançado e o Carrilero ganham zona de corridas laterais ("make more lateral runs"), o Half-Back recua com a bola ("drop deep more", confirmando a spec) e o Líbero do FM23 tem tarefas Apoio/Ataque. O guia lista "Move Into Channels" embutido na Mezzala; o Rate My Tactic usa a mesma marcação para Trequartista, Segundo Atacante, Atacante Recuado, Avançado, Atacante Completo e Atacante de Pressão (A), então assumi que também está embutido neles (inferência). As imagens do guia (mapas de calor) não vieram no PDF.
+
+5. **Manual oficial do FM23, seção Players** (PDF enviado pelo usuário): definições oficiais das características do jogador (Player Traits), usadas em `data/player-traits.json`, e a regra de que instruções podem anular características.
+
+6. **Manual oficial do FM23: Football Glossary, Playing a Match e Your Squad** (PDFs enviados pelo usuário). O glossário define *channel* como o espaço entre zagueiro e lateral (a zona de corredor foi ampliada para alcançá-lo) e confirma a regra de impedimento usada (não há impedimento no próprio campo). "Playing a Match" confirma o comportamento do Atacante Interior com "Cortar para dentro" (sai da linha lateral para o centro com a bola). Os demais trechos não tratam de posição.
+
 **Nenhuma fonte dá coordenadas.** As descrições ("recua um pouco", "sobe para pressionar") foram convertidas por mim em números, que servem de ponto de partida para calibrar. O fórum da SI, o FMInside, o Passion4FM e o sortitoutsi bloqueiam acesso automatizado e não foram lidos.
 
 ## Decisões que diferem/complementam a spec
@@ -109,12 +136,11 @@ Limitações: o adversário usa as funções do atalho de formação (sem editar
 
 ## A confirmar no jogo
 
-- **Líbero:** o Rate My Tactic dá tarefas Defender/Apoio; o FMScout (FM22) e a spec dão Apoio/Ataque. Mantive Apoio/Ataque (⚠ no seletor).
-- **Half-Back:** as fontes divergem sobre quando ele recua entre os zagueiros; mantive a spec (com a bola).
+- **Líbero:** Apoio/Ataque no FM23 (spec, FMScout e Seif Khaled); o Rate My Tactic (era FM24) dá Defender/Apoio — provavelmente mudou no FM24.
 - Lateral Invertido junto com Half-Back na construção gera uma linha de 4 atrás; o efeito combinado ainda não foi calibrado.
 - Os nomes em português das instruções são traduções minhas.
 - Todos os valores numéricos são pontos de partida; calibre com o modo editar regra.
 
 ## Fora do escopo (v1)
 
-Traits, lado da bola, transições, bola parada, leitura de arquivos do jogo. Funções/instruções individuais do adversário.
+Lado da bola, transições, bola parada, leitura de arquivos do jogo. Funções/instruções individuais do adversário.

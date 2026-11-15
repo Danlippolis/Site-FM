@@ -29,34 +29,58 @@
         "saindo": 0,
         "progressao": 0,
         "ataque": { "lineY": 16 }
+      },
+      "roles": {
+        "GK": ["goalkeeper-D"],
+        "CB": ["central_defender-D", "ball_playing_defender-D"],
+        "FB": ["full_back-S"],
+        "WB": ["wing_back-S"],
+        "DM": ["defensive_midfielder-D", "deep_lying_playmaker-S"],
+        "CM": ["central_midfielder-S", "box_to_box-S"],
+        "WM": ["wide_midfielder-S"],
+        "AMC": ["attacking_midfielder-S"],
+        "AMW": ["winger-S", "inside_forward-S"],
+        "ST": ["advanced_forward-A", "deep_lying_forward-S"]
       }
     },
     {
-      "id": "pressao_alta",
-      "label": "Pressão alta",
-      "inspiredBy": "Gegenpress",
-      "desc": "Linha alta e marcação pressão logo na nossa saída; quase não recua, mesmo com a bola no terço final.",
+      "id": "controle_bola",
+      "label": "Controle de bola",
+      "inspiredBy": "Control Possession",
+      "desc": "Paciente com a bola: troca passes curtos, ocupa bem o campo e não arrisca; pressão moderada.",
       "ti": {
-        "mentality": 5,
-        "defensiveLine": 3,
-        "lineOfEngagement": 2,
+        "mentality": 4,
+        "defensiveLine": 2,
+        "lineOfEngagement": 1,
         "widthInPossession": 2,
         "defensiveWidth": 1
       },
       "shifts": {
         "pressao": 0,
-        "defendendo": 2,
-        "bloco_baixo": 2,
-        "saindo": 8,
-        "progressao": 4,
-        "ataque": { "lineY": 22 }
+        "defendendo": 0,
+        "bloco_baixo": 0,
+        "saindo": 4,
+        "progressao": 2,
+        "ataque": { "lineY": 18 }
+      },
+      "roles": {
+        "GK": ["sweeper_keeper-S"],
+        "CB": ["ball_playing_defender-D", "central_defender-D"],
+        "FB": ["full_back-S"],
+        "WB": ["wing_back-S"],
+        "DM": ["deep_lying_playmaker-S", "defensive_midfielder-S"],
+        "CM": ["central_midfielder-S", "advanced_playmaker-S"],
+        "WM": ["wide_playmaker-S"],
+        "AMC": ["advanced_playmaker-S"],
+        "AMW": ["inverted_winger-S", "winger-S"],
+        "ST": ["deep_lying_forward-S", "complete_forward-A"]
       }
     },
     {
       "id": "posse",
-      "label": "Posse de bola curta",
+      "label": "Tiki-Taka",
       "inspiredBy": "Tiki-Taka",
-      "desc": "Time compacto e por dentro com a bola; pressiona alto para recuperar rápido.",
+      "desc": "Time compacto e por dentro com a bola, passes curtos, laterais invertidos e falso 9; pressiona alto para recuperar rápido.",
       "ti": {
         "mentality": 4,
         "defensiveLine": 3,
@@ -71,13 +95,91 @@
         "saindo": 4,
         "progressao": 3,
         "ataque": { "lineY": 20 }
+      },
+      "roles": {
+        "GK": ["sweeper_keeper-S"],
+        "CB": ["ball_playing_defender-D"],
+        "FB": ["inverted_wing_back-S"],
+        "WB": ["inverted_wing_back-S"],
+        "DM": ["half_back-D", "deep_lying_playmaker-S"],
+        "CM": ["mezzala-S", "central_midfielder-S"],
+        "WM": ["inverted_winger-S"],
+        "AMC": ["advanced_playmaker-A"],
+        "AMW": ["inside_forward-S"],
+        "ST": ["false_nine-S", "complete_forward-S"]
+      }
+    },
+    {
+      "id": "tiki_vertical",
+      "label": "Tiki-Taka vertical",
+      "inspiredBy": "Vertical Tiki-Taka",
+      "desc": "Posse com passes mais verticais: busca a área rápido pelo meio, com meias chegando e atacante de ruptura.",
+      "ti": {
+        "mentality": 5,
+        "defensiveLine": 3,
+        "lineOfEngagement": 2,
+        "widthInPossession": 2,
+        "defensiveWidth": 1
+      },
+      "shifts": {
+        "pressao": 0,
+        "defendendo": 2,
+        "bloco_baixo": 0,
+        "saindo": 6,
+        "progressao": 3,
+        "ataque": { "lineY": 20 }
+      },
+      "roles": {
+        "GK": ["sweeper_keeper-S"],
+        "CB": ["ball_playing_defender-D", "central_defender-D"],
+        "FB": ["full_back-S"],
+        "WB": ["wing_back-S"],
+        "DM": ["deep_lying_playmaker-D", "defensive_midfielder-S"],
+        "CM": ["box_to_box-S", "mezzala-A"],
+        "WM": ["winger-S"],
+        "AMC": ["advanced_playmaker-A"],
+        "AMW": ["inside_forward-A"],
+        "ST": ["advanced_forward-A"]
+      }
+    },
+    {
+      "id": "pressao_alta",
+      "label": "Gegenpress",
+      "inspiredBy": "Gegenpress",
+      "desc": "Linha alta e pressão intensa logo na nossa saída; recupera a bola perto do nosso gol e quase não recua.",
+      "ti": {
+        "mentality": 5,
+        "defensiveLine": 3,
+        "lineOfEngagement": 2,
+        "widthInPossession": 2,
+        "defensiveWidth": 1
+      },
+      "shifts": {
+        "pressao": 0,
+        "defendendo": 2,
+        "bloco_baixo": 2,
+        "saindo": 8,
+        "progressao": 4,
+        "ataque": { "lineY": 22 }
+      },
+      "roles": {
+        "GK": ["sweeper_keeper-D"],
+        "CB": ["central_defender-D", "central_defender-St"],
+        "FB": ["wing_back-S"],
+        "WB": ["wing_back-S"],
+        "DM": ["ball_winning_midfielder-D", "defensive_midfielder-S"],
+        "CM": ["box_to_box-S", "ball_winning_midfielder-S"],
+        "WM": ["winger-S"],
+        "AMC": ["attacking_midfielder-A"],
+        "AMW": ["inside_forward-A", "winger-A"],
+        "ST": ["pressing_forward-A", "pressing_forward-S"]
       }
     },
     {
       "id": "pontas",
-      "label": "Jogo pelas pontas",
+      "label": "Atacar pelas alas",
       "inspiredBy": "Wing Play",
-      "desc": "Campo bem aberto com a bola, buscando cruzamentos; bloco médio sem a bola.",
+      "desc": "Campo bem aberto com a bola: extremos e alas colados na linha cruzando para um centroavante de área.",
       "ti": {
         "mentality": 4,
         "defensiveLine": 2,
@@ -92,6 +194,18 @@
         "saindo": 0,
         "progressao": 0,
         "ataque": { "lineY": 16 }
+      },
+      "roles": {
+        "GK": ["goalkeeper-D"],
+        "CB": ["central_defender-D"],
+        "FB": ["full_back-A", "wing_back-S"],
+        "WB": ["wing_back-A"],
+        "DM": ["defensive_midfielder-S"],
+        "CM": ["central_midfielder-S", "box_to_box-S"],
+        "WM": ["winger-A", "winger-S"],
+        "AMC": ["attacking_midfielder-S"],
+        "AMW": ["winger-A", "winger-S"],
+        "ST": ["target_forward-A", "poacher-A"]
       }
     },
     {
@@ -113,13 +227,25 @@
         "saindo": -2,
         "progressao": 0,
         "ataque": { "lineY": 16 }
+      },
+      "roles": {
+        "GK": ["goalkeeper-D"],
+        "CB": ["no_nonsense_cb-D"],
+        "FB": ["full_back-D", "full_back-S"],
+        "WB": ["wing_back-S"],
+        "DM": ["defensive_midfielder-D"],
+        "CM": ["box_to_box-S", "ball_winning_midfielder-D"],
+        "WM": ["wide_midfielder-S"],
+        "AMC": ["shadow_striker-A"],
+        "AMW": ["wide_target_forward-S", "winger-A"],
+        "ST": ["target_forward-S", "advanced_forward-A"]
       }
     },
     {
       "id": "contra_ataque",
       "label": "Contra-ataque",
       "inspiredBy": "Fluid/Direct Counter-Attack",
-      "desc": "Bloco médio-baixo esperando o erro para sair rápido; espaço atrás da nossa linha.",
+      "desc": "Bloco médio-baixo esperando o erro para sair rápido; deixa espaço atrás da nossa linha.",
       "ti": {
         "mentality": 2,
         "defensiveLine": 1,
@@ -134,6 +260,18 @@
         "saindo": -10,
         "progressao": -4,
         "ataque": { "lineY": 13 }
+      },
+      "roles": {
+        "GK": ["goalkeeper-D"],
+        "CB": ["central_defender-D"],
+        "FB": ["full_back-S", "full_back-D"],
+        "WB": ["wing_back-S"],
+        "DM": ["defensive_midfielder-D", "deep_lying_playmaker-D"],
+        "CM": ["box_to_box-S", "central_midfielder-D"],
+        "WM": ["winger-A"],
+        "AMC": ["advanced_playmaker-A"],
+        "AMW": ["inside_forward-A", "winger-A"],
+        "ST": ["advanced_forward-A", "poacher-A"]
       }
     },
     {
@@ -155,8 +293,33 @@
         "saindo": -16,
         "progressao": -8,
         "ataque": { "lineY": 10 }
+      },
+      "roles": {
+        "GK": ["goalkeeper-D"],
+        "CB": ["central_defender-D", "central_defender-Co"],
+        "FB": ["no_nonsense_fb-D"],
+        "WB": ["wing_back-D"],
+        "DM": ["anchor-D", "defensive_midfielder-D"],
+        "CM": ["ball_winning_midfielder-D", "central_midfielder-D"],
+        "WM": ["defensive_winger-D"],
+        "AMC": ["enganche-S"],
+        "AMW": ["winger-S"],
+        "ST": ["target_forward-S", "poacher-A"]
       }
     }
   ],
-  "shiftsNote": "Por fase NOSSA: número = desloca o bloco dele (sem o goleiro) em y no referencial dele, a partir da fase correspondente em phaseMap; {\"lineY\": n} = ancora a linha de defensores dele em y n."
+  "shiftsNote": "Por fase NOSSA: número = desloca o bloco dele (sem o goleiro) em y no referencial dele, a partir da fase correspondente em phaseMap; {\"lineY\": n} = ancora a linha de defensores dele em y n.",
+  "roleGroups": {
+    "GK": ["GK"],
+    "CB": ["DCL", "DC", "DCR"],
+    "FB": ["DL", "DR"],
+    "WB": ["WBL", "WBR"],
+    "DM": ["DMCL", "DMC", "DMCR"],
+    "CM": ["MCL", "MC", "MCR"],
+    "WM": ["ML", "MR"],
+    "AMC": ["AMCL", "AMC", "AMCR"],
+    "AMW": ["AML", "AMR"],
+    "ST": ["STCL", "STC", "STCR"]
+  },
+  "rolesNote": "roles: funções típicas do estilo por grupo de slots (roleGroups), no formato \"funcao-Tarefa\"; com mais de um jogador no grupo, a lista é usada em sequência da esquerda para a direita. Escolhas aproximadas, inspiradas nos modelos táticos do FM."
 }

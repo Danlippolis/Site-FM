@@ -422,10 +422,10 @@
       if (rule.dy) { p.derivedDy = rule.dy; p.y += rule.dy; }
     });
     resolveCollisions(list, eng.collisionMinDist, eng.collisionIterations, eng.collisionAspect);
-    var lo = (eng.clamp || [2, 98])[0], hi = (eng.clamp || [2, 98])[1];
+    var lo = (eng.clamp || [2, 98])[0], hi = (eng.clamp || [2, 98])[1], minOut = eng.outfieldMinY == null ? 8 : eng.outfieldMinY;
     list.forEach(function (p) {
       p.x = Math.round(clamp(p.x, lo, hi) * 10) / 10;
-      p.y = Math.round(clamp(p.y, lo, hi) * 10) / 10;
+      p.y = Math.round(clamp(p.y, p.band === 'GK' ? lo : minOut, hi) * 10) / 10;
     });
     return { phase: phase, players: list, ball: ph.ball || null, warnings: [], derived: true };
   }
@@ -558,10 +558,11 @@
 
     // 5. colisão e clamp
     resolveCollisions(list, eng.collisionMinDist, eng.collisionIterations, eng.collisionAspect);
-    var lo = (eng.clamp || [2, 98])[0], hi = (eng.clamp || [2, 98])[1];
+    var lo = (eng.clamp || [2, 98])[0], hi = (eng.clamp || [2, 98])[1], minOut = eng.outfieldMinY == null ? 8 : eng.outfieldMinY;
     list.forEach(function (p) {
       p.x = Math.round(clamp(p.x, lo, hi) * 10) / 10;
-      p.y = Math.round(clamp(p.y, lo, hi) * 10) / 10;
+      // jogador de linha nunca dentro da pequena área do próprio gol
+      p.y = Math.round(clamp(p.y, p.band === 'GK' ? lo : minOut, hi) * 10) / 10;
     });
 
     return { phase: phase, players: list, ball: ph.ball || null, warnings: warnings };
@@ -649,7 +650,7 @@
     var list = res.players.map(function (p) {
       p.team = 'opp';
       p.oppPhase = map.phase;
-      if (p.band !== 'GK') p.y = clamp(p.y + shift, lo, hi);
+      if (p.band !== 'GK') p.y = clamp(p.y + shift, eng.outfieldMinY == null ? 8 : eng.outfieldMinY, hi);
       p.x = 100 - p.x;
       p.y = 100 - p.y;
       p.baseX = 100 - p.baseX;
@@ -684,6 +685,23 @@
         resolveCollisions(attackers, eng.collisionMinDist, eng.collisionIterations, eng.collisionAspect);
         applyOffside(attackers, defenders, weAttack);
       }
+    }
+    // limite da pressão: quem pressiona vai até a última linha de jogadores de quem tem a bola,
+    // mas não passa dela (não "marca o goleiro" dentro da área)
+    var margin = eng.pressMargin == null ? 3 : eng.pressMargin;
+    var withBall = isWithBall(data.formations, ph);
+    var holders = (withBall ? ours : theirs).filter(function (p) { return p.band !== 'GK'; });
+    var pressers = (withBall ? theirs : ours);
+    if (holders.length) {
+      var capped = 0;
+      if (withBall) {
+        var deepest = Math.min.apply(null, holders.map(function (p) { return p.y; })) - margin;
+        pressers.forEach(function (p) { if (p.band !== 'GK' && p.y < deepest) { p.y = deepest; capped++; } });
+      } else {
+        var deepestTheirs = Math.max.apply(null, holders.map(function (p) { return p.y; })) + margin;
+        pressers.forEach(function (p) { if (p.band !== 'GK' && p.y > deepestTheirs) { p.y = deepestTheirs; capped++; } });
+      }
+      if (capped) resolveCollisions(pressers, eng.collisionMinDist, eng.collisionIterations, eng.collisionAspect);
     }
     [ours, theirs].forEach(function (team) {
       team.forEach(function (p) {

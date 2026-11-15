@@ -23,6 +23,8 @@ let index = read('index.html')
 if (/name="fm23pv-version"/.test(index)) index = index.replace(/(name="fm23pv-version" content=")[^"]*"/, `$1${version}"`);
 else index = index.replace('<meta charset="utf-8">', `<meta charset="utf-8">\n  <meta name="fm23pv-version" content="${version}">`);
 fs.writeFileSync(path.join(root, 'index.html'), index);
+// version.json: o site compara com a versão da página carregada e recarrega se a página estiver velha em cache
+fs.writeFileSync(path.join(root, 'version.json'), JSON.stringify({ version }) + '\n');
 
 let html = index.replace(/\?v=[0-9a-f]+"/g, '"');
 const swap = (needle, replacement) => {

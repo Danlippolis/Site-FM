@@ -618,6 +618,117 @@
     return out;
   }
 
+  // ---------- equilíbrio da tática e sugestão de funções ----------
+
+  function lanesOccupied(ps) {
+    var lanes = [false, false, false, false, false];
+    ps.forEach(function (p) { lanes[Math.min(4, Math.floor(p.x / 20))] = true; });
+    return lanes.filter(Boolean).length;
+  }
+  function band01(v, lo, hi, zeroLo, zeroHi) {
+    // 1 dentro de [lo, hi]; cai linearmente até 0 em zeroLo / zeroHi
+    if (v >= lo && v <= hi) return 1;
+    if (v < lo) return Math.max(0, (v - zeroLo) / (lo - zeroLo));
+    return Math.max(0, (zeroHi - v) / (zeroHi - hi));
+  }
+
+  /**
+   * Índice de equilíbrio (0–100) com critérios táticos gerais, medidos nas fases-base:
+   * corredores ocupados e presença na área no ataque, proteção atrás da bola, linhas de passe na saída,
+   * compactação do bloco médio, jogadores empilhados e distribuição de tarefas (manual do FM23:
+   * mentalidade e fluidez equilibradas = 3 Defender, 4 Apoio, 3 Ataque).
+   */
+  function evaluateBalance(players, data, tiState) {
+    var ti = resolveInstructions(data.instructions, tiState);
+    var map = (data.instructions.engine || {}).autoDutyByMentality;
+    var atk = computePhase(players, 'ataque', data, tiState).players;
+    var bld = computePhase(players, 'saindo', data, tiState).players;
+    var def = computePhase(players, 'defendendo', data, tiState).players;
+    var out = function (ps) { return ps.filter(function (p) { return p.band !== 'GK'; }); };
+    var parts = [];
+    function add(key, label, weight, score, detail) { parts.push({ key: key, label: label, weight: weight, score: Math.max(0, Math.min(1, score)), detail: detail }); }
+
+    var front = out(atk).filter(function (p) { return p.y >= 65; });
+    var lanes = lanesOccupied(front);
+    add('corredores', 'Corredores ocupados no ataque', 20, lanes / 5, lanes + ' de 5 corredores com jogador no terço final');
+
+    var box = out(atk).filter(function (p) { return p.y >= 83 && p.x >= 25 && p.x <= 75; }).length;
+    add('area', 'Presença na área', 10, box === 2 || box === 3 ? 1 : box === 1 || box === 4 ? 0.5 : 0, box + ' jogador(es) dentro da área (ideal 2–3)');
+
+    var rest = out(atk).filter(function (p) { return p.y <= 55; }).length;
+    add('protecao', 'Proteção atrás da bola', 15, rest === 3 || rest === 4 ? 1 : rest === 2 || rest === 5 ? 0.6 : rest === 6 ? 0.3 : 0,
+      rest + ' jogador(es) de linha atrás no ataque (ideal 3–4)');
+
+    var mid = out(bld).filter(function (p) { return p.y >= 22 && p.y <= 60; });
+    var bl = lanesOccupied(mid);
+    add('saida', 'Linhas de passe na saída', 10, Math.min(1, bl / 4), bl + ' corredores com opção de passe entre a defesa e o meio');
+
+    var dy = out(def).map(function (p) { return p.y; });
+    var len = (Math.max.apply(null, dy) - Math.min.apply(null, dy)) * 1.05;
+    add('compactacao', 'Compactação sem a bola', 15, band01(len, 0, 40, 0, 55), 'bloco médio com ' + Math.round(len) + ' m de comprimento (ideal até 40 m)');
+
+    var stacked = 0;
+    [atk, bld].forEach(function (ps) {
+      var o = out(ps);
+      for (var i = 0; i < o.length; i++) for (var j = i + 1; j < o.length; j++) {
+        if (Math.hypot((o[i].x - o[j].x) * 0.68, (o[i].y - o[j].y) * 1.05) < 8) stacked++;
+      }
+    });
+    add('espacamento', 'Jogadores sem se empilhar', 15, 1 - stacked * 0.2, stacked + ' par(es) a menos de 8 m entre si com a bola');
+
+    var cnt = { D: 0, S: 0, A: 0 };
+    players.forEach(function (p) {
+      if (p.slot === 'GK') return;
+      var d = p.duty === 'St' || p.duty === 'Co' ? 'D' : p.duty === 'Au' && map ? map[ti.mentalityIdx] : p.duty;
+      if (cnt[d] != null) cnt[d]++;
+    });
+    var dev = Math.abs(cnt.D - 3) + Math.abs(cnt.S - 4) + Math.abs(cnt.A - 3);
+    add('tarefas', 'Tarefas equilibradas', 15, 1 - dev / 6, cnt.D + ' Defender · ' + cnt.S + ' Apoio · ' + cnt.A + ' Ataque (referência do manual: 3 · 4 · 3)');
+
+    var total = parts.reduce(function (t, p) { return t + p.weight * p.score; }, 0) /
+      parts.reduce(function (t, p) { return t + p.weight; }, 0) * 100;
+    return { score: Math.round(total * 10) / 10, parts: parts };
+  }
+
+  /**
+   * Busca gulosa: a cada rodada testa todas as funções+tarefas válidas de cada jogador de linha
+   * (mantendo o slot) e aplica a troca que mais melhora o índice; para quando nenhuma troca melhora
+   * pelo menos minGain ou após maxChanges trocas. Instruções individuais e características são mantidas.
+   */
+  function suggestRoles(players, data, tiState, opts) {
+    opts = opts || {};
+    var maxChanges = opts.maxChanges || 6, minGain = opts.minGain == null ? 0.5 : opts.minGain;
+    var roles = data.roles, formations = data.formations;
+    var cur = players.map(function (p) { return Object.assign({}, p); });
+    var before = evaluateBalance(cur, data, tiState), best = before;
+    var cbs = cur.filter(function (p) { return isCentreBack(formations, p.slot); }).length;
+    var changes = [];
+    for (var round = 0; round < maxChanges; round++) {
+      var top = null;
+      cur.forEach(function (p, i) {
+        if (p.slot === 'GK') return;
+        rolesForSlot(roles, p.slot).forEach(function (rk) {
+          if (roles[rk].requiresBack3 && cbs !== 3) return;
+          Object.keys(roles[rk].duties).forEach(function (dk) {
+            if (rk === p.role && dk === p.duty) return;
+            var trial = cur.slice();
+            trial[i] = Object.assign({}, p, { role: rk, duty: dk });
+            var ev = evaluateBalance(trial, data, tiState);
+            if (!top || ev.score > top.ev.score) top = { i: i, role: rk, duty: dk, ev: ev };
+          });
+        });
+      });
+      if (!top || top.ev.score - best.score < minGain) break;
+      var from = cur[top.i];
+      var improved = top.ev.parts.filter(function (pt, k) { return pt.score > best.parts[k].score + 1e-9; }).map(function (pt) { return pt.label; });
+      changes.push({ index: top.i, slot: from.slot, from: { role: from.role, duty: from.duty }, to: { role: top.role, duty: top.duty },
+        gain: Math.round((top.ev.score - best.score) * 10) / 10, improved: improved });
+      cur[top.i] = Object.assign({}, from, { role: top.role, duty: top.duty });
+      best = top.ev;
+    }
+    return { before: before, after: best, changes: changes, players: cur };
+  }
+
   // ---------- calibração (modo "editar regra") ----------
 
   /** Converte uma posição final arrastada em override (x, y) da regra, já desfazendo TI, deltas e espelhamento. */
@@ -724,6 +835,7 @@
     computeOpponentPhase: computeOpponentPhase, opponentStyle: opponentStyle, applyOffside: applyOffside,
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,
     overrideFromPosition: overrideFromPosition, applyOverride: applyOverride,
-    deltaFromPosition: deltaFromPosition, teamShape: teamShape, isWithBall: isWithBall
+    deltaFromPosition: deltaFromPosition, teamShape: teamShape, isWithBall: isWithBall,
+    evaluateBalance: evaluateBalance, suggestRoles: suggestRoles
   };
 });

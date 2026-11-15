@@ -113,6 +113,22 @@ No painel **PI** de cada jogador há a seção **Características do jogador**, 
 
 Como no jogo, a característica pode ser **anulada por uma instrução** (individual ou embutida na função), definida em `overriddenBy`. Exemplos: "Avança sempre que possível" num Lateral (Defender), que tem "Manter posição" embutido; "Cola na linha lateral" num Atacante Interior, que corta para dentro. O painel mostra "sem efeito" nesses casos. Os números são estimativas; o manual só define o comportamento.
 
+## Sugerir funções (equilíbrio da tática)
+
+No card **Funções e tarefas**, a linha *Equilíbrio da tática: N/100* mostra o índice atual (passe o mouse para ver cada critério). O botão **✨ Sugerir funções** procura trocas de função+tarefa, sem mudar a formação, que aumentam esse índice. Ele mostra cada troca com o ganho e o critério que melhorou; você aplica as que quiser e pode **desfazer**.
+
+| Critério | Peso | Como mede (nas fases-base) |
+|---|---|---|
+| Corredores ocupados no ataque | 20 | quantos dos 5 corredores têm jogador no terço final |
+| Presença na área | 10 | 2–3 jogadores dentro da área no ataque |
+| Proteção atrás da bola | 15 | 3–4 jogadores de linha atrás no ataque |
+| Linhas de passe na saída | 10 | corredores com opção de passe entre a defesa e o meio na saída |
+| Compactação sem a bola | 15 | bloco médio com até 40 m de comprimento |
+| Jogadores sem se empilhar | 15 | pares a menos de 8 m entre si com a bola |
+| Tarefas equilibradas | 15 | distância de 3 Defender · 4 Apoio · 3 Ataque (referência do manual para mentalidade e fluidez equilibradas) |
+
+A busca é gulosa: a cada rodada aplica a troca que mais melhora o índice (até 6 trocas, ganho mínimo 0,5). Instruções individuais e características são mantidas (as que deixam de valer na nova função são removidas ao aplicar). O índice é uma heurística de boas práticas, não uma avaliação do motor do jogo; os pesos ficam em `evaluateBalance` no motor.
+
 ## Adversário
 
 Seção **Adversário** no painel: liga/desliga, formação (qualquer atalho, com as funções do atalho) e estilo de jogo. O adversário é calculado com o **mesmo motor** e espelhado (ataca para baixo); aparece como quadrado claro.

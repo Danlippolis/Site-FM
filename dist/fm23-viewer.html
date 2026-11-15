@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="fm23pv-version" content="309b3ca5b6">
+  <meta name="fm23pv-version" content="706929950c">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FM23 Positioning Viewer</title>
   <meta name="description" content="Posição aproximada dos 11 jogadores em 3 fases (defendendo, saindo com a bola, no ataque) a partir da formação, funções e instruções de equipe do FM23.">
@@ -141,6 +141,22 @@ select {
 .pi-box .check small { display: block; color: var(--muted); font-size: 11.5px; }
 .pi-group { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 6px 0 2px; }
 .pi-group:first-child { margin-top: 0; }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+.card-head h2 { margin: 0; }
+.card-head .btn.small { margin-top: 0; }
+.balance { margin: 0 0 8px; font-size: 12.5px; color: var(--muted); cursor: help; }
+.suggest-box { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 10px; margin-bottom: 10px; font-size: 12.5px; }
+.sg-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 14px; }
+.sg-close { width: 28px; height: 28px; }
+.sg-parts { display: grid; gap: 2px; margin-bottom: 6px; }
+.sg-part { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); }
+.sg-part.up { color: var(--accent); font-weight: 600; }
+.sg-part.down { color: var(--danger); }
+.sg-val { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sg-change { margin: 6px 0; }
+.sg-change small { display: block; color: var(--muted); }
+.sg-actions { align-items: center; margin-top: 6px; flex-wrap: wrap; }
+.sg-actions .btn.small { margin-top: 0; }
 .pi-box .check small.warn-note { color: var(--warn); }
 .btn.small { min-height: 28px; padding: 3px 10px; font-size: 12px; margin-top: 6px; }
 .prow select { font-size: 12.5px; padding: 4px 6px; min-height: 30px; width: 100%; }
@@ -268,7 +284,12 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
       </section>
 
       <section class="card">
-        <h2>Funções e tarefas</h2>
+        <div class="card-head">
+          <h2>Funções e tarefas</h2>
+          <button class="btn small" id="suggestBtn" title="Procura trocas de função e tarefa que melhoram o equilíbrio da tática">✨ Sugerir funções</button>
+        </div>
+        <p class="balance" id="balanceLine"></p>
+        <div id="suggestBox" class="suggest-box" hidden></div>
         <div id="playerList" class="player-list"></div>
       </section>
 
@@ -956,6 +977,117 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     return out;
   }
 
+  // ---------- equilíbrio da tática e sugestão de funções ----------
+
+  function lanesOccupied(ps) {
+    var lanes = [false, false, false, false, false];
+    ps.forEach(function (p) { lanes[Math.min(4, Math.floor(p.x / 20))] = true; });
+    return lanes.filter(Boolean).length;
+  }
+  function band01(v, lo, hi, zeroLo, zeroHi) {
+    // 1 dentro de [lo, hi]; cai linearmente até 0 em zeroLo / zeroHi
+    if (v >= lo && v <= hi) return 1;
+    if (v < lo) return Math.max(0, (v - zeroLo) / (lo - zeroLo));
+    return Math.max(0, (zeroHi - v) / (zeroHi - hi));
+  }
+
+  /**
+   * Índice de equilíbrio (0–100) com critérios táticos gerais, medidos nas fases-base:
+   * corredores ocupados e presença na área no ataque, proteção atrás da bola, linhas de passe na saída,
+   * compactação do bloco médio, jogadores empilhados e distribuição de tarefas (manual do FM23:
+   * mentalidade e fluidez equilibradas = 3 Defender, 4 Apoio, 3 Ataque).
+   */
+  function evaluateBalance(players, data, tiState) {
+    var ti = resolveInstructions(data.instructions, tiState);
+    var map = (data.instructions.engine || {}).autoDutyByMentality;
+    var atk = computePhase(players, 'ataque', data, tiState).players;
+    var bld = computePhase(players, 'saindo', data, tiState).players;
+    var def = computePhase(players, 'defendendo', data, tiState).players;
+    var out = function (ps) { return ps.filter(function (p) { return p.band !== 'GK'; }); };
+    var parts = [];
+    function add(key, label, weight, score, detail) { parts.push({ key: key, label: label, weight: weight, score: Math.max(0, Math.min(1, score)), detail: detail }); }
+
+    var front = out(atk).filter(function (p) { return p.y >= 65; });
+    var lanes = lanesOccupied(front);
+    add('corredores', 'Corredores ocupados no ataque', 20, lanes / 5, lanes + ' de 5 corredores com jogador no terço final');
+
+    var box = out(atk).filter(function (p) { return p.y >= 83 && p.x >= 25 && p.x <= 75; }).length;
+    add('area', 'Presença na área', 10, box === 2 || box === 3 ? 1 : box === 1 || box === 4 ? 0.5 : 0, box + ' jogador(es) dentro da área (ideal 2–3)');
+
+    var rest = out(atk).filter(function (p) { return p.y <= 55; }).length;
+    add('protecao', 'Proteção atrás da bola', 15, rest === 3 || rest === 4 ? 1 : rest === 2 || rest === 5 ? 0.6 : rest === 6 ? 0.3 : 0,
+      rest + ' jogador(es) de linha atrás no ataque (ideal 3–4)');
+
+    var mid = out(bld).filter(function (p) { return p.y >= 22 && p.y <= 60; });
+    var bl = lanesOccupied(mid);
+    add('saida', 'Linhas de passe na saída', 10, Math.min(1, bl / 4), bl + ' corredores com opção de passe entre a defesa e o meio');
+
+    var dy = out(def).map(function (p) { return p.y; });
+    var len = (Math.max.apply(null, dy) - Math.min.apply(null, dy)) * 1.05;
+    add('compactacao', 'Compactação sem a bola', 15, band01(len, 0, 40, 0, 55), 'bloco médio com ' + Math.round(len) + ' m de comprimento (ideal até 40 m)');
+
+    var stacked = 0;
+    [atk, bld].forEach(function (ps) {
+      var o = out(ps);
+      for (var i = 0; i < o.length; i++) for (var j = i + 1; j < o.length; j++) {
+        if (Math.hypot((o[i].x - o[j].x) * 0.68, (o[i].y - o[j].y) * 1.05) < 8) stacked++;
+      }
+    });
+    add('espacamento', 'Jogadores sem se empilhar', 15, 1 - stacked * 0.2, stacked + ' par(es) a menos de 8 m entre si com a bola');
+
+    var cnt = { D: 0, S: 0, A: 0 };
+    players.forEach(function (p) {
+      if (p.slot === 'GK') return;
+      var d = p.duty === 'St' || p.duty === 'Co' ? 'D' : p.duty === 'Au' && map ? map[ti.mentalityIdx] : p.duty;
+      if (cnt[d] != null) cnt[d]++;
+    });
+    var dev = Math.abs(cnt.D - 3) + Math.abs(cnt.S - 4) + Math.abs(cnt.A - 3);
+    add('tarefas', 'Tarefas equilibradas', 15, 1 - dev / 6, cnt.D + ' Defender · ' + cnt.S + ' Apoio · ' + cnt.A + ' Ataque (referência do manual: 3 · 4 · 3)');
+
+    var total = parts.reduce(function (t, p) { return t + p.weight * p.score; }, 0) /
+      parts.reduce(function (t, p) { return t + p.weight; }, 0) * 100;
+    return { score: Math.round(total * 10) / 10, parts: parts };
+  }
+
+  /**
+   * Busca gulosa: a cada rodada testa todas as funções+tarefas válidas de cada jogador de linha
+   * (mantendo o slot) e aplica a troca que mais melhora o índice; para quando nenhuma troca melhora
+   * pelo menos minGain ou após maxChanges trocas. Instruções individuais e características são mantidas.
+   */
+  function suggestRoles(players, data, tiState, opts) {
+    opts = opts || {};
+    var maxChanges = opts.maxChanges || 6, minGain = opts.minGain == null ? 0.5 : opts.minGain;
+    var roles = data.roles, formations = data.formations;
+    var cur = players.map(function (p) { return Object.assign({}, p); });
+    var before = evaluateBalance(cur, data, tiState), best = before;
+    var cbs = cur.filter(function (p) { return isCentreBack(formations, p.slot); }).length;
+    var changes = [];
+    for (var round = 0; round < maxChanges; round++) {
+      var top = null;
+      cur.forEach(function (p, i) {
+        if (p.slot === 'GK') return;
+        rolesForSlot(roles, p.slot).forEach(function (rk) {
+          if (roles[rk].requiresBack3 && cbs !== 3) return;
+          Object.keys(roles[rk].duties).forEach(function (dk) {
+            if (rk === p.role && dk === p.duty) return;
+            var trial = cur.slice();
+            trial[i] = Object.assign({}, p, { role: rk, duty: dk });
+            var ev = evaluateBalance(trial, data, tiState);
+            if (!top || ev.score > top.ev.score) top = { i: i, role: rk, duty: dk, ev: ev };
+          });
+        });
+      });
+      if (!top || top.ev.score - best.score < minGain) break;
+      var from = cur[top.i];
+      var improved = top.ev.parts.filter(function (pt, k) { return pt.score > best.parts[k].score + 1e-9; }).map(function (pt) { return pt.label; });
+      changes.push({ index: top.i, slot: from.slot, from: { role: from.role, duty: from.duty }, to: { role: top.role, duty: top.duty },
+        gain: Math.round((top.ev.score - best.score) * 10) / 10, improved: improved });
+      cur[top.i] = Object.assign({}, from, { role: top.role, duty: top.duty });
+      best = top.ev;
+    }
+    return { before: before, after: best, changes: changes, players: cur };
+  }
+
   // ---------- calibração (modo "editar regra") ----------
 
   /** Converte uma posição final arrastada em override (x, y) da regra, já desfazendo TI, deltas e espelhamento. */
@@ -1062,7 +1194,8 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     computeOpponentPhase: computeOpponentPhase, opponentStyle: opponentStyle, applyOffside: applyOffside,
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,
     overrideFromPosition: overrideFromPosition, applyOverride: applyOverride,
-    deltaFromPosition: deltaFromPosition, teamShape: teamShape, isWithBall: isWithBall
+    deltaFromPosition: deltaFromPosition, teamShape: teamShape, isWithBall: isWithBall,
+    evaluateBalance: evaluateBalance, suggestRoles: suggestRoles
   };
 });
 </script>
@@ -1084,7 +1217,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
 
   var data = null, baseRoles = null, lastComputed = null;
   var state = null;
-  var ui = { ghost: false, shapes: true, edit: false, tab: 'saindo', group: 'todas', collapsed: false, selectedSlot: null, piOpen: null, info: {} };
+  var ui = { ghost: false, shapes: true, edit: false, tab: 'saindo', group: 'todas', collapsed: false, selectedSlot: null, piOpen: null, info: {}, suggestion: null, undo: null };
   var anim = { on: false, step: 0, timer: null };
   var drag = null;
 
@@ -1336,6 +1469,7 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     $('layout').classList.toggle('collapsed', ui.collapsed);
 
     $('animate').addEventListener('click', toggleAnim);
+    $('suggestBtn').addEventListener('click', runSuggestion);
 
     $('exportTactic').addEventListener('click', function () {
       download('tatica-fm23-' + state.presetId + '.json', {
@@ -1942,6 +2076,114 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     renderAll();
   }
 
+  // ---------- equilíbrio e sugestão de funções ----------
+
+  function roleName(r, d) {
+    var role = data.roles[r];
+    return (role ? role.label : r) + ' (' + (E.DUTIES[d] || { label: d }).label + ')';
+  }
+
+  function renderBalanceLine() {
+    var line = $('balanceLine');
+    if (!E.validate(state.players, data).ok) { line.textContent = ''; return; }
+    var ev = E.evaluateBalance(state.players, data, state.ti);
+    line.textContent = 'Equilíbrio da tática: ' + Math.round(ev.score) + '/100';
+    line.title = ev.parts.map(function (p) { return p.label + ': ' + Math.round(p.score * 100) + '% — ' + p.detail; }).join('\n');
+  }
+
+  function runSuggestion() {
+    var box = $('suggestBox');
+    box.hidden = false;
+    box.textContent = 'Calculando…';
+    setTimeout(function () {
+      ui.suggestion = E.suggestRoles(state.players, data, state.ti, { maxChanges: 6 });
+      ui.suggestion.base = clone(state.players);
+      renderSuggestion();
+    }, 20);
+  }
+
+  function renderSuggestion() {
+    var box = $('suggestBox'), sug = ui.suggestion;
+    box.textContent = '';
+    if (!sug) { box.hidden = true; return; }
+    box.hidden = false;
+    var head = el('div', { class: 'sg-head' });
+    head.appendChild(el('b', null, 'Equilíbrio ' + Math.round(sug.before.score) + ' → ' + Math.round(sug.after.score)));
+    var close = el('button', { class: 'icon-btn sg-close', type: 'button', 'aria-label': 'Fechar sugestões' }, '×');
+    close.addEventListener('click', function () { ui.suggestion = null; renderSuggestion(); });
+    head.appendChild(close);
+    box.appendChild(head);
+
+    var table = el('div', { class: 'sg-parts' });
+    sug.before.parts.forEach(function (p, i) {
+      var a = Math.round(p.score * 100), b = Math.round(sug.after.parts[i].score * 100);
+      var row = el('div', { class: 'sg-part' + (b > a ? ' up' : b < a ? ' down' : '') , title: sug.after.parts[i].detail });
+      row.appendChild(el('span', null, p.label));
+      row.appendChild(el('span', { class: 'sg-val' }, a === b ? a + '%' : a + '% → ' + b + '%'));
+      table.appendChild(row);
+    });
+    box.appendChild(table);
+
+    if (!sug.changes.length) {
+      box.appendChild(el('p', { class: 'hint' }, 'Nenhuma troca de função melhora o equilíbrio desta tática. 👍'));
+      return;
+    }
+    box.appendChild(el('div', { class: 'pi-group' }, 'Trocas sugeridas (na ordem em que foram encontradas)'));
+    var checks = [];
+    sug.changes.forEach(function (c) {
+      var lab = el('label', { class: 'check sg-change' });
+      var cb = el('input', { type: 'checkbox' });
+      cb.checked = true;
+      checks.push(cb);
+      lab.appendChild(cb);
+      var txt = el('span', { class: 'pi-text' });
+      txt.appendChild(el('b', null, c.slot + ': '));
+      txt.appendChild(document.createTextNode(roleName(c.from.role, c.from.duty) + ' → ' + roleName(c.to.role, c.to.duty) + '  (+' + c.gain + ')'));
+      if (c.improved && c.improved.length) txt.appendChild(el('small', null, 'melhora: ' + c.improved.join(', ').toLowerCase()));
+      lab.appendChild(txt);
+      box.appendChild(lab);
+    });
+    var row = el('div', { class: 'row sg-actions' });
+    var apply = el('button', { class: 'btn primary small', type: 'button' }, 'Aplicar selecionadas');
+    apply.addEventListener('click', function () {
+      ui.undo = clone(state.players);
+      sug.changes.forEach(function (c, k) {
+        if (!checks[k].checked) return;
+        var p = state.players[c.index];
+        if (!p || p.slot !== c.slot) return;
+        p.role = c.to.role; p.duty = c.to.duty;
+        fixPlayer(p);
+      });
+      ui.suggestion = null;
+      renderSuggestion();
+      renderAll();
+      showUndo();
+    });
+    row.appendChild(apply);
+    box.appendChild(row);
+    box.appendChild(el('p', { class: 'hint' }, 'O índice é heurístico: mede corredores ocupados e presença na área no ataque, proteção atrás da bola, linhas de passe na saída, compactação sem a bola, jogadores empilhados e tarefas (referência 3 D · 4 S · 3 A do manual). Confira no jogo.'));
+  }
+
+  function showUndo() {
+    var box = $('suggestBox');
+    box.hidden = false;
+    box.textContent = '';
+    var row = el('div', { class: 'row sg-actions' });
+    row.appendChild(el('span', { class: 'hint' }, 'Funções aplicadas.'));
+    var undo = el('button', { class: 'btn small', type: 'button' }, 'Desfazer');
+    undo.addEventListener('click', function () {
+      if (ui.undo) state.players = ui.undo;
+      ui.undo = null;
+      box.hidden = true;
+      renderAll();
+      toast('Funções restauradas.');
+    });
+    var ok = el('button', { class: 'btn small', type: 'button' }, 'OK');
+    ok.addEventListener('click', function () { ui.undo = null; box.hidden = true; });
+    row.appendChild(undo); row.appendChild(ok);
+    box.appendChild(row);
+  }
+
   function renderValidation(v, extra) {
     var box = $('validation');
     box.textContent = '';
@@ -1997,6 +2239,9 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     renderSlotGrid();
     renderPlayerList();
     renderValidation(v, extra);
+    renderBalanceLine();
+    // sugestão calculada para outra tática fica desatualizada
+    if (ui.suggestion && JSON.stringify(ui.suggestion.base) !== JSON.stringify(state.players)) { ui.suggestion = null; renderSuggestion(); }
     renderFields();
     $('rolesStatus').textContent = lsGet(LS_ROLES)
       ? 'Usando regras personalizadas (salvas neste navegador). Exporte o roles.json para guardar.'
@@ -2043,8 +2288,27 @@ svg.pitch { width: 100%; height: auto; display: block; border-radius: 8px; touch
     document.querySelector('.main').prepend(box);
   }
 
+  /**
+   * Se a página veio de um cache antigo (o GitHub Pages não deixa configurar o tempo de cache),
+   * compara com version.json publicado e recarrega uma vez com ?v=<versão nova>.
+   */
+  function checkFreshVersion() {
+    var vm = document.querySelector('meta[name="fm23pv-version"]');
+    if (!vm || location.protocol === 'file:' || !window.fetch) return;
+    fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.version || j.version === vm.content) return;
+        var key = 'fm23pv.reloaded.' + j.version;
+        try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); } catch (e) { /* sem storage */ }
+        location.replace(location.pathname + '?v=' + j.version + location.hash);
+      })
+      .catch(function () { /* offline: segue com a versão atual */ });
+  }
+
   function init() {
     if (!E) { showFatal('engine.js não carregado'); return; }
+    checkFreshVersion();
     loadData().then(function (d) {
       data = d;
       baseRoles = clone(d.roles);

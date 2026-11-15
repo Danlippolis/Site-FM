@@ -2,11 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="fm23pv-version" content="309b3ca5b6">
+  <meta name="fm23pv-version" content="706929950c">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FM23 Positioning Viewer</title>
   <meta name="description" content="Posição aproximada dos 11 jogadores em 3 fases (defendendo, saindo com a bola, no ataque) a partir da formação, funções e instruções de equipe do FM23.">
-  <link rel="stylesheet" href="src/ui/styles.css?v=309b3ca5b6">
+  <link rel="stylesheet" href="src/ui/styles.css?v=706929950c">
 </head>
 <body>
   <header class="topbar">
@@ -31,7 +31,12 @@
       </section>
 
       <section class="card">
-        <h2>Funções e tarefas</h2>
+        <div class="card-head">
+          <h2>Funções e tarefas</h2>
+          <button class="btn small" id="suggestBtn" title="Procura trocas de função e tarefa que melhoram o equilíbrio da tática">✨ Sugerir funções</button>
+        </div>
+        <p class="balance" id="balanceLine"></p>
+        <div id="suggestBox" class="suggest-box" hidden></div>
         <div id="playerList" class="player-list"></div>
       </section>
 
@@ -93,7 +98,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <!-- INLINE_DATA -->
-  <script src="src/engine/engine.js?v=309b3ca5b6"></script>
-  <script src="src/ui/app.js?v=309b3ca5b6"></script>
+  <script src="src/engine/engine.js?v=706929950c"></script>
+  <script src="src/ui/app.js?v=706929950c"></script>
 </body>
 </html>

@@ -530,7 +530,8 @@
       if (p.band === 'GK') p.tiDy = 0;
       else if (withBall) {
         // a linha defensiva também define a altura dos defensores com a bola (manual do FM23)
-        p.tiDy = ti.mentalityDy + (p.band === 'D' ? (ti.defLineY - defaultLineY) * defLineWithBall : 0);
+        // volantes acompanham a linha de defesa, para não ficarem colados nos zagueiros com linha alta
+        p.tiDy = ti.mentalityDy + (p.band === 'D' || p.band === 'DM' ? (ti.defLineY - defaultLineY) * defLineWithBall : 0);
       }
       else p.tiDy = (ti.defLineY - ph.y.D) + (p.band === 'AM' || p.band === 'ST' ? ti.loeDy : 0);
 

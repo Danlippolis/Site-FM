@@ -625,3 +625,15 @@ test('atacante adequado: contra bloco baixo pontua o Pivô, contra Gegenpress po
   assert.equal(score(p, 'bloco_baixo'), 0);
   assert.equal(score(tf, 'bloco_baixo'), 1);
 });
+
+test('saída de bola: com linha alta os volantes sobem junto e ficam à frente dos zagueiros', () => {
+  const P = [
+    { slot: 'GK', role: 'sweeper_keeper', duty: 'S' }, { slot: 'DCL', role: 'ball_playing_defender', duty: 'D' }, { slot: 'DC', role: 'central_defender', duty: 'Co' }, { slot: 'DCR', role: 'ball_playing_defender', duty: 'D' },
+    { slot: 'WBL', role: 'wing_back', duty: 'S' }, { slot: 'WBR', role: 'wing_back', duty: 'S' }, { slot: 'DMCL', role: 'segundo_volante', duty: 'S' }, { slot: 'DMCR', role: 'deep_lying_playmaker', duty: 'S' },
+    { slot: 'AMCL', role: 'attacking_midfielder', duty: 'A' }, { slot: 'AMCR', role: 'advanced_playmaker', duty: 'S' }, { slot: 'STC', role: 'complete_forward', duty: 'S' }];
+  for (const dl of [2, 3, 4]) {
+    const r = E.computePhase(P, 'saindo', noCol, { defensiveLine: dl });
+    const cb = Math.max(...['DCL', 'DC', 'DCR'].map((s) => byslot(r, s).y));
+    for (const dm of ['DMCL', 'DMCR']) assert.ok(byslot(r, dm).y - cb >= 7, `linha ${dl}: ${dm} ${byslot(r, dm).y} vs zagueiros ${cb}`);
+  }
+});

@@ -234,7 +234,7 @@
       },
       "S": {
         "locked": ["hold_position"],
-        "saindo": { "byBand": {"DM": {"dy": -3}, "M": {"dy": -4}} },
+        "saindo": { "byBand": {"DM": {"dy": 0}, "M": {"dy": -4}} },
         "ataque": { "byBand": {"DM": {"dy": 5}, "M": {"dy": -3}} }
       }
     }

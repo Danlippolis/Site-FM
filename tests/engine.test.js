@@ -563,3 +563,26 @@ test('o adversário usa as funções informadas (ex.: Atacante de Pressão sobe 
   const stY = (m) => Math.min(...m.saindo.opponent.players.filter((p) => p.band === 'ST').map((p) => p.y));
   assert.notEqual(stY(a), stY(b));
 });
+
+// ---------- sugestão considerando o adversário ----------
+
+test('com adversário, o índice ganha 5 critérios contra ele e continua entre 0 e 100', () => {
+  const opp = oppOf('4-4-2', 'pressao_alta');
+  const cache = E.opponentCache(data, opp, E.OPP_PHASES);
+  const ev = E.evaluateBalance(preset('4-2-3-1-dm-wide'), data, {}, cache);
+  assert.equal(ev.parts.length, 12);
+  assert.equal(ev.parts.filter((p) => p.vsOpp).length, 5);
+  assert.ok(ev.score >= 0 && ev.score <= 100 && ev.vsOpponent);
+});
+
+test('sugestão contra o adversário: não piora, é válida e pode diferir da sugestão sem adversário', () => {
+  const p = preset('4-2-3-1-dm-wide');
+  const plain = E.suggestRoles(p, data, {}, { maxChanges: 4 });
+  const results = data.opponent.styles.map((st) => E.suggestRoles(p, data, {}, { maxChanges: 4, opponent: oppOf('4-4-2', st.id) }));
+  for (const r of results) {
+    assert.ok(r.after.score >= r.before.score);
+    assert.deepEqual(E.validate(r.players, data).errors, []);
+  }
+  const key = (r) => r.changes.map((c) => c.slot + c.to.role + c.to.duty).join('|');
+  assert.ok(results.some((r) => key(r) !== key(plain)), 'o adversário deveria mudar a sugestão em pelo menos um estilo');
+});

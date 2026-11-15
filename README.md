@@ -127,7 +127,19 @@ No card **Funções e tarefas**, a linha *Equilíbrio da tática: N/100* mostra 
 | Jogadores sem se empilhar | 15 | pares a menos de 8 m entre si com a bola |
 | Tarefas equilibradas | 15 | distância de 3 Defender · 4 Apoio · 3 Ataque (referência do manual para mentalidade e fluidez equilibradas) |
 
-A busca é gulosa: a cada rodada aplica a troca que mais melhora o índice (até 6 trocas, ganho mínimo 0,5). Instruções individuais e características são mantidas (as que deixam de valer na nova função são removidas ao aplicar). O índice é uma heurística de boas práticas, não uma avaliação do motor do jogo; os pesos ficam em `evaluateBalance` no motor.
+**Com o adversário ligado**, o índice inclui também 5 critérios contra ele, medidos com os dois times nas mesmas fases (com impedimento):
+
+| Critério | Peso | Como mede |
+|---|---|---|
+| Jogadores entre as linhas dele | 15 | quantos dos nossos ficam entre a defesa e a linha seguinte dele, na progressão e no ataque (ideal 2–3) |
+| Superioridade nas pontas | 10 | em cada lado, nós em mais (ou igual) número que ele no terço final |
+| Jogadores livres de marcação | 15 | quantos dos nossos, do meio para frente, estão a 7 m ou mais do adversário mais próximo (ideal 3+) |
+| Atacantes dele vigiados | 15 | os 3 jogadores mais avançados dele com um dos nossos a até 10 m, no bloco médio e no bloco baixo |
+| Sem amontoar na linha dele | 5 | no máximo 2 dos nossos contidos na linha de impedimento no ataque |
+
+O adversário não depende das nossas funções, então é calculado uma vez e reaproveitado em todas as tentativas da busca (cerca de meio segundo no total).
+
+A busca é gulosa: a cada rodada aplica a troca que mais melhora o índice (até 6 trocas, ganho mínimo 2 pontos, para evitar trocas marginais). Instruções individuais e características são mantidas (as que deixam de valer na nova função são removidas ao aplicar). O índice é uma heurística de boas práticas, não uma avaliação do motor do jogo; os pesos ficam em `evaluateBalance` no motor.
 
 ## Adversário
 

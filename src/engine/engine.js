@@ -627,25 +627,38 @@
     var lo = (eng.clamp || [2, 98])[0], hi = (eng.clamp || [2, 98])[1];
     PHASES.forEach(function (ph) {
       var o = computeOpponentPhase(opp.players, ph, data, opp.styleId);
-      var ours = out[ph].players, theirs = o.players;
-      if (data.opponent.offside) {
-        // nós defendendo: eles atacam para baixo; nas fases com bola, nós atacamos para cima
-        var weAttack = isWithBall(data.formations, ph);
-        var attackers = weAttack ? ours : theirs, defenders = weAttack ? theirs : ours;
-        if (applyOffside(attackers, defenders, weAttack)) {
-          resolveCollisions(attackers, eng.collisionMinDist, eng.collisionIterations, eng.collisionAspect);
-          applyOffside(attackers, defenders, weAttack);
-        }
-      }
-      [ours, theirs].forEach(function (team) {
-        team.forEach(function (p) {
-          p.x = Math.round(clamp(p.x, lo, hi) * 10) / 10;
-          p.y = Math.round(clamp(p.y, lo, hi) * 10) / 10;
-        });
-      });
-      out[ph].opponent = { players: theirs, style: o.style, label: o.label };
+      settleMatchPhase(out[ph].players, o.players, ph, data);
+      out[ph].opponent = { players: o.players, style: o.style, label: o.label };
     });
     return out;
+  }
+
+  /** Impedimento entre os dois times numa fase (nós com a bola = atacamos para cima) e clamp final. */
+  function settleMatchPhase(ours, theirs, ph, data) {
+    var eng = data.instructions.engine || {};
+    var lo = (eng.clamp || [2, 98])[0], hi = (eng.clamp || [2, 98])[1];
+    if (data.opponent.offside) {
+      var weAttack = isWithBall(data.formations, ph);
+      var attackers = weAttack ? ours : theirs, defenders = weAttack ? theirs : ours;
+      if (applyOffside(attackers, defenders, weAttack)) {
+        resolveCollisions(attackers, eng.collisionMinDist, eng.collisionIterations, eng.collisionAspect);
+        applyOffside(attackers, defenders, weAttack);
+      }
+    }
+    [ours, theirs].forEach(function (team) {
+      team.forEach(function (p) {
+        p.x = Math.round(clamp(p.x, lo, hi) * 10) / 10;
+        p.y = Math.round(clamp(p.y, lo, hi) * 10) / 10;
+      });
+    });
+  }
+
+  /** Adversário calculado uma vez por fase (não depende das nossas funções); reaproveitado na busca. */
+  function opponentCache(data, opp, phases) {
+    if (!opp || !opp.enabled || !opp.players || !data.opponent) return null;
+    var c = {};
+    phases.forEach(function (ph) { c[ph] = computeOpponentPhase(opp.players, ph, data, opp.styleId); });
+    return c;
   }
 
   // ---------- equilíbrio da tática e sugestão de funções ----------
@@ -668,7 +681,69 @@
    * compactação do bloco médio, jogadores empilhados e distribuição de tarefas (manual do FM23:
    * mentalidade e fluidez equilibradas = 3 Defender, 4 Apoio, 3 Ataque).
    */
-  function evaluateBalance(players, data, tiState) {
+  var OPP_PHASES = ['progressao', 'ataque', 'defendendo', 'bloco_baixo'];
+
+  function dist(a, b) { return Math.hypot((a.x - b.x) * 0.68, (a.y - b.y) * 1.05); }
+
+  /**
+   * Critérios contra o adversário (nas fases em que os dois se enfrentam): jogadores entre as linhas
+   * dele, superioridade nas pontas, jogadores livres, atacantes dele vigiados e não amontoar na linha dele.
+   */
+  function opponentParts(players, data, tiState, cache, add) {
+    var M = {};
+    OPP_PHASES.forEach(function (ph) {
+      var ours = computePhase(players, ph, data, tiState).players.map(function (p) { return Object.assign({}, p); });
+      var theirs = cache[ph].players.map(function (p) { return Object.assign({}, p); });
+      settleMatchPhase(ours, theirs, ph, data);
+      M[ph] = { ours: ours.filter(function (p) { return p.band !== 'GK'; }), theirs: theirs.filter(function (p) { return p.band !== 'GK'; }) };
+    });
+
+    // 1) entre as linhas dele (defesa e linha seguinte), na progressão e no ataque
+    var between = ['progressao', 'ataque'].map(function (ph) {
+      var lines = teamShape(M[ph].theirs, { attackingDown: true }).lines;
+      if (lines.length < 2) return 0;
+      var mean = function (l) { return l.reduce(function (t, p) { return t + p.y; }, 0) / l.length; };
+      var top = mean(lines[0]) - 2, bottom = mean(lines[1]) + 2;
+      return M[ph].ours.filter(function (p) { return p.y > bottom && p.y < top; }).length;
+    });
+    var bscore = function (n) { return n === 2 || n === 3 ? 1 : n === 1 || n === 4 ? 0.6 : 0; };
+    add('entrelinhas', 'Jogadores entre as linhas dele', 15, (bscore(between[0]) + bscore(between[1])) / 2,
+      between[0] + ' na progressão e ' + between[1] + ' no ataque entre a defesa e o meio dele (ideal 2–3)', true);
+
+    // 2) superioridade nas pontas no ataque
+    var side = function (test) {
+      var o = M.ataque.ours.filter(function (p) { return test(p.x) && p.y >= 60; }).length;
+      var t = M.ataque.theirs.filter(function (p) { return test(p.x) && p.y >= 60; }).length;
+      return { o: o, t: t, s: o === 0 ? 0 : o > t ? 1 : o === t ? 0.6 : 0.2 };
+    };
+    var L = side(function (x) { return x < 25; }), Rr = side(function (x) { return x > 75; });
+    add('pontas', 'Superioridade nas pontas', 10, (L.s + Rr.s) / 2,
+      'esquerda ' + L.o + ' × ' + L.t + ', direita ' + Rr.o + ' × ' + Rr.t + ' no terço final (nós × eles)', true);
+
+    // 3) jogadores livres (>= 7 m do adversário mais próximo) do meio para frente
+    var free = ['progressao', 'ataque'].map(function (ph) {
+      return M[ph].ours.filter(function (p) {
+        return p.y >= 45 && Math.min.apply(null, M[ph].theirs.map(function (q) { return dist(p, q); })) >= 7;
+      }).length;
+    });
+    add('livres', 'Jogadores livres de marcação', 15, (Math.min(1, free[0] / 3) + Math.min(1, free[1] / 3)) / 2,
+      free[0] + ' na progressão e ' + free[1] + ' no ataque a 7 m ou mais do adversário mais próximo (ideal 3+)', true);
+
+    // 4) atacantes dele vigiados no bloco médio e no bloco baixo
+    var watched = ['defendendo', 'bloco_baixo'].map(function (ph) {
+      var fwd = M[ph].theirs.slice().sort(function (a, b) { return a.y - b.y; }).slice(0, 3);
+      return fwd.filter(function (q) { return M[ph].ours.some(function (p) { return dist(p, q) <= 10; }); }).length;
+    });
+    add('vigiados', 'Atacantes dele vigiados', 15, (watched[0] + watched[1]) / 6,
+      watched[0] + '/3 no bloco médio e ' + watched[1] + '/3 no bloco baixo com um dos nossos a até 10 m', true);
+
+    // 5) não amontoar na linha de impedimento dele
+    var held = M.ataque.ours.filter(function (p) { return p.offside; }).length;
+    add('linha', 'Sem amontoar na linha dele', 5, held <= 2 ? 1 : held === 3 ? 0.5 : 0,
+      held + ' jogador(es) contidos na linha de impedimento no ataque (ideal até 2)', true);
+  }
+
+  function evaluateBalance(players, data, tiState, oppCacheArg) {
     var ti = resolveInstructions(data.instructions, tiState);
     var map = (data.instructions.engine || {}).autoDutyByMentality;
     var atk = computePhase(players, 'ataque', data, tiState).players;
@@ -676,7 +751,7 @@
     var def = computePhase(players, 'defendendo', data, tiState).players;
     var out = function (ps) { return ps.filter(function (p) { return p.band !== 'GK'; }); };
     var parts = [];
-    function add(key, label, weight, score, detail) { parts.push({ key: key, label: label, weight: weight, score: Math.max(0, Math.min(1, score)), detail: detail }); }
+    function add(key, label, weight, score, detail, vsOpp) { parts.push({ key: key, label: label, weight: weight, score: Math.max(0, Math.min(1, score)), detail: detail, vsOpp: !!vsOpp }); }
 
     var front = out(atk).filter(function (p) { return p.y >= 65; });
     var lanes = lanesOccupied(front);
@@ -715,9 +790,11 @@
     var dev = Math.abs(cnt.D - 3) + Math.abs(cnt.S - 4) + Math.abs(cnt.A - 3);
     add('tarefas', 'Tarefas equilibradas', 15, 1 - dev / 6, cnt.D + ' Defender · ' + cnt.S + ' Apoio · ' + cnt.A + ' Ataque (referência do manual: 3 · 4 · 3)');
 
+    if (oppCacheArg) opponentParts(players, data, tiState, oppCacheArg, add);
+
     var total = parts.reduce(function (t, p) { return t + p.weight * p.score; }, 0) /
       parts.reduce(function (t, p) { return t + p.weight; }, 0) * 100;
-    return { score: Math.round(total * 10) / 10, parts: parts };
+    return { score: Math.round(total * 10) / 10, parts: parts, vsOpponent: !!oppCacheArg };
   }
 
   /**
@@ -727,10 +804,12 @@
    */
   function suggestRoles(players, data, tiState, opts) {
     opts = opts || {};
-    var maxChanges = opts.maxChanges || 6, minGain = opts.minGain == null ? 0.5 : opts.minGain;
+    var cache = opts.opponent ? opponentCache(data, opts.opponent, OPP_PHASES) : null;
+    opts = opts || {};
+    var maxChanges = opts.maxChanges || 6, minGain = opts.minGain == null ? 2 : opts.minGain;
     var roles = data.roles, formations = data.formations;
     var cur = players.map(function (p) { return Object.assign({}, p); });
-    var before = evaluateBalance(cur, data, tiState), best = before;
+    var before = evaluateBalance(cur, data, tiState, cache), best = before;
     var cbs = cur.filter(function (p) { return isCentreBack(formations, p.slot); }).length;
     var changes = [];
     for (var round = 0; round < maxChanges; round++) {
@@ -743,7 +822,7 @@
             if (rk === p.role && dk === p.duty) return;
             var trial = cur.slice();
             trial[i] = Object.assign({}, p, { role: rk, duty: dk });
-            var ev = evaluateBalance(trial, data, tiState);
+            var ev = evaluateBalance(trial, data, tiState, cache);
             if (!top || ev.score > top.ev.score) top = { i: i, role: rk, duty: dk, ev: ev };
           });
         });
@@ -867,6 +946,7 @@
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,
     overrideFromPosition: overrideFromPosition, applyOverride: applyOverride,
     deltaFromPosition: deltaFromPosition, teamShape: teamShape, isWithBall: isWithBall,
-    evaluateBalance: evaluateBalance, suggestRoles: suggestRoles
+    evaluateBalance: evaluateBalance, suggestRoles: suggestRoles, opponentCache: opponentCache,
+    OPP_PHASES: OPP_PHASES
   };
 });

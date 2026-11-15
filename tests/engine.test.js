@@ -367,3 +367,13 @@ test('DLP (S) no volante fica à frente dos zagueiros no ataque; no meio-campo, 
   const r2 = E.computePhase(p2, 'ataque', noCol, {});
   assert.ok(byslot(r2, 'MCL').y < byslot(r2, 'MCR').y, 'DLP no MC abaixo do Box-to-Box');
 });
+
+test('na saída de bola o Construtor Avançado recua para receber e o Meia Ofensivo (A) fica alto', () => {
+  const p = preset('3-5-2-wb').map((x) => ({ ...x }));
+  // dois meias ofensivos lado a lado, como no 3-4-2-1 do usuário
+  const i1 = p.findIndex((x) => x.slot === 'MCL'), i2 = p.findIndex((x) => x.slot === 'MCR');
+  p[i1] = { slot: 'AMCL', role: 'attacking_midfielder', duty: 'A' };
+  p[i2] = { slot: 'AMCR', role: 'advanced_playmaker', duty: 'S' };
+  const res = E.computePhase(p, 'saindo', noCol, {});
+  assert.ok(byslot(res, 'AMCL').y - byslot(res, 'AMCR').y >= 8, `${byslot(res, 'AMCL').y} vs ${byslot(res, 'AMCR').y}`);
+});

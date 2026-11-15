@@ -244,7 +244,7 @@ test('deambular: zona só nas fases com bola; embutido no Trequartista; PI para 
   p.find((x) => x.slot === 'DMCL').instructions = ['roam_from_position'];
   const all = E.computeAll(p, data, {});
   assert.equal(byslot(all.defendendo, 'AMC').zone, null);
-  assert.deepEqual(byslot(all.ataque, 'AMC').zone, { rx: 14, ry: 8 }, 'deambular + corredores embutidos');
+  assert.deepEqual(byslot(all.ataque, 'AMC').zone, { rx: 18, ry: 8 }, 'deambular + corredores embutidos');
   assert.equal(byslot(all.ataque, 'DMCL').zone.rx, 8);
   assert.equal(byslot(all.saindo, 'DMCL').zone.rx, 6);
   const info = E.slotInfo(data.formations, 'AMC');
@@ -292,7 +292,7 @@ test('"Mover-se para os corredores": zona horizontal no centroavante central; fe
   Object.assign(p.find((x) => x.slot === 'AMR'), { role: 'winger', duty: 'S', instructions: ['move_into_channels'] });
   const base = E.computePhase(preset('4-2-3-1-wide').map((x) => (x.slot === 'AMR' ? { ...x, role: 'winger', duty: 'S' } : x)), 'ataque', data, {});
   const res = E.computePhase(p, 'ataque', data, {});
-  assert.deepEqual(byslot(res, 'STC').zone, { rx: 14, ry: 4 });
+  assert.deepEqual(byslot(res, 'STC').zone, { rx: 18, ry: 4 });
   assert.ok(byslot(res, 'AMR').x < byslot(base, 'AMR').x);
 });
 
@@ -384,7 +384,7 @@ test('guia FM23 (Seif Khaled): corridas laterais do AP/Carrilero e corredores em
   Object.assign(p.find((x) => x.slot === 'STC'), { role: 'advanced_forward', duty: 'A' });
   const res = E.computePhase(p, 'ataque', data, {});
   assert.deepEqual(byslot(res, 'MCR').zone, { rx: 8, ry: 3 }, 'Carrilero: zona lateral');
-  assert.deepEqual(byslot(res, 'STC').zone, { rx: 14, ry: 8 }, 'Avançado: corredores + deambular');
+  assert.deepEqual(byslot(res, 'STC').zone, { rx: 18, ry: 8 }, 'Avançado: corredores + deambular');
   assert.ok(data.roles.libero.duties.S && data.roles.libero.duties.A && !data.roles.libero.uncertain);
 });
 
@@ -419,4 +419,10 @@ test('"Recua para buscar a bola" baixa o atacante; "Não se move para os corredo
   const res = E.computePhase(p, 'saindo', noCol, {});
   assert.equal(byslot(base, 'STC').y - byslot(res, 'STC').y, 6);
   assert.equal(byslot(res, 'STC').zone.rx, byslot(res, 'STC').zone.ry, 'só a zona circular do deambular');
+});
+
+test('glossário do FM23: a zona de corredor do centroavante chega ao espaço entre zagueiro e lateral (x ~32/68)', () => {
+  const p = preset('4-3-3-dm-wide').map((x) => (x.slot === 'STC' ? { ...x, role: 'target_forward', duty: 'S', instructions: ['move_into_channels'] } : { ...x }));
+  const st = byslot(E.computePhase(p, 'ataque', data, {}), 'STC');
+  assert.ok(st.x - st.zone.rx <= 33 && st.x + st.zone.rx >= 67, `${st.x} ± ${st.zone.rx}`);
 });

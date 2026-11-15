@@ -51,7 +51,7 @@ Botão **PI** ao lado de cada jogador abre as instruções disponíveis para aqu
 | Fechar mais (Sit Narrower) | para dentro 4 / 7 |
 | Cortar para dentro com a bola (Cut Inside With Ball) | ataque: para dentro 5 |
 | Correr pela lateral com a bola (Run Wide With Ball) | ataque: para fora 4 |
-| Mover-se para os corredores (Move Into Channels) | meio, meia e ataque. CL/CR: para fora 4 / 8. Slot central: zona horizontal de ±10 / ±14 (os dois corredores). Abertos: para dentro 4 / 6 |
+| Mover-se para os corredores (Move Into Channels) | meio, meia e ataque. CL/CR: para fora 5 / 10. Slot central: zona horizontal de ±12 / ±18 (os dois corredores). Abertos: para dentro 4 / 6 |
 | Cruzar da linha de fundo / Cruzar de trás | ataque dy +3 / −5 |
 | Pressionar com mais / menos urgência (Trigger Press More/Less) | defendendo dy +3 / −3 |
 
@@ -117,6 +117,8 @@ Limitações: o adversário usa as funções do atalho de formação (sem editar
 4. **[Guia de funções do FM23/FM24 de Seif Khaled](https://seifkhaled.me/player-roles-guide-for-football-manager-2023/)** (PDF enviado pelo usuário): lista as **instruções ocultas** de cada função (goleiros, defensores, meio-campistas). Delas vieram: o DLP vem buscar a bola na saída ("collect the ball more"), o Box-to-Box volta mais ("track back more"), o Construtor Avançado e o Carrilero ganham zona de corridas laterais ("make more lateral runs"), o Half-Back recua com a bola ("drop deep more", confirmando a spec) e o Líbero do FM23 tem tarefas Apoio/Ataque. O guia lista "Move Into Channels" embutido na Mezzala; o Rate My Tactic usa a mesma marcação para Trequartista, Segundo Atacante, Atacante Recuado, Avançado, Atacante Completo e Atacante de Pressão (A), então assumi que também está embutido neles (inferência). As imagens do guia (mapas de calor) não vieram no PDF.
 
 5. **Manual oficial do FM23, seção Players** (PDF enviado pelo usuário): definições oficiais das características do jogador (Player Traits), usadas em `data/player-traits.json`, e a regra de que instruções podem anular características.
+
+6. **Manual oficial do FM23: Football Glossary, Playing a Match e Your Squad** (PDFs enviados pelo usuário). O glossário define *channel* como o espaço entre zagueiro e lateral (a zona de corredor foi ampliada para alcançá-lo) e confirma a regra de impedimento usada (não há impedimento no próprio campo). "Playing a Match" confirma o comportamento do Atacante Interior com "Cortar para dentro" (sai da linha lateral para o centro com a bola). Os demais trechos não tratam de posição.
 
 **Nenhuma fonte dá coordenadas.** As descrições ("recua um pouco", "sobe para pressionar") foram convertidas por mim em números, que servem de ponto de partida para calibrar. O fórum da SI, o FMInside, o Passion4FM e o sortitoutsi bloqueiam acesso automatizado e não foram lidos.
 

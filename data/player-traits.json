@@ -60,8 +60,8 @@
       "bands": ["M", "AM", "ST"],
       "excludes": ["does_not_move_into_channels"],
       "phases": {
-        "saindo": { "outside": 3, "centerSpread": 8, "wideInside": 3 },
-        "ataque": { "outside": 6, "centerSpread": 12, "wideInside": 5 }
+        "saindo": { "outside": 4, "centerSpread": 10, "wideInside": 3 },
+        "ataque": { "outside": 8, "centerSpread": 16, "wideInside": 5 }
       }
     },
     "does_not_move_into_channels": {

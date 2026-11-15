@@ -15,7 +15,7 @@
 
   var data = null, baseRoles = null, lastComputed = null;
   var state = null;
-  var ui = { ghost: false, shapes: true, edit: false, tab: 'saindo', group: 'todas', collapsed: false, selectedSlot: null, piOpen: null, info: {} };
+  var ui = { ghost: false, shapes: true, edit: false, tab: 'saindo', group: 'todas', collapsed: false, selectedSlot: null, piOpen: null, info: {}, suggestion: null, undo: null };
   var anim = { on: false, step: 0, timer: null };
   var drag = null;
 
@@ -267,6 +267,7 @@
     $('layout').classList.toggle('collapsed', ui.collapsed);
 
     $('animate').addEventListener('click', toggleAnim);
+    $('suggestBtn').addEventListener('click', runSuggestion);
 
     $('exportTactic').addEventListener('click', function () {
       download('tatica-fm23-' + state.presetId + '.json', {
@@ -873,6 +874,114 @@
     renderAll();
   }
 
+  // ---------- equilíbrio e sugestão de funções ----------
+
+  function roleName(r, d) {
+    var role = data.roles[r];
+    return (role ? role.label : r) + ' (' + (E.DUTIES[d] || { label: d }).label + ')';
+  }
+
+  function renderBalanceLine() {
+    var line = $('balanceLine');
+    if (!E.validate(state.players, data).ok) { line.textContent = ''; return; }
+    var ev = E.evaluateBalance(state.players, data, state.ti);
+    line.textContent = 'Equilíbrio da tática: ' + Math.round(ev.score) + '/100';
+    line.title = ev.parts.map(function (p) { return p.label + ': ' + Math.round(p.score * 100) + '% — ' + p.detail; }).join('\n');
+  }
+
+  function runSuggestion() {
+    var box = $('suggestBox');
+    box.hidden = false;
+    box.textContent = 'Calculando…';
+    setTimeout(function () {
+      ui.suggestion = E.suggestRoles(state.players, data, state.ti, { maxChanges: 6 });
+      ui.suggestion.base = clone(state.players);
+      renderSuggestion();
+    }, 20);
+  }
+
+  function renderSuggestion() {
+    var box = $('suggestBox'), sug = ui.suggestion;
+    box.textContent = '';
+    if (!sug) { box.hidden = true; return; }
+    box.hidden = false;
+    var head = el('div', { class: 'sg-head' });
+    head.appendChild(el('b', null, 'Equilíbrio ' + Math.round(sug.before.score) + ' → ' + Math.round(sug.after.score)));
+    var close = el('button', { class: 'icon-btn sg-close', type: 'button', 'aria-label': 'Fechar sugestões' }, '×');
+    close.addEventListener('click', function () { ui.suggestion = null; renderSuggestion(); });
+    head.appendChild(close);
+    box.appendChild(head);
+
+    var table = el('div', { class: 'sg-parts' });
+    sug.before.parts.forEach(function (p, i) {
+      var a = Math.round(p.score * 100), b = Math.round(sug.after.parts[i].score * 100);
+      var row = el('div', { class: 'sg-part' + (b > a ? ' up' : b < a ? ' down' : '') , title: sug.after.parts[i].detail });
+      row.appendChild(el('span', null, p.label));
+      row.appendChild(el('span', { class: 'sg-val' }, a === b ? a + '%' : a + '% → ' + b + '%'));
+      table.appendChild(row);
+    });
+    box.appendChild(table);
+
+    if (!sug.changes.length) {
+      box.appendChild(el('p', { class: 'hint' }, 'Nenhuma troca de função melhora o equilíbrio desta tática. 👍'));
+      return;
+    }
+    box.appendChild(el('div', { class: 'pi-group' }, 'Trocas sugeridas (na ordem em que foram encontradas)'));
+    var checks = [];
+    sug.changes.forEach(function (c) {
+      var lab = el('label', { class: 'check sg-change' });
+      var cb = el('input', { type: 'checkbox' });
+      cb.checked = true;
+      checks.push(cb);
+      lab.appendChild(cb);
+      var txt = el('span', { class: 'pi-text' });
+      txt.appendChild(el('b', null, c.slot + ': '));
+      txt.appendChild(document.createTextNode(roleName(c.from.role, c.from.duty) + ' → ' + roleName(c.to.role, c.to.duty) + '  (+' + c.gain + ')'));
+      if (c.improved && c.improved.length) txt.appendChild(el('small', null, 'melhora: ' + c.improved.join(', ').toLowerCase()));
+      lab.appendChild(txt);
+      box.appendChild(lab);
+    });
+    var row = el('div', { class: 'row sg-actions' });
+    var apply = el('button', { class: 'btn primary small', type: 'button' }, 'Aplicar selecionadas');
+    apply.addEventListener('click', function () {
+      ui.undo = clone(state.players);
+      sug.changes.forEach(function (c, k) {
+        if (!checks[k].checked) return;
+        var p = state.players[c.index];
+        if (!p || p.slot !== c.slot) return;
+        p.role = c.to.role; p.duty = c.to.duty;
+        fixPlayer(p);
+      });
+      ui.suggestion = null;
+      renderSuggestion();
+      renderAll();
+      showUndo();
+    });
+    row.appendChild(apply);
+    box.appendChild(row);
+    box.appendChild(el('p', { class: 'hint' }, 'O índice é heurístico: mede corredores ocupados e presença na área no ataque, proteção atrás da bola, linhas de passe na saída, compactação sem a bola, jogadores empilhados e tarefas (referência 3 D · 4 S · 3 A do manual). Confira no jogo.'));
+  }
+
+  function showUndo() {
+    var box = $('suggestBox');
+    box.hidden = false;
+    box.textContent = '';
+    var row = el('div', { class: 'row sg-actions' });
+    row.appendChild(el('span', { class: 'hint' }, 'Funções aplicadas.'));
+    var undo = el('button', { class: 'btn small', type: 'button' }, 'Desfazer');
+    undo.addEventListener('click', function () {
+      if (ui.undo) state.players = ui.undo;
+      ui.undo = null;
+      box.hidden = true;
+      renderAll();
+      toast('Funções restauradas.');
+    });
+    var ok = el('button', { class: 'btn small', type: 'button' }, 'OK');
+    ok.addEventListener('click', function () { ui.undo = null; box.hidden = true; });
+    row.appendChild(undo); row.appendChild(ok);
+    box.appendChild(row);
+  }
+
   function renderValidation(v, extra) {
     var box = $('validation');
     box.textContent = '';
@@ -928,6 +1037,9 @@
     renderSlotGrid();
     renderPlayerList();
     renderValidation(v, extra);
+    renderBalanceLine();
+    // sugestão calculada para outra tática fica desatualizada
+    if (ui.suggestion && JSON.stringify(ui.suggestion.base) !== JSON.stringify(state.players)) { ui.suggestion = null; renderSuggestion(); }
     renderFields();
     $('rolesStatus').textContent = lsGet(LS_ROLES)
       ? 'Usando regras personalizadas (salvas neste navegador). Exporte o roles.json para guardar.'

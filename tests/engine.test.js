@@ -491,3 +491,45 @@ test('estrutura do adversário (ataca para baixo) mede a última linha a partir 
 test('estrutura com a bola mostra o escalonamento (4-2-3-1 vira 2-4-3-1 na saída)', () => {
   assert.equal(E.teamShape(E.computePhase(preset('4-2-3-1-dm-wide'), 'saindo', data, {}).players).shape, '2-4-3-1');
 });
+
+// ---------- equilíbrio e sugestão de funções ----------
+
+test('índice de equilíbrio fica entre 0 e 100 e tem os 7 critérios', () => {
+  for (const pr of data.formations.presets) {
+    const ev = E.evaluateBalance(pr.players, data, {});
+    assert.ok(ev.score >= 0 && ev.score <= 100, pr.id);
+    assert.equal(ev.parts.length, 7);
+  }
+});
+
+test('tarefas: 3 D / 4 S / 3 A pontua mais que todo mundo em Ataque', () => {
+  const p = preset('4-2-3-1-dm-wide');
+  const allA = p.map((x) => {
+    if (x.slot === 'GK') return x;
+    const r = data.roles[x.role];
+    return r.duties.A ? { ...x, duty: 'A' } : x;
+  });
+  const t = (pl) => E.evaluateBalance(pl, data, {}).parts.find((q) => q.key === 'tarefas').score;
+  assert.ok(t(p) > t(allA));
+});
+
+test('sugestão nunca piora o índice, mantém slots e só usa funções válidas', () => {
+  for (const id of ['4-2-3-1-dm-wide', '4-3-3-dm-wide', '4-4-2']) {
+    const p = preset(id);
+    const sug = E.suggestRoles(p, data, {}, { maxChanges: 4 });
+    assert.ok(sug.after.score >= sug.before.score, id);
+    assert.deepEqual(sug.players.map((x) => x.slot), p.map((x) => x.slot));
+    assert.deepEqual(E.validate(sug.players, data).errors, [], id);
+    for (const c of sug.changes) assert.ok(c.gain > 0);
+  }
+});
+
+test('sugestão melhora uma tática desequilibrada (todos em Defender)', () => {
+  const p = preset('4-2-3-1-dm-wide').map((x) => {
+    if (x.slot === 'GK') return x;
+    const r = data.roles[x.role];
+    return r.duties.D ? { ...x, duty: 'D' } : x;
+  });
+  const sug = E.suggestRoles(p, data, {}, { maxChanges: 5 });
+  assert.ok(sug.changes.length > 0 && sug.after.score - sug.before.score > 5, `${sug.before.score} → ${sug.after.score}`);
+});

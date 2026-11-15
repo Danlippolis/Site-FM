@@ -132,6 +132,22 @@ select {
 .pi-box .check small { display: block; color: var(--muted); font-size: 11.5px; }
 .pi-group { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 6px 0 2px; }
 .pi-group:first-child { margin-top: 0; }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+.card-head h2 { margin: 0; }
+.card-head .btn.small { margin-top: 0; }
+.balance { margin: 0 0 8px; font-size: 12.5px; color: var(--muted); cursor: help; }
+.suggest-box { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 10px; margin-bottom: 10px; font-size: 12.5px; }
+.sg-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 14px; }
+.sg-close { width: 28px; height: 28px; }
+.sg-parts { display: grid; gap: 2px; margin-bottom: 6px; }
+.sg-part { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); }
+.sg-part.up { color: var(--accent); font-weight: 600; }
+.sg-part.down { color: var(--danger); }
+.sg-val { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sg-change { margin: 6px 0; }
+.sg-change small { display: block; color: var(--muted); }
+.sg-actions { align-items: center; margin-top: 6px; flex-wrap: wrap; }
+.sg-actions .btn.small { margin-top: 0; }
 .pi-box .check small.warn-note { color: var(--warn); }
 .btn.small { min-height: 28px; padding: 3px 10px; font-size: 12px; margin-top: 6px; }
 .prow select { font-size: 12.5px; padding: 4px 6px; min-height: 30px; width: 100%; }

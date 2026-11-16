@@ -1,0 +1,59 @@
+{
+  "note": "Alertas de combinação tirados dos riscos do Book of Roles (Daljit Singh, FM23). A detecção de cada regra está em tacticalAlerts (src/engine/engine.js); aqui ficam o texto, a página do livro e a função ligada ao guia. {slots} vira a lista de slots envolvidos. Cada alerta tira pontos do critério 'Combinações sem risco conhecido' do índice de equilíbrio.",
+  "balanceWeight": 10,
+  "penaltyPerAlert": 0.35,
+  "rules": {
+    "ap_overlap": {
+      "role": "advanced_playmaker", "page": 77,
+      "text": "{slots}: o overlap do mesmo lado atrapalha as corridas do Construtor Avançado. Tire o overlap desse lado ou troque a função."
+    },
+    "mez_iw_same_side": {
+      "role": "mezzala", "page": 119,
+      "text": "{slots}: Mezzala e Extremo Invertido do mesmo lado ocupam o mesmo meio-espaço. A sobrecarga só rende se os dois cruzarem bem na diagonal."
+    },
+    "iw_bbm_same_side": {
+      "role": "inverted_winger", "page": 119,
+      "text": "{slots}: com o Box-to-Box do mesmo lado, o Extremo Invertido pode ficar isolado, porque o BBM não abre. Um lateral fazendo overlap ajuda."
+    },
+    "wp_isolated": {
+      "role": "wide_playmaker", "page": 79,
+      "text": "{slots}: o jogo tende a se concentrar no outro lado (funções dinâmicas lá), e o Construtor Aberto pode ser esquecido."
+    },
+    "enganche_no_movers": {
+      "role": "enganche", "page": 93,
+      "text": "{slots}: o Enganche é um ponto fixo e precisa de gente se movimentando em volta (tarefas de Ataque, quem deambula ou abre pelos canais). Com menos de dois assim, tende a ser ignorado."
+    },
+    "af_lone": {
+      "role": "advanced_forward", "page": 143,
+      "text": "{slots}: Avançado sozinho sem nenhum jogador aberto em Ataque tende a sair em carreira solo. O livro sugere um extremo em Ataque como apoio."
+    },
+    "regista_bypassed": {
+      "role": "regista", "page": 46,
+      "text": "{slots}: com Zagueiro Simples lançando direto e mentalidade alta, o Regista pode virar espectador. \"Jogar pelo meio\" ajuda, mas não resolve tudo."
+    },
+    "roamer_unscreened": {
+      "role": "roaming_playmaker", "page": 48,
+      "text": "{slots}: função que deambula na faixa de volante sem ninguém que segure a posição na frente da defesa. Pense em quem protege esse espaço quando ele sai."
+    },
+    "mezzala_no_cover": {
+      "role": "mezzala", "page": 69,
+      "text": "{slots}: a Mezzala (A) deixa a marcação com os colegas e precisa de um ladrão de bola ou de um meio-campista que segure a posição por perto."
+    },
+    "treq_press": {
+      "role": "trequartista", "page": 98,
+      "text": "{slots}: com linha de pressão alta, o Trequartista na meia não acompanha a pressão do resto da frente."
+    },
+    "wb_attack_no_width": {
+      "role": "wing_back", "page": 25,
+      "text": "{slots}: ala em Ataque como única largura daquele lado tende a ter os cruzamentos bloqueados (sai mais escanteio que cruzamento). Considere Apoio."
+    },
+    "ss_vs_two_dm": {
+      "role": "shadow_striker", "page": 104,
+      "text": "{slots}: o adversário joga com dois volantes, e o Segundo Atacante sofre com a falta de espaço."
+    },
+    "raumdeuter_no_overload": {
+      "role": "raumdeuter", "page": 109,
+      "text": "{slots}: o Raumdeuter precisa de sobrecarga no lado oposto para ter espaço, e lá há menos de dois jogadores em Ataque."
+    }
+  }
+}

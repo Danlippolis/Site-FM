@@ -2,11 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="fm23pv-version" content="4cbd1cb834">
+  <meta name="fm23pv-version" content="a08f86a5dc">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FM23 Positioning Viewer</title>
   <meta name="description" content="Posição aproximada dos 11 jogadores em 3 fases (defendendo, saindo com a bola, no ataque) a partir da formação, funções e instruções de equipe do FM23.">
-  <link rel="stylesheet" href="src/ui/styles.css?v=4cbd1cb834">
+  <link rel="stylesheet" href="src/ui/styles.css?v=a08f86a5dc">
 </head>
 <body>
   <header class="topbar">
@@ -95,10 +95,22 @@
     </main>
   </div>
 
+  <dialog class="guide" id="guide" aria-labelledby="guideTitle">
+    <div class="guide-head">
+      <div class="guide-title">
+        <h2 id="guideTitle"></h2>
+        <select id="guideRole" aria-label="Ver outra função"></select>
+      </div>
+      <button class="icon-btn" id="guideClose" type="button" aria-label="Fechar">✕</button>
+    </div>
+    <div class="guide-duties" id="guideDuties" role="group" aria-label="Tarefa"></div>
+    <div class="guide-body" id="guideBody"></div>
+  </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <!-- INLINE_DATA -->
-  <script src="src/engine/engine.js?v=4cbd1cb834"></script>
-  <script src="src/ui/app.js?v=4cbd1cb834"></script>
+  <script src="src/engine/engine.js?v=a08f86a5dc"></script>
+  <script src="src/ui/app.js?v=a08f86a5dc"></script>
 </body>
 </html>

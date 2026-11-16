@@ -1,0 +1,751 @@
+{
+  "source": {
+    "title": "The Book of Roles",
+    "author": "Daljit Singh",
+    "year": 2023,
+    "game": "FM23",
+    "note": "Resumo próprio do livro (não é o texto original). Os atributos estão em português com o nome em inglês na dica; a tradução é do site e pode não bater exatamente com a do jogo."
+  },
+  "attributes": {
+    "acceleration": { "label": "Aceleração", "en": "Acceleration" },
+    "aerial_ability": { "label": "Alcance aéreo", "en": "Aerial Ability" },
+    "aggression": { "label": "Agressividade", "en": "Aggression" },
+    "agility": { "label": "Agilidade", "en": "Agility" },
+    "anticipation": { "label": "Antecipação", "en": "Anticipation" },
+    "balance": { "label": "Equilíbrio", "en": "Balance" },
+    "bravery": { "label": "Bravura", "en": "Bravery" },
+    "command_of_area": { "label": "Domínio da área", "en": "Command of Area" },
+    "communication": { "label": "Comunicação", "en": "Communication" },
+    "composure": { "label": "Compostura", "en": "Composure" },
+    "concentration": { "label": "Concentração", "en": "Concentration" },
+    "crossing": { "label": "Cruzamento", "en": "Crossing" },
+    "decisions": { "label": "Decisões", "en": "Decisions" },
+    "determination": { "label": "Determinação", "en": "Determination" },
+    "dribbling": { "label": "Drible", "en": "Dribbling" },
+    "eccentricity": { "label": "Excentricidade", "en": "Eccentricity" },
+    "finishing": { "label": "Finalização", "en": "Finishing" },
+    "first_touch": { "label": "Primeiro toque", "en": "First Touch" },
+    "flair": { "label": "Talento", "en": "Flair" },
+    "handling": { "label": "Segurar a bola", "en": "Handling" },
+    "heading": { "label": "Cabeceio", "en": "Heading" },
+    "jumping_reach": { "label": "Impulsão", "en": "Jumping Reach" },
+    "kicking": { "label": "Chute (goleiro)", "en": "Kicking" },
+    "long_shots": { "label": "Chute de longe", "en": "Long Shots" },
+    "marking": { "label": "Marcação", "en": "Marking" },
+    "natural_fitness": { "label": "Condição física natural", "en": "Natural Fitness" },
+    "off_the_ball": { "label": "Sem bola", "en": "Off the Ball" },
+    "one_on_one": { "label": "Um contra um", "en": "One on Ones" },
+    "pace": { "label": "Velocidade", "en": "Pace" },
+    "passing": { "label": "Passe", "en": "Passing" },
+    "positioning": { "label": "Posicionamento", "en": "Positioning" },
+    "reflexes": { "label": "Reflexos", "en": "Reflexes" },
+    "rushing_out": { "label": "Saídas do gol", "en": "Rushing Out" },
+    "stamina": { "label": "Resistência", "en": "Stamina" },
+    "strength": { "label": "Força", "en": "Strength" },
+    "tackling": { "label": "Desarme", "en": "Tackling" },
+    "teamwork": { "label": "Trabalho em equipe", "en": "Teamwork" },
+    "technique": { "label": "Técnica", "en": "Technique" },
+    "throwing": { "label": "Reposição com as mãos", "en": "Throwing" },
+    "vision": { "label": "Visão", "en": "Vision" },
+    "work_rate": { "label": "Índice de trabalho", "en": "Work Rate" }
+  },
+  "roles": {
+    "goalkeeper": {
+      "page": 9,
+      "summary": "Joga simples: procura um colega livre e, se não houver, chuta longo. A estratégia muda a reposição: cautelosa, ele afasta; agressiva, sai jogando com os zagueiros.",
+      "duties": { "D": "Fica na área e raramente sai dela." },
+      "attributes": ["aerial_ability", "command_of_area", "communication", "first_touch", "handling", "kicking", "reflexes", "one_on_one", "throwing", "anticipation", "decisions", "positioning"],
+      "tips": [
+        "Não precisa de bom primeiro toque; com a instrução de equipe \"sair jogando\" ainda passa curto.",
+        "Instruções de reposição mudam o estilo: \"para o pivô\" se o chute for bom, \"rolar para os zagueiros\" em táticas de posse.",
+        "Para jogo direto, a característica de lançar com as mãos para contra-atacar funciona bem com boas decisões e visão."
+      ]
+    },
+    "sweeper_keeper": {
+      "page": 9,
+      "summary": "Goleiro e líbero ao mesmo tempo: varre bolas perto da área e começa contra-ataques com passes diretos. É a peça de times de posse com linha alta, como último defensor que joga com os pés.",
+      "duties": {
+        "D": "Mais cauteloso; só faz o passe de contra-ataque se ele estiver claro.",
+        "S": "Sai da área e arrisca mais nos passes de contra-ataque.",
+        "A": "Vai bem longe da área e conduz com a bola; é a versão mais arriscada."
+      },
+      "attributes": {
+        "D": ["aerial_ability", "command_of_area", "communication", "first_touch", "handling", "kicking", "reflexes", "one_on_one", "throwing", "anticipation", "decisions", "positioning", "composure", "concentration", "agility"],
+        "S": ["aerial_ability", "command_of_area", "first_touch", "kicking", "reflexes", "one_on_one", "anticipation", "decisions", "positioning", "composure", "concentration", "agility", "rushing_out", "acceleration", "eccentricity"],
+        "A": ["aerial_ability", "command_of_area", "first_touch", "kicking", "reflexes", "one_on_one", "anticipation", "decisions", "positioning", "composure", "concentration", "agility", "rushing_out", "acceleration", "eccentricity"]
+      },
+      "combos": [
+        { "role": "ball_playing_defender", "why": "Juntos atraem a pressão alta e a furam, ou impedem que o adversário marque a reposição curta." },
+        { "role": "deep_lying_playmaker", "why": "Uma opção de passe perto dele é o que faz a função render." }
+      ],
+      "risks": ["Na experiência do autor, rende menos do que a SI pretendia; o melhor dele aparece com linha alta, saindo para cortar a bola em profundidade e passar para o lado."]
+    },
+    "central_defender": {
+      "page": 12,
+      "summary": "Impede o passe do adversário e afasta o perigo. Em táticas mais agressivas também precisa de técnica e compostura para manter a posse com passes simples.",
+      "duties": {
+        "D": "Fica em linha com o parceiro, marca o atacante e evita que a bola chegue à área.",
+        "St": "Sobe à frente da linha para fechar o adversário antes da área.",
+        "Co": "Recua um pouco para varrer as bolas nas costas da defesa."
+      },
+      "attributes": {
+        "D": ["heading", "marking", "tackling", "anticipation", "bravery", "concentration", "decisions", "determination", "positioning", "jumping_reach", "strength", "aggression"],
+        "St": ["heading", "marking", "tackling", "anticipation", "bravery", "concentration", "decisions", "determination", "positioning", "jumping_reach", "strength", "aggression"],
+        "Co": ["heading", "marking", "tackling", "anticipation", "bravery", "concentration", "decisions", "determination", "positioning", "jumping_reach", "strength", "aggression", "acceleration"]
+      },
+      "tips": [
+        "Para táticas de posse: características \"não tenta passes em profundidade\" e \"raramente conduz\".",
+        "\"Fica sempre atrás\" garante que ele não saia da linha."
+      ],
+      "risks": ["Sem opção de passe, tende a lançar longo; a mentalidade e as instruções de equipe pesam."]
+    },
+    "ball_playing_defender": {
+      "page": 12,
+      "summary": "Zagueiro que constrói: desde o FM20 sai conduzindo por padrão e tenta passes que quebram linhas. Leva a bola até um construtor e reavalia; em algumas transições aparece até no terço final.",
+      "duties": {
+        "D": "Em linha com o parceiro; com a bola, conduz e procura o passe em profundidade.",
+        "St": "Sobe à frente da linha para fechar antes da área.",
+        "Co": "Recua para varrer as bolas nas costas da defesa."
+      },
+      "attributes": {
+        "D": ["heading", "marking", "tackling", "anticipation", "bravery", "concentration", "decisions", "determination", "positioning", "jumping_reach", "strength", "aggression", "first_touch", "technique", "vision", "passing", "composure"],
+        "St": ["heading", "marking", "tackling", "anticipation", "bravery", "concentration", "decisions", "determination", "positioning", "jumping_reach", "strength", "aggression", "first_touch", "technique", "vision", "passing", "composure"],
+        "Co": ["heading", "marking", "tackling", "anticipation", "bravery", "concentration", "decisions", "positioning", "jumping_reach", "strength", "first_touch", "technique", "vision", "passing", "composure", "acceleration"]
+      },
+      "combos": [
+        { "role": "sweeper_keeper", "why": "Contra a pressão alta, os dois atraem o adversário e soltam a bola para um construtor ou numa diagonal longa." },
+        { "role": "inside_forward", "why": "Um Atacante Interior (A) com espaço é o alvo da diagonal longa que ele lança de trás." }
+      ],
+      "tips": ["Funciona bem tanto em linha de 4 quanto de 5.", "\"Fica sempre atrás\" impede que ele saia da linha; \"tenta passes decisivos\" reforça o lançamento."],
+      "risks": [
+        "Arriscado com jogador de primeiro toque, compostura e drible fracos.",
+        "Com \"driblar mais\", pode passar direto pelo construtor e seguir conduzindo.",
+        "Com \"sair jogando\" e mentalidade positiva, às vezes desce pelo corredor até o terço final."
+      ]
+    },
+    "no_nonsense_cb": {
+      "page": 15,
+      "summary": "A prioridade é afastar a bola, sem arriscar e sem fazer falta. Joga direto, para o espaço ou para um colega.",
+      "duties": {
+        "D": "Fica em linha com o parceiro e afasta o perigo.",
+        "St": "Sobe à frente da linha para fechar antes da área.",
+        "Co": "Recua para varrer as bolas nas costas da defesa."
+      },
+      "attributes": ["heading", "marking", "tackling", "determination", "positioning", "jumping_reach", "strength"],
+      "tips": [
+        "Boa função para quem é fraco de passe, primeiro toque ou drible.",
+        "Também serve a times ofensivos como lançamento direto, quando há tarefas de ataque na frente."
+      ]
+    },
+    "wide_centre_back": { "notCovered": true },
+    "libero": {
+      "page": 16,
+      "summary": "Recua atrás da linha para varrer, cobrir erros e recuperar bolas soltas; com a posse, sobe para o meio-campo. No FM23 joga numa linha de 3, em Apoio ou Ataque.",
+      "duties": {
+        "S": "Com a posse garantida, entra no meio-campo e tenta passes para os atacantes.",
+        "A": "Vai bem mais à frente: ameaça de longe e põe os colegas na cara do gol."
+      },
+      "attributes": {
+        "S": ["heading", "marking", "passing", "tackling", "anticipation", "composure", "concentration", "decisions", "positioning", "teamwork", "acceleration", "balance", "jumping_reach"],
+        "A": ["heading", "marking", "passing", "tackling", "anticipation", "composure", "concentration", "decisions", "positioning", "teamwork", "acceleration", "balance", "jumping_reach", "pace", "stamina"]
+      },
+      "tips": [
+        "Rende mais sem construtores à frente dele: na maior parte do tempo forma a linha de 3, mas com \"sair jogando\" e ninguém criando à frente chega ao terço adversário.",
+        "Boa função para um construtor mais velho reconvertido, desde que os zagueiros ao lado sejam rápidos."
+      ]
+    },
+    "full_back": {
+      "page": 19,
+      "summary": "A função mais versátil do jogo. Defende primeiro e apoia com corridas por fora; é a mais defensiva entre laterais e alas, mas sobe quando o time precisa de largura, mesmo em Defender.",
+      "duties": {
+        "D": "Fica atrás, faz passes simples pelo lado ou para o meio e cruza de trás.",
+        "S": "Dá largura ao meio-campo e escolhe entre cruzar e enfiar a bola.",
+        "A": "Faz o overlap e cruza de primeira na área.",
+        "Au": "Segue a mentalidade do time e libera instruções que outras tarefas não têm; o autor evita."
+      },
+      "attributes": {
+        "D": ["marking", "tackling", "positioning", "teamwork"],
+        "S": ["marking", "tackling", "anticipation", "concentration", "positioning", "teamwork", "work_rate", "stamina"],
+        "A": ["crossing", "tackling", "anticipation", "positioning", "teamwork", "work_rate", "acceleration", "stamina"],
+        "Au": ["marking", "tackling", "anticipation", "concentration", "positioning", "teamwork", "work_rate", "stamina"]
+      },
+      "combos": [
+        { "role": "wide_midfielder", "why": "No 4-4-2, os dois trabalham em dupla pelo lado." }
+      ],
+      "tips": [
+        "Em Apoio e Defender só se compromete com o ataque quando o time controla o terço adversário.",
+        "\"Menos passes arriscados\" e \"passes curtos\" ajudam a manter a posse.",
+        "Com a característica de trocar de flanco, vira um pivô que começa as viradas no próprio campo.",
+        "\"Fechar mais\" faz ele passar por dentro na saída, útil para quem perde a bola construindo de trás.",
+        "Cruzamento cedo em diagonal para um atacante rápido (o Leicester de 2016) exige ocupar o lateral adversário com um médio ala ou extremo em Ataque."
+      ],
+      "risks": ["Overlap/underlap aproximam o lateral (S) do meio-campo; arriscado se o time não circula bem a bola."]
+    },
+    "inverted_full_back": { "notCovered": true },
+    "wing_back": {
+      "page": 23,
+      "summary": "Lateral com mais ênfase no ataque e uma das posições mais exigentes. Rende mais em sistemas sem outra fonte de largura, como o losango e o 5-3-2. No FM23 não tem mais \"driblar mais\" embutido.",
+      "duties": {
+        "D": "Ajuda a manter a posse e a passar pelo meio, mas prioriza voltar; cruza de trás e fica acima de um Lateral (S).",
+        "S": "Conduz e sobe para apoiar o ataque.",
+        "A": "Conduz por fora, cruza mais e da linha de fundo.",
+        "Au": "Segue a mentalidade do time."
+      },
+      "attributes": ["acceleration", "pace", "stamina", "crossing", "decisions", "teamwork", "work_rate", "off_the_ball"],
+      "combos": [
+        { "role": "inverted_winger", "why": "Juntos criam sobrecarga pelo lado." },
+        { "role": "inside_forward", "why": "Com \"trocar de flanco\", vira o jogo para o Atacante Interior (A) ou o outro ala atacando do lado oposto." }
+      ],
+      "risks": [
+        "Preso em postura defensiva, custa a ser liberado; \"cruzar de trás\" ou \"cruzamentos cedo\" resolvem.",
+        "Em Ataque, sem outra largura, muitos cruzamentos são bloqueados (sai mais escanteio que cruzamento); considere Apoio."
+      ]
+    },
+    "complete_wing_back": {
+      "page": 25,
+      "summary": "Adora atacar e quer decidir no terço adversário. Tem \"deambular\" embutido: começa aberto e pode cortar para dentro ou ir à linha.",
+      "duties": {
+        "S": "Equilibra o instinto ofensivo com alguma responsabilidade defensiva.",
+        "A": "Mais aventureiro, joga quase sempre no campo adversário."
+      },
+      "attributes": ["crossing", "dribbling", "first_touch", "passing", "tackling", "decisions", "off_the_ball", "positioning", "teamwork", "work_rate", "acceleration", "pace", "stamina"],
+      "risks": [
+        "Em Ataque é pego fora de posição na transição defensiva; sem ninguém cobrindo, leva cartões tentando parar o adversário.",
+        "Por deambular, precisa de boas decisões para escolher entre abrir e fechar."
+      ]
+    },
+    "inverted_wing_back": {
+      "page": 26,
+      "summary": "Defende como lateral, mas com a bola fecha para o meio e sobe para a faixa de volante, congestionando o centro em vez de dar largura. É uma mistura de volante e lateral.",
+      "duties": {
+        "D": "Segura a posição; com overlap pode descer pelo lado quando o time controla o terço adversário.",
+        "S": "Pode atacar a área por dentro, às vezes mais à frente que um Médio Centro (S).",
+        "A": "Como o Apoio, com mais liberdade para subir.",
+        "Au": "Segue a mentalidade do time."
+      },
+      "attributes": ["marking", "passing", "tackling", "anticipation", "decisions", "determination", "positioning", "work_rate", "acceleration", "stamina"],
+      "combos": [
+        { "role": "winger", "why": "Com extremos à frente, os dois IWB ficam um pouco à frente do volante; com overlap sobem por fora." }
+      ],
+      "tips": ["No FM23 joga como Ala quando há dois volantes, quando o único volante não é o central (o IWB do lado dele) ou quando não há extremo ou médio ala à frente. O site modela essas três condições."],
+      "risks": [
+        "As conduções deixam o lado exposto à bola diagonal.",
+        "Com linha alta, escolher o jogador errado é catastrófico: precisa de técnica, aceleração, resistência e índice de trabalho."
+      ]
+    },
+    "no_nonsense_fb": {
+      "page": 22,
+      "summary": "Foca na defesa e raramente avança; joga direto, sem arriscar.",
+      "duties": { "D": "Fica atrás e afasta o perigo." },
+      "attributes": ["marking", "tackling", "strength"],
+      "tips": ["Boa função para quem é fraco de passe, primeiro toque ou drible, em times que priorizam afastar a bola."]
+    },
+    "defensive_midfielder": {
+      "page": 31,
+      "summary": "Protege a linha defensiva fechando quem chega e segura a bola enquanto o time se reorganiza. Um pouco mais criativo que o Âncora: tenta passes mais longos e arriscados.",
+      "duties": {
+        "D": "Fica entre a defesa e o meio e recicla a posse de trás.",
+        "S": "Sobe para a linha do meio e apoia o ataque."
+      },
+      "attributes": ["tackling", "positioning", "teamwork", "work_rate", "concentration", "stamina"],
+      "tips": ["Sem instruções travadas, é boa opção para um jogador criativo que você não quer prender num estilo."],
+      "risks": [
+        "Pode sair para pressionar mais longe que o Âncora; se outros também pressionam no meio, ele entra junto e deixa a defesa exposta.",
+        "Precisa de posicionamento, concentração e decisões, porque às vezes toma decisões ruins."
+      ]
+    },
+    "deep_lying_playmaker": {
+      "page": 49,
+      "summary": "Começa as jogadas de trás, entre a defesa e o meio, com passes precisos; também defende. Desde o FM19 segura a posição em todas as tarefas. Para um construtor que sobe, use o Regista.",
+      "duties": {
+        "D": "Fica à frente da defesa e quase não apoia o ataque.",
+        "S": "Sai com a bola da defesa e tenta passes em profundidade."
+      },
+      "attributes": ["first_touch", "passing", "technique", "composure", "decisions", "vision", "balance"],
+      "combos": [
+        { "role": "sweeper_keeper", "why": "Opção de passe perto do goleiro para sair jogando." }
+      ],
+      "risks": [
+        "Precisa de colegas que lhe deem tempo e espaço.",
+        "Se houver funções criativas por perto (por exemplo, um IWB conduzindo), o time pode ignorá-lo.",
+        "Contra defesas baixas e congestionadas rende menos jogando de trás.",
+        "Em times mais fracos, contra pressão alta, precisa também de compostura, equilíbrio e primeiro toque."
+      ]
+    },
+    "anchor": {
+      "page": 33,
+      "summary": "O \"carregador de piano\": fica no buraco entre a defesa e o meio, intercepta, desarma e entrega passes simples aos criativos. Não sai para pressionar alto nem para apoiar o ataque. É o volante mais disciplinado.",
+      "duties": { "D": "Fica à frente dos zagueiros, sem se afastar deles; com a bola no campo adversário, acompanha o time." },
+      "attributes": ["tackling", "anticipation", "composure", "concentration", "decisions", "positioning"],
+      "tips": [
+        "Protege o centro contra chutes de fora.",
+        "Isola o centroavante solitário como opção de passe.",
+        "Ótimo para levar a bola com segurança aos construtores do meio."
+      ],
+      "risks": ["Não fecha os lados: a dupla com os zagueiros é central."]
+    },
+    "half_back": {
+      "page": 38,
+      "summary": "Entre um líbero agressivo e um volante: recua entre os zagueiros, que abrem e sobem, e oferece uma saída para reciclar a posse quando o ataque trava.",
+      "duties": { "D": "Fica perto dos zagueiros em quase todas as fases; no ataque sobe um pouco, e com Alas em Apoio/Ataque chega ao terço adversário." },
+      "attributes": ["first_touch", "passing", "technique", "anticipation", "composure", "decisions", "positioning", "teamwork"],
+      "combos": [
+        { "role": "sweeper_keeper", "why": "Na construção, a posição dele vira saída de passe para o goleiro." },
+        { "role": "wing_back", "why": "Ao abrir os zagueiros, ele empurra os alas para cima; com eles em Apoio/Ataque, sobe junto." }
+      ],
+      "risks": [
+        "Pode deixar os zagueiros desprotegidos para fechar ameaças perto dos lados.",
+        "Comparado a Volante, Âncora e Recuperador, fica mais vezes alto demais na transição defensiva."
+      ]
+    },
+    "ball_winning_midfielder": {
+      "page": 35,
+      "summary": "O desarmador: fecha o adversário, rouba a bola e a entrega aos criativos. Desde o FM19 é mais disciplinado, limitado pela forma defensiva; o que o separa do Âncora é desarmar mais forte.",
+      "duties": {
+        "D": "Recupera a bola no centro e entrega rápido.",
+        "S": "Tenta recuperar mais alto e apoiar o contra-ataque que nasce dali."
+      },
+      "attributes": ["tackling", "aggression", "bravery", "determination", "teamwork", "work_rate", "concentration", "stamina", "positioning", "strength"],
+      "tips": ["Um bom lugar para ele é o meio-campo em Apoio, atrapalhando a transição do adversário pelo meio."],
+      "risks": [
+        "Na faixa de volante pode sair para fechar os lados e deixar os zagueiros sozinhos.",
+        "Precisa de colegas com bom posicionamento e concentração em volta."
+      ]
+    },
+    "regista": {
+      "page": 44,
+      "summary": "Versão mais agressiva do Construtor Recuado, para times de posse que pressionam alto. Tem liberdade total para ditar o jogo de trás e aparece bem alto quando o time ataca (Pirlo).",
+      "duties": { "S": "Recua para receber do goleiro e, no ataque, sobe quase até a entrada da área." },
+      "attributes": ["first_touch", "passing", "technique", "composure", "decisions", "off_the_ball", "vision"],
+      "combos": [
+        { "role": "segundo_volante", "why": "Boa dupla de volantes: o Regista cria, o Segundo Volante conduz e chega na área." }
+      ],
+      "tips": ["Muito útil no 4-1-3-2: sobe junto com o meio e mantém o adversário pressionado.", "Rende melhor com tempo mais baixo e com o time instalado no campo adversário."],
+      "risks": ["Com tempo alto, zagueiro simples chutando para frente e alas conduzindo rápido, pode virar espectador; \"jogar pelo meio\" ajuda, mas não resolve tudo."]
+    },
+    "roaming_playmaker": {
+      "page": 47,
+      "summary": "O coração do time: pega a bola atrás e a leva adiante com urgência, volta para cobrir e acampa na entrada da área procurando o chute ou o passe decisivo.",
+      "duties": { "S": "Circula por todo o meio-campo, para o lado onde o time precisa dele." },
+      "attributes": ["dribbling", "first_touch", "passing", "technique", "anticipation", "composure", "decisions", "determination", "off_the_ball", "vision", "work_rate", "acceleration", "stamina", "natural_fitness"],
+      "tips": ["Avalie pelo percentual de passes certos e pelos passes que geram assistências, não pelas assistências dele.", "Funciona com qualquer tempo."],
+      "risks": [
+        "Deambula muito: pense em quem cobre o espaço que ele deixa à frente da defesa.",
+        "Quando o ataque é cortado, costuma estar mal posicionado."
+      ]
+    },
+    "segundo_volante": {
+      "page": 40,
+      "summary": "Mistura de Construtor Recuado, Recuperador e Box-to-Box: começa recuado, conduz agressivamente pelo seu lado e chega atrasado na área. Só existe na faixa de volante, em dupla ou fora do centro.",
+      "duties": {
+        "S": "Escolhe quando subir; também pode atuar no meio-espaço e atrair marcadores.",
+        "A": "Sobe já na progressão, quase na linha do extremo, e chega atrasado na área."
+      },
+      "attributes": ["stamina", "work_rate", "determination", "bravery", "anticipation", "positioning", "vision", "decisions", "off_the_ball", "tackling", "first_touch", "passing", "composure"],
+      "combos": [
+        { "role": "anchor", "why": "Dupla segura, mas pouco criativa." },
+        { "role": "defensive_midfielder", "why": "Um pouco melhor que com o Âncora, porque o volante não fica colado na defesa." },
+        { "role": "regista", "why": "Outra boa dupla de volantes." },
+        { "role": "winger", "why": "Com um Extremo (S) do mesmo lado, forma uma dupla de lado muito forte." },
+        { "role": "false_nine", "why": "O Falso 9 recua e abre o espaço que o SV (A) ataca." }
+      ],
+      "tips": ["Boa opção para times de posse com forma defensiva, como o 4-2-2-2 com volantes."]
+    },
+    "central_midfielder": {
+      "page": 62,
+      "summary": "Ligação versátil entre defesa e ataque, e uma das funções mais personalizáveis. A posição não é travada como a da Mezzala ou do Carrilero.",
+      "duties": {
+        "D": "Fica mais recuado, corta contra-ataques e controla o ritmo pelo meio.",
+        "S": "Equilibra defesa e ataque: sobe quando precisa e enfia passes para o terço final.",
+        "A": "Avança para o terço final.",
+        "Au": "Segue a mentalidade do time."
+      },
+      "attributes": {
+        "D": ["passing", "tackling", "concentration", "teamwork", "positioning", "aggression"],
+        "S": ["first_touch", "passing", "decisions", "teamwork"],
+        "A": ["first_touch", "passing", "decisions", "off_the_ball"],
+        "Au": ["first_touch", "passing", "decisions", "teamwork"]
+      },
+      "combos": [
+        { "role": "carrilero", "why": "CM (S) + Carrilero, com alas em Defender, montam um 4-2-3-1 de posse." }
+      ],
+      "tips": ["Dá para montar um Recuperador sem \"desarmar mais forte\" (e sem o risco de expulsão) usando \"pressionar muito mais\"."]
+    },
+    "box_to_box": {
+      "page": 73,
+      "summary": "Dinamismo nos dois sentidos: chega atrasado para cruzamentos e chutes de fora e volta para proteger a linha. Por estar em Apoio, na prática não é o mais rápido de área a área.",
+      "duties": { "S": "Aparece à frente da defesa para ajudar e chega à área com o time instalado no campo adversário." },
+      "attributes": ["passing", "tackling", "decisions", "determination", "off_the_ball", "positioning", "work_rate", "acceleration", "natural_fitness", "stamina"],
+      "tips": [
+        "Não recua para ajudar o goleiro a sair jogando.",
+        "Demora a acompanhar quando um ala conduz; aparece de verdade com o time instalado no campo adversário, e nunca é o primeiro a chegar na área."
+      ]
+    },
+    "advanced_playmaker": {
+      "page": 76,
+      "summary": "Busca o espaço entre o meio e a defesa adversária para receber e virar defesa em ataque num instante. Joga no meio, na meia ou aberto (aberto, fecha para o meio por conta própria).",
+      "duties": {
+        "S": "Fica no bolsão e distribui para os colegas que apoiam e para os atacantes.",
+        "A": "Conduz, parte para cima e ataca a área."
+      },
+      "attributes": {
+        "S": ["first_touch", "passing", "technique", "composure", "decisions", "vision"],
+        "A": ["dribbling", "first_touch", "balance", "passing", "technique", "composure", "decisions", "off_the_ball", "vision"]
+      },
+      "combos": [
+        { "role": "mezzala", "why": "Aberto, com uma Mezzala (A) ao lado, os dois atraem vários marcadores e liberam espaço." },
+        { "role": "wing_back", "why": "Atrai marcadores e solta a bola para o Ala (D) cruzar de trás para um pivô." }
+      ],
+      "risks": [
+        "Num meio de 2 precisa ser excepcional (índice de trabalho, posicionamento, bravura, concentração, desarme).",
+        "Overlap do mesmo lado atrapalha as corridas dele; num meio de 3, tire o overlap desse lado.",
+        "Se perder a bola alto, segurando-a contra vários marcadores, o time fica exposto à bola nas costas."
+      ]
+    },
+    "mezzala": {
+      "page": 68,
+      "summary": "\"Meio-ponta\": trabalha os meio-espaços do terço final, segura a bola e cria sobrecarga. Abre mais na consolidação do meio; defender não é a prioridade.",
+      "duties": {
+        "S": "Equilibra ataque e defesa.",
+        "A": "Deixa a marcação para os colegas e procura fazer algo com a bola."
+      },
+      "attributes": {
+        "S": ["off_the_ball", "decisions", "flair", "dribbling", "passing", "vision", "teamwork", "anticipation", "composure", "work_rate", "determination", "bravery", "positioning"],
+        "A": ["off_the_ball", "decisions", "flair", "dribbling", "passing", "vision", "teamwork", "anticipation", "composure", "balance", "first_touch"]
+      },
+      "combos": [
+        { "role": "wide_playmaker", "why": "Dupla que segura a bola e libera um lateral de ataque atrás deles." },
+        { "role": "advanced_playmaker", "why": "Aberto e com a Mezzala (A), atraem marcadores e liberam espaço." }
+      ],
+      "tips": ["Rende mais num meio de 3, em losango ou em linha.", "Com pressão agressiva e linha de pressão alta, a Mezzala (A) também defende lá na frente."],
+      "risks": [
+        "Ao subir, abre o meio; com time fraco em sem bola, compostura e passe, evite \"trabalhar a bola até a área\".",
+        "Precisa de bons ladrões de bola em volta."
+      ]
+    },
+    "carrilero": {
+      "page": 63,
+      "summary": "\"Carregador\": cobre o corredor entre o centro e o lado, liga defesa e meio, mantém a bola rodando e protege os lados. Não entra em nenhuma das duas áreas; no ataque fica na entrada da área.",
+      "duties": { "S": "Fecha o portador no lado, segura a posição quando há gente suficiente atrás da bola e não sai sem necessidade." },
+      "attributes": ["tackling", "positioning", "decisions", "marking", "acceleration", "strength", "bravery", "determination"],
+      "combos": [
+        { "role": "inside_forward", "why": "No 4-2-3-1, cobre o meio-espaço enquanto o Atacante Interior ataca." },
+        { "role": "central_midfielder", "why": "Com um CM (S), forma um meio de 2 de posse (exige planejamento de funções)." }
+      ],
+      "tips": ["Ideal em losango, mas funciona em qualquer formação.", "Não exige jogador de alta habilidade.", "Características como \"entra na área adversária\" mudam bastante o papel."],
+      "risks": ["Ao subir, abre o meio (mesmo risco da Mezzala)."]
+    },
+    "wide_midfielder": {
+      "page": 53,
+      "summary": "Ataca e defende pelo lado com trabalho em vez de velocidade ou drible. Muito personalizável e, para o autor, uma das funções mais subestimadas: fica no meio-espaço na saída e no ataque.",
+      "duties": {
+        "D": "Fica atrás e cruza de trás; com linha de pressão padrão, só fecha o portador perto do próprio campo.",
+        "S": "Fica mais recuado e tenta passes angulados para a área ou cruza quando precisa.",
+        "A": "Faz cruzamentos rápidos do terço final.",
+        "Au": "Totalmente personalizável."
+      },
+      "attributes": {
+        "D": ["passing", "tackling", "positioning", "teamwork", "work_rate"],
+        "S": ["passing", "teamwork", "work_rate", "concentration"],
+        "A": ["crossing", "passing", "first_touch", "teamwork", "work_rate"],
+        "Au": ["passing", "teamwork", "work_rate"]
+      },
+      "combos": [
+        { "role": "wing_back", "why": "Em Apoio põe o ala no jogo, e o ala quase sempre tem tempo para cruzar livre." },
+        { "role": "full_back", "why": "No 4-4-2, os dois trabalham em dupla pelo lado." }
+      ],
+      "tips": [
+        "Um dos melhores papéis para um 4-4-2 de baixo risco.",
+        "Com \"fechar mais\" e \"cortar para dentro\", ataca por dentro (estilo Mahrez).",
+        "Em Ataque dá para imitar o Beckham de 1999: fecha e cruza de trás."
+      ]
+    },
+    "winger": {
+      "page": 81,
+      "summary": "Tenta vencer o marcador por fora: cola na linha quando o time ataca e procura a linha de fundo. Precisa de técnica e velocidade.",
+      "duties": {
+        "S": "Tenta passar rápido pelo marcador e cruzar cedo para os atacantes.",
+        "A": "Parte para cima da defesa no terço final antes de chutar, cruzar ou passar."
+      },
+      "attributes": {
+        "S": ["crossing", "passing", "technique", "acceleration", "pace", "teamwork", "work_rate"],
+        "A": ["crossing", "passing", "first_touch", "technique", "acceleration", "pace", "teamwork", "work_rate"]
+      },
+      "combos": [
+        { "role": "segundo_volante", "why": "Extremo (S) e Segundo Volante do mesmo lado formam uma dupla forte." }
+      ],
+      "tips": ["Para colar sempre na linha, ensine a característica; com \"cortar para dentro\" ele alterna entre abrir e entrar, o que é difícil de marcar."],
+      "risks": ["Sozinho em Ataque, os cruzamentos tendem a ser bloqueados; em Apoio, com alguém perto, cria cruzamentos melhores."]
+    },
+    "wide_playmaker": {
+      "page": 79,
+      "summary": "A principal fonte de criatividade vindo do lado: fecha para dentro, onde escapa da pressão do meio e pode ficar sem marcação. Sem a bola, fica no lado e cobre o lateral.",
+      "duties": {
+        "S": "Com a bola, senta no meio-campo e cria de lá.",
+        "A": "Ocupa o espaço entre a defesa e o meio adversários; pode ficar alto demais para voltar."
+      },
+      "attributes": {
+        "S": ["first_touch", "passing", "technique", "composure", "decisions", "positioning", "vision"],
+        "A": ["first_touch", "passing", "technique", "composure", "decisions", "off_the_ball", "positioning", "teamwork"]
+      },
+      "combos": [
+        { "role": "mezzala", "why": "Dupla que segura a bola e dá várias opções a um lateral de ataque atrás deles." }
+      ],
+      "tips": ["Ótimo para viradas diagonais.", "Funciona bem no 4-4-1-1 e no 4-4-2."],
+      "risks": ["Funções erradas em volta o isolam: se o outro lado concentra o jogo (por exemplo, BBM, Mezzala (A), Extremo Invertido (A) e IWB), ele é esquecido."]
+    },
+    "defensive_winger": {
+      "page": 59,
+      "summary": "Pressiona o lateral adversário para recuperar alto e, quando o time controla o meio, segura a bola ou vai à linha de fundo. Nada de firulas: passe simples ou se livra da bola.",
+      "duties": {
+        "D": "Muito disciplinado: segura a posição com a bola, fecha linha de passe e só pressiona no próprio campo.",
+        "S": "Pressiona, tenta passar pelo marcador e cruzar cedo; pode fechar para dentro como um meia agressivo."
+      },
+      "attributes": {
+        "D": ["aggression", "anticipation", "concentration", "determination", "positioning", "teamwork", "work_rate", "passing", "marking", "tackling", "stamina"],
+        "S": ["crossing", "dribbling", "aggression", "anticipation", "concentration", "determination", "positioning", "teamwork", "work_rate", "passing", "marking", "tackling", "stamina"]
+      },
+      "combos": [
+        { "role": "wing_back", "why": "Protege o lado de um Ala (A): segura a posição quando o ala conduz por dentro ou passa por fora." }
+      ],
+      "risks": ["Em Apoio, a pressão pode tirá-lo de posição, principalmente com instruções de pressão mais intensa."]
+    },
+    "inverted_winger": {
+      "page": 84,
+      "summary": "Parte aberto, com o pé trocado, e corta para dentro para abrir o corredor ao lateral. Desde o FM20 é mais criativo que o Atacante Interior (Sané contra Salah): sobrecarrega um lado para abrir o outro.",
+      "duties": {
+        "S": "Faz diagonais e procura passes em profundidade pelo meio ou viradas para o outro lado.",
+        "A": "Parte para cima da defesa, passa ou finaliza; no 4-1-4-1 vira um segundo atacante chegando atrasado."
+      },
+      "attributes": {
+        "S": ["acceleration", "dribbling", "crossing", "first_touch", "composure", "decisions", "passing", "vision", "technique", "agility", "off_the_ball"],
+        "A": ["acceleration", "dribbling", "crossing", "first_touch", "composure", "decisions", "passing", "vision", "technique", "agility", "finishing", "off_the_ball"]
+      },
+      "combos": [
+        { "role": "roaming_playmaker", "why": "O autor usa Extremo Invertido (A) com Construtor Móvel (S) e uma Mezzala no outro lado, num 4-1-2-3, para sobrecarregar os dois lados." },
+        { "role": "shadow_striker", "why": "No 4-2-3-1, com um Segundo Atacante ou Construtor Avançado (A) no meio, ele tem alvos no terço final." },
+        { "role": "full_back", "why": "Joga bem com lateral que faz overlap." }
+      ],
+      "tips": ["Mesmo em Ataque, às vezes se posiciona para cortar linhas de passe.", "Como pode driblar, passar, chutar ou cruzar, ajuda ser bom com os dois pés."],
+      "risks": [
+        "Precisa de espaço: evite outras tarefas de ataque perto dele.",
+        "Com uma Mezzala do mesmo lado, os dois ocupam a mesma zona; a sobrecarga só funciona se ambos cruzarem bem na diagonal.",
+        "Com um Box-to-Box ao lado pode ficar isolado, porque o BBM não abre.",
+        "Em Apoio não fica no ombro do último defensor; contra defesa baixa isso pesa."
+      ]
+    },
+    "attacking_midfielder": {
+      "page": 88,
+      "summary": "Joga atrás dos atacantes e cria ou finaliza no terço final antes de a defesa fechar o espaço. A posição central permite virar o jogo.",
+      "duties": {
+        "S": "Ajuda a defesa e fica no bolsão em vez de entrar na área; pode aparecer no próprio campo para apoiar.",
+        "A": "Cria para os atacantes e chega na área como mais uma ameaça."
+      },
+      "attributes": {
+        "S": ["first_touch", "passing", "technique", "anticipation", "decisions"],
+        "A": ["first_touch", "passing", "technique", "anticipation", "decisions", "off_the_ball"]
+      },
+      "tips": ["Função genérica, personalizável para correr entre lateral e zagueiro.", "Pode chegar atrasado na área como alvo do cruzamento."],
+      "risks": ["Para render, exige boas funções e tarefas em volta no terço final."]
+    },
+    "enganche": {
+      "page": 93,
+      "summary": "O \"gancho\": ponto fixo entre o meio e o ataque, em volta do qual o time se movimenta (Riquelme). Um construtor parado, só em Apoio.",
+      "duties": { "S": "Fica no meio para fazer o jogo circular; não pressiona no terço final." },
+      "attributes": ["first_touch", "passing", "technique", "composure", "decisions", "off_the_ball", "vision"],
+      "tips": ["Use formações que esticam a defesa e funções em volta que façam o movimento por ele."],
+      "risks": ["Sem as funções certas em volta, é ignorado e tira notas baixas.", "Função de nicho, menos comum no futebol atual; teve seus dias de glória no FM17."]
+    },
+    "trequartista": {
+      "page": 97,
+      "summary": "Criativo que circula muito: recua até o meio-campo para receber (mais que o Enganche), cai pelos lados e chega atrasado na área. Quase não defende; o time o carrega sem a bola. Joga no meio, nos lados ou no ataque.",
+      "duties": { "A": "Pode agir como Atacante Interior, Extremo, construtor ou atacante; às vezes fica no ombro do último defensor." },
+      "attributes": ["first_touch", "passing", "technique", "anticipation", "composure", "decisions", "off_the_ball", "vision", "work_rate", "stamina"],
+      "combos": [
+        { "role": "poacher", "why": "Dupla de ataque para contra-ataque direto." },
+        { "role": "advanced_forward", "why": "Contrapeso criativo a um atacante mais simples no 4-4-2 ou 4-4-1-1." }
+      ],
+      "risks": [
+        "Não serve para uma pressão em que toda a frente pressiona: na meia, ele pode não pressionar.",
+        "Para cobrir terreno e ainda ser ameaça, precisa de índice de trabalho e resistência altos."
+      ]
+    },
+    "shadow_striker": {
+      "page": 103,
+      "summary": "Finalizador vindo de trás: participa da construção, recua um pouco para ajudar a passar pelo meio e chega atrasado na área. Também pressiona os defensores.",
+      "duties": { "A": "No próprio campo, ajuda a recuperar conforme a linha de pressão; com a bola bem atrás, para de marcar e espera o contra-ataque." },
+      "attributes": ["finishing", "anticipation", "composure", "decisions", "determination", "off_the_ball", "work_rate", "stamina", "passing"],
+      "combos": [
+        { "role": "target_forward", "why": "O pivô escora de cabeça para ele atacar o espaço." },
+        { "role": "deep_lying_forward", "why": "O Atacante Recuado recua e tenta lançá-lo." },
+        { "role": "complete_forward", "why": "Funciona se o Completo tiver cara de pivô e souber recuar e passar." }
+      ],
+      "tips": ["Bom no 4-4-1-1, 4-3-1-2 e 4-2-3-1; também em sistemas sem centroavante."],
+      "risks": [
+        "Sofre contra times com dois volantes, porque falta espaço.",
+        "Se perder a bola na construção, o time fica mal posicionado para o contra-ataque."
+      ]
+    },
+    "inside_forward": {
+      "page": 112,
+      "summary": "Corta de fora para dentro e parte para cima da defesa; rende mais com o pé trocado. O movimento abre espaço para o lateral e atrai mais de um marcador.",
+      "duties": {
+        "S": "Corta para dentro e tenta pôr os colegas na cara do gol, ou chuta de longe.",
+        "A": "Ataca a defesa no ombro do último defensor; finaliza, passa ou cruza."
+      },
+      "attributes": {
+        "S": ["dribbling", "passing", "technique", "decisions", "off_the_ball", "acceleration", "balance", "agility"],
+        "A": ["dribbling", "composure", "finishing", "passing", "balance", "agility", "technique", "decisions", "off_the_ball", "acceleration"]
+      },
+      "combos": [
+        { "role": "ball_playing_defender", "why": "É o alvo da diagonal longa do Zagueiro com Bola." },
+        { "role": "carrilero", "why": "No 4-2-3-1, o Carrilero cobre o meio-espaço que ele deixa." }
+      ],
+      "risks": [
+        "A corrida pode ser inútil sem um plano: use-o para atacar espaço (A) ou para controlar a posse num lado (S).",
+        "Em Ataque precisa de espaço para atacar a área: crie sobrecarga ou atraia o adversário."
+      ]
+    },
+    "raumdeuter": {
+      "page": 108,
+      "summary": "\"Intérprete do espaço\" (Müller): procura bolsões e espera o momento de romper a linha. Pode passar períodos parado e não defende.",
+      "duties": { "A": "Abre ou fecha procurando espaço, ora fundo, ora alto; é o primeiro a atacar o espaço quando o time recupera." },
+      "attributes": ["anticipation", "composure", "decisions", "concentration", "determination", "off_the_ball", "work_rate", "balance", "stamina", "acceleration"],
+      "combos": [
+        { "role": "inside_forward", "why": "Atacante Interior (S) + Mezzala do outro lado sobrecarregam aquele lado e abrem espaço para ele." },
+        { "role": "mezzala", "why": "Ajuda a sobrecarregar o lado oposto." }
+      ],
+      "tips": ["Crie espaço para ele: concentre o jogo no lado oposto, com sobrecarga, um ala de ataque e alguém que vire o jogo.", "Linha de pressão que atraia o adversário abre espaço atrás da defesa."],
+      "risks": ["Só é útil com quem faça o passe decisivo para ele.", "Exige cobertura atrás, porque não defende."]
+    },
+    "wide_target_forward": {
+      "page": 106,
+      "summary": "Referência pelo lado para bolas longas e chutões, de preferência contra um lateral menor e mais fraco: segura a bola e recicla para os colegas.",
+      "duties": {
+        "S": "Ganha no físico do lateral e escora para quem chega.",
+        "A": "Vira o foco do ataque: recebe aberto e põe os outros no jogo."
+      },
+      "attributes": ["strength", "off_the_ball", "passing", "balance", "first_touch", "work_rate", "teamwork", "anticipation", "vision"],
+      "combos": [
+        { "role": "wing_back", "why": "Escora para o ala cruzar de trás." },
+        { "role": "mezzala", "why": "Funções que atacam o espaço que ele cria: Mezzala (A), lateral de overlap, Box-to-Box, Segundo Atacante." },
+        { "role": "box_to_box", "why": "Chega para aproveitar as escoras." },
+        { "role": "shadow_striker", "why": "Ataca o espaço que ele abre." }
+      ],
+      "tips": ["Ótimo para sobrecarga num lado no 4-2-3-1.", "Com \"cortar para dentro\", fecha e incomoda ainda mais.", "Laterais e extremos podem mirar os cruzamentos nele."]
+    },
+    "advanced_forward": {
+      "page": 142,
+      "summary": "Lidera a linha e é o foco do ataque: o atacante mais avançado e o mais agressivo do jogo, sempre no ombro do último defensor.",
+      "duties": { "A": "Ataca a profundidade e persegue bolas mal passadas e chutões para ganhar a posse." },
+      "attributes": ["finishing", "anticipation", "composure", "acceleration", "off_the_ball"],
+      "combos": [
+        { "role": "inverted_wing_back", "why": "Em sistemas diretos e profundos, IWB, Ala Completo, Zagueiro com Bola e Goleiro Líbero soltam bolas de trás para ele." },
+        { "role": "ball_playing_defender", "why": "Lança de trás para ele." },
+        { "role": "sweeper_keeper", "why": "Mais uma fonte de bola longa." }
+      ],
+      "tips": ["Rende melhor contra sistemas que deixam espaço nas costas."],
+      "risks": [
+        "Sofre contra defesas baixas: baixe a linha de pressão para criar espaço (aí precisa de aceleração e controle de bola).",
+        "É o que mais cai em impedimento.",
+        "Sozinho pode sair em carreira solo; precisa de apoio, normalmente um extremo em Ataque."
+      ]
+    },
+    "complete_forward": {
+      "page": 146,
+      "summary": "Técnica do Atacante Recuado, gol do Matador e força do Pivô: cria, finaliza e circula muito, deambulando como um Falso 9 e caindo pelos lados.",
+      "duties": {
+        "S": "Recua, parte para cima, chuta de longe, cai pelos lados e enfia bolas na defesa.",
+        "A": "Como o Apoio, mais vezes na área."
+      },
+      "attributes": {
+        "S": ["dribbling", "first_touch", "heading", "long_shots", "passing", "technique", "anticipation", "composure", "decisions", "off_the_ball", "vision", "acceleration", "agility", "strength"],
+        "A": ["dribbling", "first_touch", "heading", "long_shots", "passing", "technique", "anticipation", "composure", "decisions", "off_the_ball", "vision", "acceleration", "agility", "strength", "finishing"]
+      },
+      "combos": [
+        { "role": "shadow_striker", "why": "Com perfil de pivô, recua e serve o Segundo Atacante." },
+        { "role": "target_forward", "why": "Pivô e Completo formam uma boa dupla." }
+      ],
+      "risks": ["Exige muita habilidade atual; sem boas decisões e sem bola, o movimento todo se perde."]
+    },
+    "deep_lying_forward": {
+      "page": 126,
+      "summary": "Liga o meio ao ataque: recua, segura a bola e distribui. Desde o FM19 sempre olha para frente. Usa força e equilíbrio para segurar; o Falso 9 usa o drible.",
+      "duties": {
+        "S": "Põe os colegas no jogo antes de atacar a área vindo de trás.",
+        "A": "Também procura criar chances para si."
+      },
+      "attributes": ["strength", "first_touch", "passing", "technique", "composure", "decisions", "off_the_ball", "teamwork"],
+      "combos": [
+        { "role": "poacher", "why": "Dupla clássica do 4-4-2: o Recuado volta para defender e construir, o Matador fica na área." },
+        { "role": "shadow_striker", "why": "Recua e lança o Segundo Atacante." },
+        { "role": "winger", "why": "No 4-1-2-2-1, o Recuado (S) serve de isca e libera o extremo contra o lateral." }
+      ],
+      "tips": ["Bom substituto para quem não dá conta de jogar de Falso 9.", "Como atacante solitário, vai para o lado onde precisam dele e é a saída do contra-ataque mesmo em Apoio."],
+      "risks": ["Mesmo com \"corridas pelos canais\" embutido, às vezes não abre, principalmente sozinho."]
+    },
+    "false_nine": {
+      "page": 123,
+      "summary": "O atacante mais criativo: recua para criar problemas, porque o zagueiro o segue ou lhe dá espaço (Messi no Barça de Guardiola). Cai pelos lados e também aparece na área.",
+      "duties": { "S": "Recua, segura a bola de costas e solta para quem chega; pode virar atacante solitário eficiente." },
+      "attributes": ["first_touch", "passing", "technique", "composure", "off_the_ball", "vision", "teamwork", "strength", "decisions", "balance", "agility"],
+      "combos": [
+        { "role": "segundo_volante", "why": "Recua e abre o espaço que o SV (A) ataca." },
+        { "role": "inverted_wing_back", "why": "Ajuda a soltar o IWB (S) em condução." }
+      ],
+      "tips": ["Pode não liderar a artilharia, mas cria pelo movimento e pelo passe."],
+      "risks": ["Sem força e decisões, evite: são obrigatórios para não perder a bola e para escolher entre abrir espaço e atacar a área."]
+    },
+    "poacher": {
+      "page": 140,
+      "summary": "Vive no ombro do último defensor para romper a linha e finalizar. Quase não participa da construção, mas é dos poucos atacantes que devolvem a bola para trás de forma confiável.",
+      "duties": { "A": "Fica na área, não abre e nunca tenta o passe em profundidade; num sistema de um atacante, às vezes sai do centro." },
+      "attributes": ["finishing", "first_touch", "anticipation", "composure", "off_the_ball"],
+      "combos": [
+        { "role": "deep_lying_forward", "why": "Dupla clássica do 4-4-2." },
+        { "role": "target_forward", "why": "Pivô + Matador continua muito bom no FM23." },
+        { "role": "false_nine", "why": "O Falso 9 cria, ele finaliza." },
+        { "role": "pressing_forward", "why": "O Atacante de Pressão volta; ele fica na frente para o contra-ataque." },
+        { "role": "complete_forward", "why": "Também combina." }
+      ],
+      "tips": ["Para ele marcar, monte um jogo de cruzamentos com um bom pivô ou de passes para trás vindos da linha de fundo."],
+      "risks": ["Não cria espaço: use funções e tarefas para isso (sobrecarga, pivô, cruzamentos)."]
+    },
+    "pressing_forward": {
+      "page": 133,
+      "summary": "A primeira linha de defesa: pressiona a última linha e quem tem a bola; no ataque, joga simples. É um dos poucos atacantes que voltam para defender no próprio campo e apoia a construção como um Falso 9 ou Recuado (Vardy).",
+      "duties": {
+        "D": "Fica um pouco mais recuado e pressiona os volantes.",
+        "S": "Pressiona os zagueiros; recua mas fica central.",
+        "A": "Pressiona e, com a bola, joga como um Avançado, abrindo pelos canais."
+      },
+      "attributes": ["aggression", "bravery", "determination", "teamwork", "work_rate", "acceleration", "stamina"],
+      "combos": [
+        { "role": "poacher", "why": "Combina com tarefas de ataque na frente: Matador, Avançado, Completo (A), Recuado (A)." },
+        { "role": "advanced_forward", "why": "O Avançado fica na frente para o contra-ataque enquanto ele volta." },
+        { "role": "complete_forward", "why": "Também combina em Ataque." },
+        { "role": "deep_lying_forward", "why": "Com o Recuado em Ataque." }
+      ],
+      "tips": ["O PF (S) é subestimado no FM23: o autor chegou a 100 gols de um atacante nessa função.", "Se ele recua até o próprio campo, ponha outro atacante em Ataque para contra-ataques rápidos."]
+    },
+    "target_forward": {
+      "page": 137,
+      "summary": "Usa o físico e o jogo aéreo para pôr os colegas no jogo e abrir espaço para o parceiro de ataque, em vez de depender da técnica. Recua para segurar a bola.",
+      "duties": {
+        "S": "Ganha as escoras e faz passes simples para pôr os colegas no jogo.",
+        "A": "Lidera a linha e abre espaço para os colegas."
+      },
+      "attributes": {
+        "S": ["jumping_reach", "strength"],
+        "A": ["finishing", "heading", "jumping_reach", "strength"]
+      },
+      "combos": [
+        { "role": "shadow_striker", "why": "Escora para o Segundo Atacante atacar o espaço." },
+        { "role": "poacher", "why": "Pivô + Matador continua muito bom no FM23." },
+        { "role": "complete_forward", "why": "Outra boa dupla." }
+      ],
+      "tips": ["Bom para padrões simples e diretos; laterais e extremos podem mirar os cruzamentos nele."],
+      "risks": ["Com mentalidade alta, os colegas (inclusive Zagueiro com Bola, Goleiro Líbero e construtores) procuram o pivô primeiro em vez de outras opções."]
+    }
+  }
+}

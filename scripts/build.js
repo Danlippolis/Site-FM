@@ -14,7 +14,7 @@ const json = (p) => JSON.stringify(JSON.parse(read(p))).replace(/</g, '\\u003c')
 // para o navegador nunca misturar arquivos antigos (em cache) com novos depois de uma atualização.
 const crypto = require('crypto');
 const SOURCES = ['src/engine/engine.js', 'src/ui/app.js', 'src/ui/styles.css', 'data/formations.json', 'data/roles.json',
-  'data/team-instructions.json', 'data/player-instructions.json', 'data/opponent.json', 'data/player-traits.json'];
+  'data/team-instructions.json', 'data/player-instructions.json', 'data/opponent.json', 'data/player-traits.json', 'data/role-guide.json', 'data/alerts.json'];
 const version = crypto.createHash('sha1').update(SOURCES.map(read).join('\n')).digest('hex').slice(0, 10);
 let index = read('index.html')
   .replace(/(href="src\/ui\/styles\.css)(\?v=[^"]*)?"/, `$1?v=${version}"`)
@@ -39,7 +39,9 @@ swap('<!-- INLINE_DATA -->', [
   `<script type="application/json" id="data-instructions">${json('data/team-instructions.json')}</script>`,
   `<script type="application/json" id="data-player-instructions">${json('data/player-instructions.json')}</script>`,
   `<script type="application/json" id="data-opponent">${json('data/opponent.json')}</script>`,
-  `<script type="application/json" id="data-player-traits">${json('data/player-traits.json')}</script>`
+  `<script type="application/json" id="data-player-traits">${json('data/player-traits.json')}</script>`,
+  `<script type="application/json" id="data-role-guide">${json('data/role-guide.json')}</script>`,
+  `<script type="application/json" id="data-alerts">${json('data/alerts.json')}</script>`
 ].join('\n  '));
 swap('<script src="src/engine/engine.js"></script>', `<script>\n${safeScript(read('src/engine/engine.js'))}</script>`);
 swap('<script src="src/ui/app.js"></script>', `<script>\n${safeScript(read('src/ui/app.js'))}</script>`);

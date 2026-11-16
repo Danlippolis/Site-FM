@@ -34,6 +34,12 @@ Regras de função com a chave de uma fase derivada (`pressao`, `bloco_baixo`, `
 
 No desktop, o seletor **Sem a bola / Com a bola / Todas** escolhe os campos exibidos; no celular, as 6 fases ficam em abas.
 
+## Sobre a função
+
+O botão **i** ao lado de cada jogador (e o link **Sobre a função →** no detalhe do jogador no campo) abre um guia da função: resumo, o que cada tarefa muda, atributos-chave da tarefa, combinações (clicáveis), riscos e dicas. O seletor no topo do painel mostra qualquer outra função.
+
+O conteúdo está em `data/role-guide.json` e é um **resumo próprio** do *Book of Roles* (Daljit Singh, FM23), com a página de origem, e não o texto do livro. A tradução dos atributos é do site e pode não bater exatamente com a do jogo (o nome em inglês aparece ao passar o mouse). O livro não cobre o Zagueiro Aberto nem o Lateral Invertido; para eles o painel mostra só a descrição do site. Se o arquivo não carregar, o site funciona normalmente, só sem o painel.
+
 ## Estrutura e medidas
 
 Com **Mostrar linhas de estrutura e medidas** (Visualização), cada campo liga os jogadores de cada linha do time (linha branca; a do adversário, tracejada escura) e mostra:
@@ -52,10 +58,12 @@ src/ui/app.js            interface (vanilla JS + SVG)
 src/ui/styles.css
 data/formations.json     grade de slots, transformações por fase, atalhos de formação
 data/roles.json          funções, slots válidos, tarefas, regras por fase e instruções embutidas
-data/team-instructions.json  mentalidade, linha defensiva, linha de pressão, larguras com/sem bola, parâmetros do motor
+data/team-instructions.json  mentalidade, linha defensiva, linha de pressão, larguras com/sem bola, overlap/underlap por lado, parâmetros do motor
+data/alerts.json         alertas de combinação (texto, página do Book of Roles e função ligada ao guia; a detecção fica em tacticalAlerts)
 data/player-instructions.json  instruções individuais (PIs): disponibilidade, exclusões e efeito por fase
 data/opponent.json       adversário: correspondência de fases, estilos de jogo e impedimento
 data/player-traits.json  características do jogador (traits): disponibilidade, conflitos, quem anula e efeito por fase
+data/role-guide.json     guia das funções (painel "Sobre a função"): resumo, tarefas, atributos-chave, combinações, riscos e dicas
 scripts/build.js         gera dist/fm23-viewer.html (tudo embutido)
 tests/engine.test.js     11 jogadores, validação, clamp, espelhamento, efeitos, colisão, inversa do modo edição
 ```
@@ -141,6 +149,7 @@ No card **Funções e tarefas**, a linha *Equilíbrio da tática: N/100* mostra 
 | Compactação sem a bola | 15 | bloco médio com até 40 m de comprimento |
 | Jogadores sem se empilhar | 15 | pares a menos de 8 m entre si com a bola |
 | Tarefas equilibradas | 15 | distância de 3 Defender · 4 Apoio · 3 Ataque (referência do manual para mentalidade e fluidez equilibradas) |
+| Combinações sem risco conhecido | 10 | −35% por alerta de combinação do Book of Roles (ver abaixo) |
 
 **Com o adversário ligado**, o índice inclui também 5 critérios contra ele, medidos com os dois times nas mesmas fases (com impedimento):
 
@@ -155,6 +164,37 @@ No card **Funções e tarefas**, a linha *Equilíbrio da tática: N/100* mostra 
 O adversário não depende das nossas funções, então é calculado uma vez e reaproveitado em todas as tentativas da busca (cerca de meio segundo no total).
 
 A busca é gulosa: a cada rodada aplica a troca que mais melhora o índice (até 6 trocas, ganho mínimo 2 pontos, para evitar trocas marginais). Instruções individuais e características são mantidas (as que deixam de valer na nova função são removidas ao aplicar). O índice é uma heurística de boas práticas, não uma avaliação do motor do jogo; os pesos ficam em `evaluateBalance` no motor.
+
+## Overlap e underlap
+
+Em **Instruções de equipe**, *Corridas pelo lado esquerdo/direito* liga o overlap ou o underlap de cada lado. Vale para o defensor mais recuado do corredor daquele lado (lateral ou ala; o Lateral Invertido fica de fora, porque vira zagueiro) e só nas fases com bola:
+
+- **overlap**: +4 na saída e +6 no ataque, e no ataque vai por fora (no máximo x 14). O Ala Invertido, por exemplo, deixa de fechar e desce pelo lado;
+- **underlap**: +4 na saída e +6 no ataque, e no ataque passa por dentro (no mínimo x 26).
+
+A Progressão herda pela mistura. Fonte: Book of Roles (o lateral em Apoio "fica perto da linha do meio" com overlap/underlap; captura da p. 27 com Alas Invertidos em overlap a x ~20). Os números ficam em `flankRuns` no `team-instructions.json`.
+
+## Alertas de combinação
+
+A caixa de avisos do card **Formação** mostra, em verde, riscos de combinação que o *Book of Roles* aponta e que dá para detectar pela escalação, cada um com um link para o guia da função:
+
+| Alerta | Quando dispara |
+|---|---|
+| Construtor Avançado + overlap | Construtor Avançado no meio com overlap do mesmo lado |
+| Mezzala + Extremo Invertido | os dois do mesmo lado |
+| Extremo Invertido + Box-to-Box | os dois do mesmo lado |
+| Construtor Aberto isolado | 2+ funções dinâmicas no lado oposto (Mezzala/Extremo Invertido/Atacante Interior em Ataque, Ala Invertido, Box-to-Box) |
+| Enganche sem movimento | menos de 2 jogadores do meio para frente em Ataque, deambulando ou abrindo pelos canais |
+| Avançado sozinho | um só atacante, Avançado, e ninguém aberto em Ataque |
+| Regista ignorado | Regista + Zagueiro Simples com mentalidade Positiva ou mais |
+| Volante que deambula sem proteção | quem deambula na faixa de volante sem ninguém segurando a posição à frente da defesa |
+| Mezzala (A) sem proteção | idem, com Mezzala em Ataque |
+| Trequartista na pressão | Trequartista central na meia com linha de pressão alta |
+| Ala em Ataque sem largura | Ala (A) sem ninguém aberto à frente do mesmo lado |
+| Segundo Atacante contra dois volantes | com o adversário ligado e dois volantes centrais nele |
+| Raumdeuter sem sobrecarga | menos de 2 jogadores em Ataque no lado oposto |
+
+Cada alerta tira pontos do critério *Combinações sem risco conhecido* do índice de equilíbrio, então o **✨ Sugerir funções** também passa a evitar essas combinações. Entre os atalhos de formação, só o 3-5-2 dispara um alerta: o ala direito em Ataque como única largura daquele lado, que é o caso descrito no livro.
 
 ## Adversário
 
@@ -198,9 +238,26 @@ Limitações: o adversário não tem instruções individuais nem característic
    - **estrutura de pressão**: um 4-2-3-1 tende a pressionar em **4-4-2** → na Pressão alta, com um centroavante só e um meia central, o meia sobe ao lado dele e os meias abertos recuam para a linha do meio (`pressShape`);
    - **zona à frente da defesa** ("golden zone") → critério novo no índice de equilíbrio (peso 10);
    - **tipo de atacante x linha do adversário**: contra linha alta rendem os de ruptura (Avançado, Matador, Atacante de Pressão, Completo); contra linha baixa, os de ligação/referência (Recuado, Pivô, Falso 9, Trequartista, Completo) → critério novo contra o adversário (peso 5; neutro contra linha padrão).
-8. **Ala Invertido no FM23** — tópico do [FM-Arena](https://fm-arena.com/thread/4615-fm23-inverted-wing-backs-how-they-work/) (lido via resumo de busca; o site bloqueou o acesso direto) e relato no bug tracker oficial da SI de que os Alas Invertidos ficavam abertos no FM23: **só inverte se o slot de volante do seu lado (DMCL/DMCR) estiver livre**; senão, age como Ala na mesma tarefa (`needsFreeSlot` + `fallbackRole` em `roles.json`). Isso muda, por exemplo, o 4-2-3-1 DM Wide, em que os dois volantes ocupam esses slots.
+8. **Ala Invertido no FM23** — tópico do [FM-Arena](https://fm-arena.com/thread/4615-fm23-inverted-wing-backs-how-they-work/) (lido via resumo de busca; o site bloqueou o acesso direto) e relato no bug tracker oficial da SI de que os Alas Invertidos ficavam abertos no FM23: **só inverte se o slot de volante do seu lado (DMCL/DMCR) estiver livre**; senão, age como Ala na mesma tarefa (`needsFreeSlot` + `fallbackRole` em `roles.json`). Isso muda, por exemplo, o 4-2-3-1 DM Wide, em que os dois volantes ocupam esses slots. O *Book of Roles* (item 10) acrescenta uma condição: sem ponta/meia aberto à frente dele (ML/AML à esquerda, MR/AMR à direita), também age como Ala (`needsOccupiedSlot`). O livro diz "sem pontas/meias abertos nos slots AML/AMR/ML/MR" sem especificar o lado; assumi que vale o do próprio lado.
 
 9. **[Guide to Football — Tactical theory](https://fm.guidetofootball.com/tactical-theory/)**: framework teórico (528 conceitos) do qual vieram os nomes e as definições das notas de estrutura. O próprio site avisa que não foi testado no jogo e que sua aplicação a uma versão do FM é ao FM26.
+
+10. **The Book of Roles, de Daljit Singh (FM23, 2023)** (PDF de 152 páginas enviado pelo usuário, `Book-of-Roles.pdf` na `main`): movimento de cada função por fase, em texto e em ~177 capturas do jogo. As capturas 2D foram medidas: um script acha o campo pelas linhas brancas e desenha uma grade de 10% sobre ele, e a posição da função destacada (círculo vermelho ou legenda) foi lida em coordenadas do site, com a direção de ataque tirada do goleiro de cada time. Cada captura é um instante, não a média, então só entrou o que diverge bastante ou se repete em mais de uma imagem. Ajustes (entre parênteses, o que as capturas mostram):
+   - **Lateral (S)** segura na progressão: −6 (y 29–37 com a bola no meio); **Ala (D)** acima do Lateral (S): saída y 30, ataque y 70 (72–74 em três capturas);
+   - **Volante (D)** sem "pressionar menos" embutido (sai para pressionar ~20 acima dos zagueiros) e, com o **Âncora**, uns 10 acima dos zagueiros no ataque: y 56 e 55 (+9 a +14);
+   - **Half Back** um pouco à frente dos zagueiros no ataque (y 50) e no terço adversário com Alas em Apoio/Ataque (y 64; captura: ~66), efeito `hb_push_with_wingbacks`;
+   - **Regista** alto no ataque: y 74 (76–78); **Construtor Móvel** acampa na entrada da área: y 74;
+   - **Segundo Volante** sobe já na progressão: (A) saída y 34 e +12 na progressão (~68, "quase na linha do ponta"), ataque y 80; (S) +8 na progressão, ataque y 70;
+   - **Box-to-Box** com o time instalado no campo adversário: y 78 (80); **Carrilero** na entrada da área: y 76 (78);
+   - **Meia Aberto (S)** no meio-espaço: saída x 22 e ataque x 24, y 72 (x 20–33, y 72–83);
+   - **Trequartista** recua até o meio-campo na saída: y 40 (29–37; na progressão o modelo dá 57–62, como as capturas);
+   - **Segundo Atacante** recua na construção: saída y 46 (41–44);
+   - **Atacante Recuado** e **Pivô** recuam para segurar a bola: saída y 56 (S) / 60 (A) (Recuado 58 e Pivô 46–61 na progressão);
+   - **Atacante de Pressão** volta para defender: (D) −4 no bloco médio, todas as tarefas −8 no bloco baixo, e (D)/(S) recuam para y 62 na saída (59 na progressão).
+
+   **Conferidos e mantidos** (as capturas batem com o modelo): Construtor Recuado, Meia Aberto (D) sem a bola, Defensive Winger, Meia Central (S), Mezzala no ataque, Construtor Aberto, Ponta, Enganche, Falso 9, Avançado e Matador.
+
+   **Não aplicado:** as listas de instruções embutidas do livro divergem do site em alguns pontos: sem "deambular" no Avançado, no Atacante Recuado e no Atacante de Pressão (A); sem "corridas pelos canais" no Atacante Completo (S); com "corridas pelos canais" no Raumdeuter; sem "pressionar menos" no Âncora. Como as listas do livro têm erros de copiar e colar (a do Ponta repete a do Meia Aberto), ficam para conferir no jogo. Também ficaram de fora medidas de uma captura só (Mezzala mais aberta na progressão, Meia Ofensivo (S) mais recuado sem a bola, Ala Invertido (S) mais aberto no ataque).
 
 **Nenhuma fonte dá coordenadas.** As descrições ("recua um pouco", "sobe para pressionar") foram convertidas por mim em números, que servem de ponto de partida para calibrar. O fórum da SI, o FMInside, o Passion4FM e o sortitoutsi bloqueiam acesso automatizado e não foram lidos.
 

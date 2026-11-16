@@ -137,8 +137,38 @@
       widthFactor: pick(instructions.widthInPossession, ti.widthInPossession).factor,
       defWidthFactor: instructions.defensiveWidth ? pick(instructions.defensiveWidth, ti.defensiveWidth).factor : null,
       mentalityIdx: instructions.mentality.options[ti.mentality] ? ti.mentality : instructions.mentality.default,
+      runs: {
+        L: instructions.runsLeft ? pick(instructions.runsLeft, ti.runsLeft).run || null : null,
+        R: instructions.runsRight ? pick(instructions.runsRight, ti.runsRight).run || null : null
+      },
       flags: flags
     };
+  }
+
+  /**
+   * Overlap/underlap (instrução de equipe, por lado): o defensor mais recuado do corredor daquele lado
+   * (lateral ou ala) sobe e vai por fora (overlap) ou por dentro (underlap). Só nas fases-base com bola;
+   * a Progressão herda pela mistura.
+   */
+  function applyFlankRuns(list, phase, ti, instructions, roles) {
+    var cfg = instructions.flankRuns;
+    if (!cfg || !ti.runs) return;
+    ['L', 'R'].forEach(function (side) {
+      var run = ti.runs[side], def = run && cfg[run], eff = def && def[phase];
+      if (!eff) return;
+      var cands = list.filter(function (p) {
+        return p.side === side && (p.lane === 'L' || p.lane === 'R') && (p.band === 'D' || p.band === 'DM') &&
+          (cfg.exclude || []).indexOf(p.role) < 0;
+      }).sort(function (a, b) { return BAND_ORDER.indexOf(a.band) - BAND_ORDER.indexOf(b.band); });
+      var p = cands[0];
+      if (!p) return;
+      p.run = run;
+      if (eff.dy) p.dy += eff.dy;
+      var mirror = side === 'R', lx = mirror ? 100 - p.bx : p.bx;
+      if (eff.outsideTo != null && lx > eff.outsideTo) { lx = eff.outsideTo; p.inside = 0; }
+      if (eff.insideTo != null && lx < eff.insideTo) lx = eff.insideTo;
+      p.bx = mirror ? 100 - lx : lx;
+    });
   }
 
   // ---------- regras de função ----------
@@ -160,16 +190,23 @@
   /**
    * Função que precisa de um slot livre ao lado para ter o comportamento próprio (ex.: no FM23 o
    * Ala Invertido só fecha para dentro com o slot de volante do seu lado livre). Sem ele, usa as
-   * regras de fallbackRole na mesma tarefa. Devolve a chave da função cujas regras valem.
+   * regras de fallbackRole na mesma tarefa. `needsOccupiedSlot` é o inverso: exige ao menos um dos
+   * slots ocupado (o Ala Invertido precisa de um ponta/meia aberto à frente, Book of Roles).
+   * Devolve a chave da função cujas regras valem.
    */
   function ruleRole(roles, p, occupied) {
-    var role = roles[p.role], need = role && role.needsFreeSlot;
-    if (!need || !occupied) return p.role;
-    var slots = need[p.side] || [];
-    var blocked = slots.some(function (s) { return occupied[s]; });
-    if (!blocked) return p.role;
-    p.fallback = need.fallbackRole;
-    return need.fallbackRole && roles[need.fallbackRole] ? need.fallbackRole : p.role;
+    var role = roles[p.role];
+    if (!role || !occupied) return p.role;
+    var free = role.needsFreeSlot, taken = role.needsOccupiedSlot, fb = null, why = null;
+    if (free && (free[p.side] || []).some(function (s) { return occupied[s]; })) {
+      fb = free.fallbackRole; why = 'dm_slot';
+    } else if (taken && taken[p.side] && !taken[p.side].some(function (s) { return occupied[s]; })) {
+      fb = taken.fallbackRole; why = 'no_wide_ahead';
+    }
+    if (!fb) return p.role;
+    p.fallback = fb;
+    p.fallbackWhy = why;
+    return roles[fb] ? fb : p.role;
   }
 
   function getRule(roles, p, phase, flags, duty, occupied) {
@@ -281,6 +318,17 @@
       var target = source.side === 'L' ? dcs[0] : dcs[dcs.length - 1];
       if (target.side !== source.side) return;
       target.bx += source.side === 'L' ? -5 : 5;
+    },
+    /**
+     * Half Back com Alas (ou Alas Completos) em Apoio/Ataque: no ataque sobe até o terço adversário
+     * (Book of Roles: "when using support or attacking wingbacks the HB can push into the opponents third").
+     */
+    hb_push_with_wingbacks: function (list, phase, source) {
+      if (phase !== 'ataque') return;
+      var wingBacks = list.some(function (p) {
+        return (p.role === 'wing_back' || p.role === 'complete_wing_back') && (p.effDuty === 'S' || p.effDuty === 'A');
+      });
+      if (wingBacks) source.by = 64;
     },
     /** Lateral Invertido entra na linha dos zagueiros: os DCs deslizam para o lado oposto, formando uma linha de 3. */
     ifb_back_three: function (list, phase, source) {
@@ -515,6 +563,9 @@
         if (eff.centerSpread && p.side === 'C' && !noChannels) addZone(p, eff.centerSpread, eff.centerSpreadY || 4);
       });
     });
+
+    // 2c. overlap/underlap (instrução de equipe por lado)
+    if (withBall) applyFlankRuns(list, phase, ti, instructions, roles);
 
     // 3. efeitos sobre outros jogadores
     var warnings = [];
@@ -883,6 +934,94 @@
       held + ' jogador(es) contidos na linha de impedimento no ataque (ideal até 2)', true);
   }
 
+  // ---------- alertas de combinação (Book of Roles) ----------
+
+  /**
+   * Riscos de combinação que dá para detectar pela escalação (textos em data/alerts.json).
+   * oppPlayers (opcional): jogadores do adversário, para regras que dependem dele.
+   * Devolve [{ id, slots, role, page, text }].
+   */
+  function tacticalAlerts(players, data, tiState, oppPlayers) {
+    var cfg = data.alerts;
+    if (!cfg || !cfg.rules) return [];
+    var roles = data.roles, formations = data.formations;
+    var ti = resolveInstructions(data.instructions, tiState);
+    var map = (data.instructions.engine || {}).autoDutyByMentality;
+    var ps = players.filter(function (p) { return formations.slots[p.slot] && roles[p.role] && p.slot !== 'GK'; }).map(function (p) {
+      var info = slotInfo(formations, p.slot);
+      var duty = p.duty === 'St' || p.duty === 'Co' ? 'D' : p.duty === 'Au' ? (map && map[ti.mentalityIdx]) || 'S' : p.duty;
+      return { slot: p.slot, role: p.role, duty: duty, band: info.band, lane: info.lane, side: info.side, locked: lockedFor(roles, p) };
+    });
+    function has(p, k) { return p.locked.indexOf(k) >= 0; }
+    function wide(p) { return p.lane === 'L' || p.lane === 'R'; }
+    function other(side) { return side === 'L' ? 'R' : 'L'; }
+    function byRole(r, side) { return ps.filter(function (p) { return p.role === r && (!side || p.side === side); }); }
+    var out = [];
+    function add(id, list) {
+      var rule = cfg.rules[id];
+      if (!rule) return;
+      var slots = list.map(function (p) { return p.slot; });
+      out.push({ id: id, slots: slots, role: rule.role, page: rule.page, text: rule.text.replace('{slots}', slots.join(' e ')) });
+    }
+    var holders = ps.filter(function (p) {
+      return (p.band === 'DM' || (p.band === 'M' && !wide(p))) && (has(p, 'hold_position') || p.role === 'ball_winning_midfielder');
+    });
+
+    ps.forEach(function (p) {
+      if (p.role === 'advanced_playmaker' && p.band === 'M' && p.side !== 'C' && ti.runs && ti.runs[p.side] === 'overlap') add('ap_overlap', [p]);
+    });
+    ['L', 'R'].forEach(function (side) {
+      var iw = byRole('inverted_winger', side);
+      if (iw.length && byRole('mezzala', side).length) add('mez_iw_same_side', byRole('mezzala', side).concat(iw));
+      if (iw.length && byRole('box_to_box', side).length) add('iw_bbm_same_side', iw.concat(byRole('box_to_box', side)));
+    });
+    byRole('wide_playmaker').forEach(function (wp) {
+      var dyn = ps.filter(function (q) {
+        return q.side === other(wp.side) && (
+          (q.duty === 'A' && ['mezzala', 'inverted_winger', 'inside_forward'].indexOf(q.role) >= 0) ||
+          q.role === 'inverted_wing_back' || q.role === 'box_to_box');
+      });
+      if (dyn.length >= 2) add('wp_isolated', [wp].concat(dyn));
+    });
+    byRole('enganche').forEach(function (eg) {
+      var movers = ps.filter(function (q) {
+        return q !== eg && ['M', 'AM', 'ST'].indexOf(q.band) >= 0 && !has(q, 'hold_position') &&
+          (q.duty === 'A' || has(q, 'get_further_forward') || has(q, 'move_into_channels') || has(q, 'roam_from_position'));
+      });
+      if (movers.length < 2) add('enganche_no_movers', [eg]);
+    });
+    var sts = ps.filter(function (p) { return p.band === 'ST'; });
+    if (sts.length === 1 && sts[0].role === 'advanced_forward' &&
+        !ps.some(function (q) { return wide(q) && (q.band === 'M' || q.band === 'AM') && q.duty === 'A'; })) add('af_lone', sts);
+    var reg = byRole('regista'), ncb = byRole('no_nonsense_cb');
+    if (reg.length && ncb.length && ti.mentalityIdx >= 4) add('regista_bypassed', reg.concat(ncb));
+    var roamers = ps.filter(function (p) { return p.band === 'DM' && has(p, 'roam_from_position'); });
+    if (roamers.length && !holders.length) add('roamer_unscreened', roamers);
+    var mezA = byRole('mezzala').filter(function (p) { return p.duty === 'A'; });
+    if (mezA.length && !holders.length) add('mezzala_no_cover', mezA);
+    if (ti.loeDy > 0) {
+      var tq = byRole('trequartista').filter(function (p) { return p.band === 'AM' && !wide(p); });
+      if (tq.length) add('treq_press', tq);
+    }
+    byRole('wing_back').forEach(function (wb) {
+      if (wb.duty !== 'A') return;
+      if (!ps.some(function (q) { return q.side === wb.side && wide(q) && (q.band === 'M' || q.band === 'AM'); })) add('wb_attack_no_width', [wb]);
+    });
+    var ss = byRole('shadow_striker');
+    if (ss.length && oppPlayers) {
+      var oppDm = oppPlayers.filter(function (o) {
+        var s = formations.slots[o.slot];
+        return s && s.band === 'DM' && s.lane !== 'L' && s.lane !== 'R';
+      }).length;
+      if (oppDm >= 2) add('ss_vs_two_dm', ss);
+    }
+    byRole('raumdeuter').forEach(function (rmd) {
+      var atk = ps.filter(function (q) { return q.side === other(rmd.side) && q.band !== 'ST' && q.duty === 'A'; });
+      if (atk.length < 2) add('raumdeuter_no_overload', [rmd]);
+    });
+    return out;
+  }
+
   function evaluateBalance(players, data, tiState, oppCacheArg) {
     var ti = resolveInstructions(data.instructions, tiState);
     var map = (data.instructions.engine || {}).autoDutyByMentality;
@@ -936,6 +1075,14 @@
     });
     var dev = Math.abs(cnt.D - 3) + Math.abs(cnt.S - 4) + Math.abs(cnt.A - 3);
     add('tarefas', 'Tarefas equilibradas', 15, 1 - dev / 6, cnt.D + ' Defender · ' + cnt.S + ' Apoio · ' + cnt.A + ' Ataque (referência do manual: 3 · 4 · 3)');
+
+    if (data.alerts) {
+      var oppKeys = oppCacheArg ? Object.keys(oppCacheArg) : [];
+      var al = tacticalAlerts(players, data, tiState, oppKeys.length ? oppCacheArg[oppKeys[0]].players : null);
+      add('combinacoes', 'Combinações sem risco conhecido', data.alerts.balanceWeight || 10,
+        1 - al.length * (data.alerts.penaltyPerAlert || 0.35),
+        al.length ? al.length + ' alerta(s) do Book of Roles: ' + al.map(function (x) { return x.slots.join('+'); }).join('; ') : 'nenhum alerta de combinação (Book of Roles)');
+    }
 
     if (oppCacheArg) opponentParts(players, data, tiState, oppCacheArg, add);
 
@@ -1093,7 +1240,7 @@
     resolveCollisions: resolveCollisions, clamp: clamp, registerEffect: registerEffect,
     overrideFromPosition: overrideFromPosition, applyOverride: applyOverride,
     deltaFromPosition: deltaFromPosition, teamShape: teamShape, isWithBall: isWithBall,
-    evaluateBalance: evaluateBalance, suggestRoles: suggestRoles, opponentCache: opponentCache,
+    evaluateBalance: evaluateBalance, suggestRoles: suggestRoles, opponentCache: opponentCache, tacticalAlerts: tacticalAlerts,
     structureScores: structureScores,
     OPP_PHASES: OPP_PHASES
   };

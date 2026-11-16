@@ -9,7 +9,8 @@ const data = {
   instructions: require('../data/team-instructions.json'),
   playerInstructions: require('../data/player-instructions.json'),
   opponent: require('../data/opponent.json'),
-  playerTraits: require('../data/player-traits.json')
+  playerTraits: require('../data/player-traits.json'),
+  alerts: require('../data/alerts.json')
 };
 const preset = (id) => data.formations.presets.find((p) => p.id === id).players;
 const byslot = (res, slot) => res.players.find((p) => p.slot === slot);
@@ -499,7 +500,7 @@ test('índice de equilíbrio fica entre 0 e 100 e tem os 7 critérios', () => {
   for (const pr of data.formations.presets) {
     const ev = E.evaluateBalance(pr.players, data, {});
     assert.ok(ev.score >= 0 && ev.score <= 100, pr.id);
-    assert.equal(ev.parts.length, 8);
+    assert.equal(ev.parts.length, 9);
   }
 });
 
@@ -571,7 +572,7 @@ test('com adversário, o índice ganha 5 critérios contra ele e continua entre 
   const opp = oppOf('4-4-2', 'pressao_alta');
   const cache = E.opponentCache(data, opp, E.OPP_PHASES);
   const ev = E.evaluateBalance(preset('4-2-3-1-dm-wide'), data, {}, cache);
-  assert.equal(ev.parts.length, 14);
+  assert.equal(ev.parts.length, 15);
   assert.equal(ev.parts.filter((p) => p.vsOpp).length, 6);
   assert.ok(ev.score >= 0 && ev.score <= 100 && ev.vsOpponent);
 });
@@ -599,6 +600,85 @@ test('Ala Invertido só inverte com o slot de volante do seu lado livre (FM23); 
   const rb = byslot(E.computePhase(b, 'ataque', noCol, {}), 'DL');
   assert.ok(ra.x > 30, `inverte: ${ra.x}`);
   assert.ok(rb.x < 15 && rb.fallback === 'wing_back', `não inverte: ${rb.x}`);
+});
+
+// ---------- The Book of Roles (Daljit Singh, FM23), PDF enviado pelo usuário ----------
+
+const P = (slot, role, duty) => ({ slot, role, duty });
+// 4-1-4-1 de teste: troque um slot com `swap(slot, role, duty)`
+const book = [
+  P('GK', 'goalkeeper', 'D'), P('DL', 'full_back', 'S'), P('DCL', 'central_defender', 'D'), P('DCR', 'central_defender', 'D'),
+  P('DR', 'full_back', 'S'), P('DMC', 'defensive_midfielder', 'D'), P('ML', 'wide_midfielder', 'S'),
+  P('MCL', 'central_midfielder', 'S'), P('MCR', 'central_midfielder', 'S'), P('MR', 'winger', 'S'), P('STC', 'advanced_forward', 'A')
+];
+const swap = (...changes) => book.map((p) => {
+  const c = changes.find((x) => x[0] === p.slot);
+  return c ? P(c[0], c[1], c[2]) : p;
+});
+
+test('Ala Invertido sem ponta/meia aberto à frente age como Ala (Book of Roles)', () => {
+  // sem ninguém em ML/AML (o ponta do lado direito não conta para o lado esquerdo)
+  const xi = swap(['DL', 'inverted_wing_back', 'S']).filter((p) => p.slot !== 'ML').concat([P('MC', 'central_midfielder', 'S')]);
+  const dl = byslot(E.computePhase(xi, 'ataque', noCol, {}), 'DL');
+  assert.equal(dl.fallback, 'wing_back');
+  assert.equal(dl.fallbackWhy, 'no_wide_ahead');
+  const withWinger = byslot(E.computePhase(swap(['DL', 'inverted_wing_back', 'S']), 'ataque', noCol, {}), 'DL');
+  assert.ok(!withWinger.fallback && withWinger.x > 30, `com meia aberto à frente, inverte: ${withWinger.x}`);
+});
+
+test('Ala (D) fica acima do Lateral (S) na saída e no ataque', () => {
+  const xi = swap(['DL', 'wing_back', 'D']);
+  for (const ph of ['saindo', 'ataque']) {
+    const r = E.computePhase(xi, ph, noCol, {});
+    assert.ok(byslot(r, 'DL').y > byslot(r, 'DR').y, `${ph}: WB(D) ${byslot(r, 'DL').y} x FB(S) ${byslot(r, 'DR').y}`);
+  }
+});
+
+test('Half Back no ataque fica um pouco à frente dos zagueiros, não atrás', () => {
+  const r = E.computePhase(swap(['DMC', 'half_back', 'D']), 'ataque', noCol, {});
+  const hb = byslot(r, 'DMC').y, cb = byslot(r, 'DCL').y;
+  assert.ok(hb > cb && hb - cb <= 8, `HB ${hb} x DC ${cb}`);
+});
+
+test('Atacante de Pressão volta mais que um Avançado sem a bola; o (D) é o mais recuado', () => {
+  const y = (duty, ph) => byslot(E.computePhase(swap(['STC', 'pressing_forward', duty]), ph, noCol, {}), 'STC').y;
+  const af = (ph) => byslot(E.computePhase(book, ph, noCol, {}), 'STC').y;
+  for (const ph of ['defendendo', 'bloco_baixo']) {
+    assert.ok(y('D', ph) < y('S', ph) && y('S', ph) <= y('A', ph), `${ph}: D ${y('D', ph)}, S ${y('S', ph)}, A ${y('A', ph)}`);
+    assert.ok(y('A', ph) < af(ph), `${ph}: PF(A) ${y('A', ph)} x AF ${af(ph)}`);
+  }
+});
+
+test('Trequartista recua na saída, mais fundo que o Enganche e que um Meia (S)', () => {
+  const ys = (role, duty) => byslot(E.computePhase(swap(['STC', 'advanced_forward', 'A']).concat([P('AMC', role, duty)])
+    .filter((p) => p.slot !== 'MCR'), 'saindo', noCol, {}), 'AMC').y;
+  assert.ok(ys('trequartista', 'A') < ys('enganche', 'S'), 'T x EG');
+  assert.ok(ys('trequartista', 'A') < ys('attacking_midfielder', 'S'), 'T x AM(S)');
+  const st = byslot(E.computePhase(swap(['STC', 'trequartista', 'A']), 'saindo', noCol, {}), 'STC').y;
+  const af = byslot(E.computePhase(book, 'saindo', noCol, {}), 'STC').y;
+  assert.ok(st < af - 10, `T no ataque recua: ${st} x AF ${af}`);
+});
+
+test('Segundo Atacante recua um pouco na saída; Pivô recua como o Atacante Recuado', () => {
+  const am = (role, duty) => byslot(E.computePhase(book.filter((p) => p.slot !== 'MCR').concat([P('AMC', role, duty)]), 'saindo', noCol, {}), 'AMC').y;
+  assert.ok(am('shadow_striker', 'A') < am('attacking_midfielder', 'S'));
+  const st = (role, duty) => byslot(E.computePhase(swap(['STC', role, duty]), 'saindo', noCol, {}), 'STC').y;
+  assert.ok(st('target_forward', 'S') <= st('deep_lying_forward', 'S'));
+  assert.ok(st('target_forward', 'A') <= st('deep_lying_forward', 'A'));
+});
+
+test('Meia Aberto (S) fecha para o meio-espaço na saída', () => {
+  const r = E.computePhase(book, 'saindo', noCol, {});
+  assert.ok(byslot(r, 'ML').x > 15 && byslot(r, 'ML').x < byslot(r, 'MCL').x, `WM(S) x ${byslot(r, 'ML').x}`);
+});
+
+test('No ataque: Carrilero e IWB(S) acima de um Meia Central (S); RPM perto da entrada da área', () => {
+  const r = E.computePhase(swap(['MCR', 'carrilero', 'S']), 'ataque', noCol, {});
+  assert.ok(byslot(r, 'MCR').y > byslot(r, 'MCL').y, 'CAR x CM(S)');
+  const dm = E.computePhase(swap(['DMC', 'roaming_playmaker', 'S']), 'ataque', noCol, {});
+  assert.ok(byslot(dm, 'DMC').y >= 70, `RPM ${byslot(dm, 'DMC').y}`);
+  const iwb = E.computePhase(swap(['DL', 'inverted_wing_back', 'S']), 'ataque', noCol, {});
+  assert.ok(Math.abs(byslot(iwb, 'DL').y - byslot(iwb, 'MCL').y) <= 4, 'IWB(S) chega à altura do CM(S)');
 });
 
 test('Zagueiro com Bola conduz na saída (sobe mais que o Zagueiro Central)', () => {
@@ -688,4 +768,152 @@ test('laterais e alas não sobem com a linha defensiva (só zagueiros e volantes
   assert.equal(byslot(high, 'DC').y - byslot(std, 'DC').y, 5);
   const P4 = preset('4-4-2');
   assert.equal(byslot(E.computePhase(P4, 'ataque', noCol, { defensiveLine: 3 }), 'DL').y, byslot(E.computePhase(P4, 'ataque', noCol, {}), 'DL').y);
+});
+
+// ---------- Book of Roles: medidas tiradas das capturas 2D do livro (grade de 10% sobre o campo) ----------
+
+test('Capturas: Segundo Volante (A) já sobe na progressão; Regista alto no ataque', () => {
+  const xi = book.filter((p) => p.slot !== 'DMC').concat([P('DMCL', 'segundo_volante', 'A'), P('DMCR', 'regista', 'S')])
+    .filter((p) => p.slot !== 'MCR');
+  const prog = E.computePhase(xi, 'progressao', noCol, {});
+  assert.ok(byslot(prog, 'DMCL').y >= 62, `SV(A) na progressão: ${byslot(prog, 'DMCL').y} (livro ~68)`);
+  const atk = E.computePhase(xi, 'ataque', noCol, {});
+  assert.ok(byslot(atk, 'DMCR').y >= 70, `Regista no ataque: ${byslot(atk, 'DMCR').y} (livro 76-78)`);
+});
+
+test('Capturas: Âncora e Volante (D) ficam ~10 acima dos zagueiros no ataque', () => {
+  for (const role of ['anchor', 'defensive_midfielder']) {
+    const r = E.computePhase(swap(['DMC', role, 'D']), 'ataque', noCol, {});
+    const gap = byslot(r, 'DMC').y - byslot(r, 'DCL').y;
+    assert.ok(gap >= 8 && gap <= 14, `${role}: ${gap}`);
+  }
+});
+
+test('Capturas: Half Back sobe ao terço adversário com Alas em Apoio/Ataque', () => {
+  const xi = swap(['DMC', 'half_back', 'D'], ['DL', 'wing_back', 'S']);
+  const withWb = byslot(E.computePhase(xi, 'ataque', noCol, {}), 'DMC').y;
+  const withFb = byslot(E.computePhase(swap(['DMC', 'half_back', 'D']), 'ataque', noCol, {}), 'DMC').y;
+  assert.ok(withWb >= 60 && withWb > withFb + 10, `com Ala ${withWb}, com Lateral ${withFb}`);
+});
+
+test('Capturas: Meia Aberto (S) no ataque fica no meio-espaço; Lateral (S) segura na progressão', () => {
+  const atk = E.computePhase(book, 'ataque', noCol, {});
+  assert.ok(byslot(atk, 'ML').x >= 18 && byslot(atk, 'ML').y >= 70, `WM(S) ${byslot(atk, 'ML').x},${byslot(atk, 'ML').y}`);
+  const prog = E.computePhase(book, 'progressao', noCol, {});
+  assert.ok(byslot(prog, 'DL').y <= 40, `FB(S) na progressão: ${byslot(prog, 'DL').y} (livro 29-37)`);
+});
+
+// ---------- guia das funções (data/role-guide.json) ----------
+
+test('guia das funções: cobre todas as funções e só referencia funções, tarefas e atributos que existem', () => {
+  const guide = require('../data/role-guide.json');
+  const roles = data.roles;
+  assert.deepEqual(Object.keys(guide.roles).sort(), Object.keys(roles).sort());
+  for (const [key, g] of Object.entries(guide.roles)) {
+    if (g.notCovered) continue;
+    assert.ok(g.summary && g.page, `${key}: resumo e página`);
+    for (const d of Object.keys(g.duties)) assert.ok(roles[key].duties[d], `${key}: tarefa ${d}`);
+    const lists = Array.isArray(g.attributes) ? [g.attributes] : Object.entries(g.attributes).map(([d, l]) => {
+      assert.ok(roles[key].duties[d], `${key}: atributos da tarefa ${d}`);
+      return l;
+    });
+    for (const l of lists) for (const a of l) assert.ok(guide.attributes[a], `${key}: atributo ${a}`);
+    for (const c of g.combos || []) {
+      assert.ok(roles[c.role], `${key}: combinação ${c.role}`);
+      assert.notEqual(c.role, key, `${key}: combinação consigo mesmo`);
+    }
+  }
+});
+
+// ---------- overlap/underlap (instrução de equipe) ----------
+
+test('Overlap: o lateral daquele lado sobe e vai por fora; underlap: sobe por dentro; o outro lado não muda', () => {
+  const xi = swap(['DL', 'full_back', 'S'], ['DR', 'full_back', 'S']);
+  const at = (ti, slot) => byslot(E.computePhase(xi, 'ataque', noCol, ti), slot);
+  const base = at({}, 'DL'), ov = at({ runsLeft: 1 }, 'DL'), un = at({ runsRight: 2 }, 'DR');
+  assert.ok(ov.y > base.y && ov.run === 'overlap' && ov.x <= 15, `overlap ${ov.x},${ov.y}`);
+  assert.ok(un.y > at({}, 'DR').y && un.x <= 75 && un.run === 'underlap', `underlap ${un.x},${un.y}`);
+  assert.equal(at({ runsLeft: 1 }, 'DR').y, at({}, 'DR').y);
+  assert.ok(byslot(E.computePhase(xi, 'saindo', noCol, { runsLeft: 1 }), 'DL').y > byslot(E.computePhase(xi, 'saindo', noCol, {}), 'DL').y);
+  // sem a bola, nada muda
+  assert.equal(byslot(E.computePhase(xi, 'defendendo', noCol, { runsLeft: 1 }), 'DL').y, byslot(E.computePhase(xi, 'defendendo', noCol, {}), 'DL').y);
+});
+
+test('Overlap no Ala Invertido: desce por fora no ataque (captura da p. 27)', () => {
+  const xi = swap(['DL', 'inverted_wing_back', 'S']);
+  const iwb = byslot(E.computePhase(xi, 'ataque', noCol, { runsLeft: 1 }), 'DL');
+  assert.ok(iwb.x <= 15 && iwb.y >= 60, `${iwb.x},${iwb.y}`);
+});
+
+// ---------- alertas de combinação (Book of Roles) ----------
+
+const alertIds = (xi, ti, opp) => E.tacticalAlerts(xi, data, ti || {}, opp).map((a) => a.id);
+
+test('Alertas: os atalhos de formação quase não disparam (só o 3-5-2, com ala em Ataque sem largura)', () => {
+  for (const p of data.formations.presets) {
+    const ids = alertIds(p.players);
+    if (p.id === '3-5-2-wb') assert.deepEqual(ids, ['wb_attack_no_width']);
+    else assert.deepEqual(ids, [], p.id);
+  }
+});
+
+test('Alertas: Construtor Avançado com overlap do mesmo lado', () => {
+  const xi = swap(['MCL', 'advanced_playmaker', 'S']);
+  assert.ok(!alertIds(xi).includes('ap_overlap'));
+  assert.ok(alertIds(xi, { runsLeft: 1 }).includes('ap_overlap'));
+  assert.ok(!alertIds(xi, { runsRight: 1 }).includes('ap_overlap'));
+});
+
+test('Alertas: Mezzala + Extremo Invertido do mesmo lado; Mezzala (A) sem proteção', () => {
+  const xi = swap(['MCL', 'mezzala', 'A'], ['ML', 'inverted_winger', 'S']);
+  assert.ok(alertIds(xi).includes('mez_iw_same_side'));
+  assert.ok(!alertIds(xi).includes('mezzala_no_cover'), 'o Volante (D) segura a posição');
+  const noCover = swap(['MCL', 'mezzala', 'A'], ['DMC', 'segundo_volante', 'S']);
+  assert.ok(alertIds(noCover).includes('mezzala_no_cover'));
+});
+
+test('Alertas: volante que deambula sem ninguém segurando a posição', () => {
+  assert.ok(alertIds(swap(['DMC', 'roaming_playmaker', 'S'])).includes('roamer_unscreened'));
+  const ok = swap(['DMC', 'roaming_playmaker', 'S'], ['MCL', 'central_midfielder', 'D']);
+  assert.ok(!alertIds(ok).includes('roamer_unscreened'));
+});
+
+test('Alertas: Avançado sozinho sem ninguém aberto em Ataque', () => {
+  assert.ok(alertIds(swap(['MR', 'wide_midfielder', 'S'])).includes('af_lone'));
+  assert.ok(!alertIds(swap(['MR', 'winger', 'A'])).includes('af_lone'));
+});
+
+test('Alertas: Regista com Zagueiro Simples só com mentalidade alta; Trequartista com linha de pressão alta', () => {
+  const xi = book.filter((p) => p.slot !== 'DMC').concat([P('DMCL', 'regista', 'S'), P('DMCR', 'anchor', 'D')])
+    .map((p) => (p.slot === 'DCL' ? P('DCL', 'no_nonsense_cb', 'D') : p)).filter((p) => p.slot !== 'MCR');
+  assert.ok(!alertIds(xi, { mentality: 3 }).includes('regista_bypassed'));
+  assert.ok(alertIds(xi, { mentality: 5 }).includes('regista_bypassed'));
+  const tq = book.filter((p) => p.slot !== 'MCR').concat([P('AMC', 'trequartista', 'A')]);
+  assert.ok(!alertIds(tq).includes('treq_press'));
+  assert.ok(alertIds(tq, { lineOfEngagement: 2 }).includes('treq_press'));
+});
+
+test('Alertas: Segundo Atacante contra dois volantes (só com adversário)', () => {
+  const xi = book.filter((p) => p.slot !== 'MCR').concat([P('AMC', 'shadow_striker', 'A')]);
+  const twoDm = data.formations.presets.find((p) => p.id === '4-2-3-1-dm-wide').players;
+  assert.ok(!alertIds(xi).includes('ss_vs_two_dm'));
+  assert.ok(alertIds(xi, {}, twoDm).includes('ss_vs_two_dm'));
+  assert.ok(!alertIds(xi, {}, preset('4-4-2')).includes('ss_vs_two_dm'));
+});
+
+test('Alertas entram no índice de equilíbrio e a sugestão evita combinações arriscadas', () => {
+  const risky = swap(['DMC', 'roaming_playmaker', 'S'], ['MR', 'wide_midfielder', 'S']);
+  const part = (xi) => E.evaluateBalance(xi, data, {}).parts.find((p) => p.key === 'combinacoes');
+  const clean = swap(['MR', 'winger', 'A']);
+  assert.deepEqual(alertIds(clean), []);
+  assert.ok(part(risky).score < 1 && part(clean).score === 1);
+  const sug = E.suggestRoles(risky, data, {}, { maxChanges: 6 });
+  assert.ok(alertIds(sug.players).length < alertIds(risky).length);
+});
+
+test('alerts.json: toda regra detectada tem texto e aponta para uma função existente', () => {
+  for (const [id, r] of Object.entries(data.alerts.rules)) {
+    assert.ok(r.text.includes('{slots}') && r.page, id);
+    assert.ok(data.roles[r.role], `${id}: ${r.role}`);
+  }
 });

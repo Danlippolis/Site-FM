@@ -58,7 +58,8 @@ src/ui/app.js            interface (vanilla JS + SVG)
 src/ui/styles.css
 data/formations.json     grade de slots, transformações por fase, atalhos de formação
 data/roles.json          funções, slots válidos, tarefas, regras por fase e instruções embutidas
-data/team-instructions.json  mentalidade, linha defensiva, linha de pressão, larguras com/sem bola, parâmetros do motor
+data/team-instructions.json  mentalidade, linha defensiva, linha de pressão, larguras com/sem bola, overlap/underlap por lado, parâmetros do motor
+data/alerts.json         alertas de combinação (texto, página do Book of Roles e função ligada ao guia; a detecção fica em tacticalAlerts)
 data/player-instructions.json  instruções individuais (PIs): disponibilidade, exclusões e efeito por fase
 data/opponent.json       adversário: correspondência de fases, estilos de jogo e impedimento
 data/player-traits.json  características do jogador (traits): disponibilidade, conflitos, quem anula e efeito por fase
@@ -148,6 +149,7 @@ No card **Funções e tarefas**, a linha *Equilíbrio da tática: N/100* mostra 
 | Compactação sem a bola | 15 | bloco médio com até 40 m de comprimento |
 | Jogadores sem se empilhar | 15 | pares a menos de 8 m entre si com a bola |
 | Tarefas equilibradas | 15 | distância de 3 Defender · 4 Apoio · 3 Ataque (referência do manual para mentalidade e fluidez equilibradas) |
+| Combinações sem risco conhecido | 10 | −35% por alerta de combinação do Book of Roles (ver abaixo) |
 
 **Com o adversário ligado**, o índice inclui também 5 critérios contra ele, medidos com os dois times nas mesmas fases (com impedimento):
 
@@ -162,6 +164,37 @@ No card **Funções e tarefas**, a linha *Equilíbrio da tática: N/100* mostra 
 O adversário não depende das nossas funções, então é calculado uma vez e reaproveitado em todas as tentativas da busca (cerca de meio segundo no total).
 
 A busca é gulosa: a cada rodada aplica a troca que mais melhora o índice (até 6 trocas, ganho mínimo 2 pontos, para evitar trocas marginais). Instruções individuais e características são mantidas (as que deixam de valer na nova função são removidas ao aplicar). O índice é uma heurística de boas práticas, não uma avaliação do motor do jogo; os pesos ficam em `evaluateBalance` no motor.
+
+## Overlap e underlap
+
+Em **Instruções de equipe**, *Corridas pelo lado esquerdo/direito* liga o overlap ou o underlap de cada lado. Vale para o defensor mais recuado do corredor daquele lado (lateral ou ala; o Lateral Invertido fica de fora, porque vira zagueiro) e só nas fases com bola:
+
+- **overlap**: +4 na saída e +6 no ataque, e no ataque vai por fora (no máximo x 14). O Ala Invertido, por exemplo, deixa de fechar e desce pelo lado;
+- **underlap**: +4 na saída e +6 no ataque, e no ataque passa por dentro (no mínimo x 26).
+
+A Progressão herda pela mistura. Fonte: Book of Roles (o lateral em Apoio "fica perto da linha do meio" com overlap/underlap; captura da p. 27 com Alas Invertidos em overlap a x ~20). Os números ficam em `flankRuns` no `team-instructions.json`.
+
+## Alertas de combinação
+
+A caixa de avisos do card **Formação** mostra, em verde, riscos de combinação que o *Book of Roles* aponta e que dá para detectar pela escalação, cada um com um link para o guia da função:
+
+| Alerta | Quando dispara |
+|---|---|
+| Construtor Avançado + overlap | Construtor Avançado no meio com overlap do mesmo lado |
+| Mezzala + Extremo Invertido | os dois do mesmo lado |
+| Extremo Invertido + Box-to-Box | os dois do mesmo lado |
+| Construtor Aberto isolado | 2+ funções dinâmicas no lado oposto (Mezzala/Extremo Invertido/Atacante Interior em Ataque, Ala Invertido, Box-to-Box) |
+| Enganche sem movimento | menos de 2 jogadores do meio para frente em Ataque, deambulando ou abrindo pelos canais |
+| Avançado sozinho | um só atacante, Avançado, e ninguém aberto em Ataque |
+| Regista ignorado | Regista + Zagueiro Simples com mentalidade Positiva ou mais |
+| Volante que deambula sem proteção | quem deambula na faixa de volante sem ninguém segurando a posição à frente da defesa |
+| Mezzala (A) sem proteção | idem, com Mezzala em Ataque |
+| Trequartista na pressão | Trequartista central na meia com linha de pressão alta |
+| Ala em Ataque sem largura | Ala (A) sem ninguém aberto à frente do mesmo lado |
+| Segundo Atacante contra dois volantes | com o adversário ligado e dois volantes centrais nele |
+| Raumdeuter sem sobrecarga | menos de 2 jogadores em Ataque no lado oposto |
+
+Cada alerta tira pontos do critério *Combinações sem risco conhecido* do índice de equilíbrio, então o **✨ Sugerir funções** também passa a evitar essas combinações. Entre os atalhos de formação, só o 3-5-2 dispara um alerta: o ala direito em Ataque como única largura daquele lado, que é o caso descrito no livro.
 
 ## Adversário
 

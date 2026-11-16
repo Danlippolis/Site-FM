@@ -107,6 +107,9 @@ select {
 .validation .msg { font-size: 12px; padding: 6px 8px; border-radius: 6px; }
 .validation .err { background: var(--err-bg); color: var(--danger); }
 .validation .warn { background: var(--warn-bg); color: var(--warn); }
+.validation .tip { background: var(--accent-soft); color: var(--text); }
+.validation .tip .tip-tag { font-weight: 700; color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.validation .tip .link-btn { font-size: 12px; white-space: nowrap; }
 
 /* lista de jogadores */
 .player-list { display: flex; flex-direction: column; gap: 6px; }

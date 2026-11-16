@@ -57,6 +57,32 @@
       { "label": "Mais larga", "en": "Wider", "factor": 0.85 }
     ]
   },
+  "runsLeft": {
+    "label": "Corridas pelo lado esquerdo",
+    "en": "Overlap/Underlap Left",
+    "default": 0,
+    "options": [
+      { "label": "Nenhuma", "en": "None" },
+      { "label": "Overlap", "en": "Overlap Left", "run": "overlap" },
+      { "label": "Underlap", "en": "Underlap Left", "run": "underlap" }
+    ]
+  },
+  "runsRight": {
+    "label": "Corridas pelo lado direito",
+    "en": "Overlap/Underlap Right",
+    "default": 0,
+    "options": [
+      { "label": "Nenhuma", "en": "None" },
+      { "label": "Overlap", "en": "Overlap Right", "run": "overlap" },
+      { "label": "Underlap", "en": "Underlap Right", "run": "underlap" }
+    ]
+  },
+  "flankRuns": {
+    "note": "Vale para o defensor mais recuado do corredor (lateral ou ala) daquele lado, só nas fases com bola. Book of Roles: com overlap/underlap o lateral (S) fica perto da linha do meio; o Ala Invertido com overlap desce por fora quando o time controla o terço adversário (captura da p. 27: x ~20). outsideTo/insideTo são x do lado esquerdo (espelhado à direita): no máximo / no mínimo esse x.",
+    "exclude": ["inverted_full_back"],
+    "overlap": { "label": "faz overlap (por fora)", "saindo": { "dy": 4 }, "ataque": { "dy": 6, "outsideTo": 14 } },
+    "underlap": { "label": "faz underlap (por dentro)", "saindo": { "dy": 4 }, "ataque": { "dy": 6, "insideTo": 26 } }
+  },
   "flags": {
     "dlp_drop": { "label": "Construtor Recuado (D) no meio-defensivo recua entre os DCs", "default": false }
   },

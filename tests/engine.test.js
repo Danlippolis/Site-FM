@@ -9,7 +9,8 @@ const data = {
   instructions: require('../data/team-instructions.json'),
   playerInstructions: require('../data/player-instructions.json'),
   opponent: require('../data/opponent.json'),
-  playerTraits: require('../data/player-traits.json')
+  playerTraits: require('../data/player-traits.json'),
+  alerts: require('../data/alerts.json')
 };
 const preset = (id) => data.formations.presets.find((p) => p.id === id).players;
 const byslot = (res, slot) => res.players.find((p) => p.slot === slot);
@@ -499,7 +500,7 @@ test('índice de equilíbrio fica entre 0 e 100 e tem os 7 critérios', () => {
   for (const pr of data.formations.presets) {
     const ev = E.evaluateBalance(pr.players, data, {});
     assert.ok(ev.score >= 0 && ev.score <= 100, pr.id);
-    assert.equal(ev.parts.length, 8);
+    assert.equal(ev.parts.length, 9);
   }
 });
 
@@ -571,7 +572,7 @@ test('com adversário, o índice ganha 5 critérios contra ele e continua entre 
   const opp = oppOf('4-4-2', 'pressao_alta');
   const cache = E.opponentCache(data, opp, E.OPP_PHASES);
   const ev = E.evaluateBalance(preset('4-2-3-1-dm-wide'), data, {}, cache);
-  assert.equal(ev.parts.length, 14);
+  assert.equal(ev.parts.length, 15);
   assert.equal(ev.parts.filter((p) => p.vsOpp).length, 6);
   assert.ok(ev.score >= 0 && ev.score <= 100 && ev.vsOpponent);
 });
@@ -821,5 +822,98 @@ test('guia das funções: cobre todas as funções e só referencia funções, t
       assert.ok(roles[c.role], `${key}: combinação ${c.role}`);
       assert.notEqual(c.role, key, `${key}: combinação consigo mesmo`);
     }
+  }
+});
+
+// ---------- overlap/underlap (instrução de equipe) ----------
+
+test('Overlap: o lateral daquele lado sobe e vai por fora; underlap: sobe por dentro; o outro lado não muda', () => {
+  const xi = swap(['DL', 'full_back', 'S'], ['DR', 'full_back', 'S']);
+  const at = (ti, slot) => byslot(E.computePhase(xi, 'ataque', noCol, ti), slot);
+  const base = at({}, 'DL'), ov = at({ runsLeft: 1 }, 'DL'), un = at({ runsRight: 2 }, 'DR');
+  assert.ok(ov.y > base.y && ov.run === 'overlap' && ov.x <= 15, `overlap ${ov.x},${ov.y}`);
+  assert.ok(un.y > at({}, 'DR').y && un.x <= 75 && un.run === 'underlap', `underlap ${un.x},${un.y}`);
+  assert.equal(at({ runsLeft: 1 }, 'DR').y, at({}, 'DR').y);
+  assert.ok(byslot(E.computePhase(xi, 'saindo', noCol, { runsLeft: 1 }), 'DL').y > byslot(E.computePhase(xi, 'saindo', noCol, {}), 'DL').y);
+  // sem a bola, nada muda
+  assert.equal(byslot(E.computePhase(xi, 'defendendo', noCol, { runsLeft: 1 }), 'DL').y, byslot(E.computePhase(xi, 'defendendo', noCol, {}), 'DL').y);
+});
+
+test('Overlap no Ala Invertido: desce por fora no ataque (captura da p. 27)', () => {
+  const xi = swap(['DL', 'inverted_wing_back', 'S']);
+  const iwb = byslot(E.computePhase(xi, 'ataque', noCol, { runsLeft: 1 }), 'DL');
+  assert.ok(iwb.x <= 15 && iwb.y >= 60, `${iwb.x},${iwb.y}`);
+});
+
+// ---------- alertas de combinação (Book of Roles) ----------
+
+const alertIds = (xi, ti, opp) => E.tacticalAlerts(xi, data, ti || {}, opp).map((a) => a.id);
+
+test('Alertas: os atalhos de formação quase não disparam (só o 3-5-2, com ala em Ataque sem largura)', () => {
+  for (const p of data.formations.presets) {
+    const ids = alertIds(p.players);
+    if (p.id === '3-5-2-wb') assert.deepEqual(ids, ['wb_attack_no_width']);
+    else assert.deepEqual(ids, [], p.id);
+  }
+});
+
+test('Alertas: Construtor Avançado com overlap do mesmo lado', () => {
+  const xi = swap(['MCL', 'advanced_playmaker', 'S']);
+  assert.ok(!alertIds(xi).includes('ap_overlap'));
+  assert.ok(alertIds(xi, { runsLeft: 1 }).includes('ap_overlap'));
+  assert.ok(!alertIds(xi, { runsRight: 1 }).includes('ap_overlap'));
+});
+
+test('Alertas: Mezzala + Extremo Invertido do mesmo lado; Mezzala (A) sem proteção', () => {
+  const xi = swap(['MCL', 'mezzala', 'A'], ['ML', 'inverted_winger', 'S']);
+  assert.ok(alertIds(xi).includes('mez_iw_same_side'));
+  assert.ok(!alertIds(xi).includes('mezzala_no_cover'), 'o Volante (D) segura a posição');
+  const noCover = swap(['MCL', 'mezzala', 'A'], ['DMC', 'segundo_volante', 'S']);
+  assert.ok(alertIds(noCover).includes('mezzala_no_cover'));
+});
+
+test('Alertas: volante que deambula sem ninguém segurando a posição', () => {
+  assert.ok(alertIds(swap(['DMC', 'roaming_playmaker', 'S'])).includes('roamer_unscreened'));
+  const ok = swap(['DMC', 'roaming_playmaker', 'S'], ['MCL', 'central_midfielder', 'D']);
+  assert.ok(!alertIds(ok).includes('roamer_unscreened'));
+});
+
+test('Alertas: Avançado sozinho sem ninguém aberto em Ataque', () => {
+  assert.ok(alertIds(swap(['MR', 'wide_midfielder', 'S'])).includes('af_lone'));
+  assert.ok(!alertIds(swap(['MR', 'winger', 'A'])).includes('af_lone'));
+});
+
+test('Alertas: Regista com Zagueiro Simples só com mentalidade alta; Trequartista com linha de pressão alta', () => {
+  const xi = book.filter((p) => p.slot !== 'DMC').concat([P('DMCL', 'regista', 'S'), P('DMCR', 'anchor', 'D')])
+    .map((p) => (p.slot === 'DCL' ? P('DCL', 'no_nonsense_cb', 'D') : p)).filter((p) => p.slot !== 'MCR');
+  assert.ok(!alertIds(xi, { mentality: 3 }).includes('regista_bypassed'));
+  assert.ok(alertIds(xi, { mentality: 5 }).includes('regista_bypassed'));
+  const tq = book.filter((p) => p.slot !== 'MCR').concat([P('AMC', 'trequartista', 'A')]);
+  assert.ok(!alertIds(tq).includes('treq_press'));
+  assert.ok(alertIds(tq, { lineOfEngagement: 2 }).includes('treq_press'));
+});
+
+test('Alertas: Segundo Atacante contra dois volantes (só com adversário)', () => {
+  const xi = book.filter((p) => p.slot !== 'MCR').concat([P('AMC', 'shadow_striker', 'A')]);
+  const twoDm = data.formations.presets.find((p) => p.id === '4-2-3-1-dm-wide').players;
+  assert.ok(!alertIds(xi).includes('ss_vs_two_dm'));
+  assert.ok(alertIds(xi, {}, twoDm).includes('ss_vs_two_dm'));
+  assert.ok(!alertIds(xi, {}, preset('4-4-2')).includes('ss_vs_two_dm'));
+});
+
+test('Alertas entram no índice de equilíbrio e a sugestão evita combinações arriscadas', () => {
+  const risky = swap(['DMC', 'roaming_playmaker', 'S'], ['MR', 'wide_midfielder', 'S']);
+  const part = (xi) => E.evaluateBalance(xi, data, {}).parts.find((p) => p.key === 'combinacoes');
+  const clean = swap(['MR', 'winger', 'A']);
+  assert.deepEqual(alertIds(clean), []);
+  assert.ok(part(risky).score < 1 && part(clean).score === 1);
+  const sug = E.suggestRoles(risky, data, {}, { maxChanges: 6 });
+  assert.ok(alertIds(sug.players).length < alertIds(risky).length);
+});
+
+test('alerts.json: toda regra detectada tem texto e aponta para uma função existente', () => {
+  for (const [id, r] of Object.entries(data.alerts.rules)) {
+    assert.ok(r.text.includes('{slots}') && r.page, id);
+    assert.ok(data.roles[r.role], `${id}: ${r.role}`);
   }
 });

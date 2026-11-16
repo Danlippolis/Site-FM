@@ -79,7 +79,7 @@
   function loadData() {
     function inline(id) { var s = document.getElementById(id); return s ? JSON.parse(s.textContent) : null; }
     var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions'), pi = inline('data-player-instructions'), op = inline('data-opponent'), tr = inline('data-player-traits');
-    if (f && r && t && pi && op && tr) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi, opponent: op, playerTraits: tr, guide: inline('data-role-guide') });
+    if (f && r && t && pi && op && tr) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi, opponent: op, playerTraits: tr, guide: inline('data-role-guide'), alerts: inline('data-alerts') });
     var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json', 'data/player-instructions.json', 'data/opponent.json', 'data/player-traits.json'];
     var vm = document.querySelector('meta[name="fm23pv-version"]');
     var v = vm ? '?v=' + vm.content : '';
@@ -90,9 +90,9 @@
       });
     }
     // o guia das funções é opcional: sem ele o site funciona, só não mostra o painel
-    var guide = get('data/role-guide.json').catch(function () { return null; });
-    return Promise.all(urls.map(get).concat([guide]))
-      .then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3], opponent: a[4], playerTraits: a[5], guide: a[6] }; });
+    var optional = ['data/role-guide.json', 'data/alerts.json'].map(function (u) { return get(u).catch(function () { return null; }); });
+    return Promise.all(urls.map(get).concat(optional))
+      .then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3], opponent: a[4], playerTraits: a[5], guide: a[6], alerts: a[7] }; });
   }
 
   function isRolesObj(o) {
@@ -112,6 +112,8 @@
       lineOfEngagement: ins.lineOfEngagement.default,
       widthInPossession: ins.widthInPossession.default,
       defensiveWidth: ins.defensiveWidth ? ins.defensiveWidth.default : undefined,
+      runsLeft: ins.runsLeft ? ins.runsLeft.default : undefined,
+      runsRight: ins.runsRight ? ins.runsRight.default : undefined,
       flags: flags
     };
   }
@@ -345,7 +347,7 @@
 
   function buildTIForm() {
     var form = $('tiForm'), ins = data.instructions;
-    ['mentality', 'defensiveLine', 'lineOfEngagement', 'widthInPossession', 'defensiveWidth'].forEach(function (key) {
+    ['mentality', 'defensiveLine', 'lineOfEngagement', 'widthInPossession', 'defensiveWidth', 'runsLeft', 'runsRight'].forEach(function (key) {
       var def = ins[key];
       if (!def) return;
       var lab = el('label', null, def.label + ' (' + def.en + ')');
@@ -674,6 +676,10 @@
     if (cp.zone) txt += cp.zone.rx > cp.zone.ry ? ' · circula pelos corredores (±' + fmt(cp.zone.rx) + ' na largura)' : ' · deambula num raio de ~' + fmt(cp.zone.rx);
     if (cp.locked && cp.locked.length) txt += ' · embutidas na função: ' + piLabels(cp.locked);
     if (cp.offside) txt += ' · contido pela linha de impedimento do adversário';
+    if (cp.run) {
+      var runDef = (data.instructions.flankRuns || {})[cp.run];
+      txt += ' · ' + (runDef && runDef.label ? runDef.label : cp.run) + ' (instrução de equipe)';
+    }
     if (cp.fallback) {
       txt += ' · ' + (cp.fallbackWhy === 'no_wide_ahead' ? 'sem ponta/meia aberto à frente' : 'sem slot de volante livre ao lado') +
         ': age como ' + (data.roles[cp.fallback] ? data.roles[cp.fallback].label : cp.fallback) + ' (comportamento do FM23)';
@@ -1189,11 +1195,22 @@
     box.appendChild(row);
   }
 
-  function renderValidation(v, extra) {
+  function renderValidation(v, extra, alerts) {
     var box = $('validation');
     box.textContent = '';
     v.errors.forEach(function (m) { box.appendChild(el('div', { class: 'msg err' }, m)); });
     v.warnings.concat(extra || []).forEach(function (m) { box.appendChild(el('div', { class: 'msg warn' }, m)); });
+    (alerts || []).forEach(function (a) {
+      var m = el('div', { class: 'msg tip' });
+      m.appendChild(el('span', { class: 'tip-tag' }, 'Combinação'));
+      m.appendChild(document.createTextNode(' ' + a.text + ' '));
+      if (data.guide && a.role && data.roles[a.role]) {
+        var b = el('button', { class: 'link-btn', type: 'button', title: 'Book of Roles, p. ' + a.page }, 'Ver ' + data.roles[a.role].label + ' →');
+        b.addEventListener('click', function () { openGuide(a.role, null); });
+        m.appendChild(b);
+      }
+      box.appendChild(m);
+    });
   }
 
   // ---------- render geral ----------
@@ -1268,14 +1285,16 @@
 
   function renderAll() {
     var v = E.validate(state.players, data);
-    var extra = [];
+    var extra = [], alerts = [];
     if (v.ok) {
-      lastComputed = E.computeMatch(state.players, data, state.ti, oppConfig());
+      var opp = oppConfig();
+      lastComputed = E.computeMatch(state.players, data, state.ti, opp);
       E.PHASES.forEach(function (ph) { extra = extra.concat(lastComputed[ph].warnings); });
+      alerts = E.tacticalAlerts(state.players, data, state.ti, opp ? opp.players : null);
     }
     renderSlotGrid();
     renderPlayerList();
-    renderValidation(v, extra);
+    renderValidation(v, extra, alerts);
     renderBalanceLine();
     // sugestão calculada para outra tática fica desatualizada
     if (ui.suggestion && JSON.stringify(ui.suggestion.base) !== JSON.stringify(state.players)) { ui.suggestion = null; renderSuggestion(); }

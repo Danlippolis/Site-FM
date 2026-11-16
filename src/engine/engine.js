@@ -761,17 +761,32 @@
    * Impedimento: quem ataca não passa do último defensor de linha rival (ignora o goleiro),
    * e a regra só vale no campo adversário. Mexe só nos atacantes. Retorna quantos foram contidos.
    */
+  /**
+   * Impedimento: ninguém passa da linha do último defensor (nem da linha do meio, que limita quando a defesa
+   * dele está no nosso campo). Em vez de prender cada um exatamente na linha (o que achata funções diferentes
+   * numa linha reta), comprime quem passaria da linha e quem está na faixa logo abaixo dela (OFFSIDE_BAND)
+   * nesse espaço, proporcionalmente: o mais avançado fica na linha e a ordem entre eles se mantém.
+   */
+  var OFFSIDE_BAND = 15;
   function applyOffside(attackers, defenders, attackingUp) {
     var outfield = defenders.filter(function (p) { return p.band !== 'GK'; });
     if (!outfield.length) return 0;
-    var n = 0;
-    if (attackingUp) {
-      var line = Math.max(50, Math.max.apply(null, outfield.map(function (p) { return p.y; })));
-      attackers.forEach(function (p) { if (p.band !== 'GK' && p.y > line) { p.y = line; p.offside = true; n++; } });
-    } else {
-      var lineD = Math.min(50, Math.min.apply(null, outfield.map(function (p) { return p.y; })));
-      attackers.forEach(function (p) { if (p.band !== 'GK' && p.y < lineD) { p.y = lineD; p.offside = true; n++; } });
-    }
+    var field = attackers.filter(function (p) { return p.band !== 'GK'; });
+    if (!field.length) return 0;
+    // trabalha sempre "para cima": no outro sentido, espelha y
+    var up = function (y) { return attackingUp ? y : 100 - y; };
+    var line = attackingUp ? Math.max(50, Math.max.apply(null, outfield.map(function (p) { return p.y; })))
+      : 100 - Math.min(50, Math.min.apply(null, outfield.map(function (p) { return p.y; })));
+    var top = Math.max.apply(null, field.map(function (p) { return up(p.y); }));
+    if (top <= line) return 0;
+    var floor = line - OFFSIDE_BAND, n = 0;
+    field.forEach(function (p) {
+      var y = up(p.y);
+      if (y <= floor) return;
+      var ny = floor + (y - floor) * (line - floor) / (top - floor);
+      if (y > line) { p.offside = true; n++; }
+      p.y = attackingUp ? ny : 100 - ny;
+    });
     return n;
   }
 

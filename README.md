@@ -235,7 +235,7 @@ Cada **estilo** é um conjunto de instruções de equipe (mentalidade, linhas, l
 
 **Funções do adversário:** trocar a formação ou o estilo aplica as funções típicas do estilo (`roles` por grupo de slots em `data/opponent.json`; ex.: Atacar pelas alas → extremos e alas de ataque; Gegenpress → atacantes de pressão e recuperadores; Tiki-Taka → laterais invertidos, Half-Back, Mezzala e Falso 9). Em **Funções dos jogadores adversários** dá para ajustar função e tarefa jogador a jogador; "Voltar às funções típicas do estilo" desfaz. As escolhas de funções e os números dos estilos são aproximações minhas.
 
-**Impedimento** (`offside: true`): quem ataca não passa do último defensor de linha rival (o goleiro não conta), e só no campo adversário. Com o adversário ligado, isso pode conter os **nossos** atacantes na linha dele nas fases com bola — o tooltip avisa "contido pela linha de impedimento". Com o adversário desligado, nosso time não muda.
+**Impedimento** (`offside: true`): quem ataca não passa do último defensor de linha rival (o goleiro não conta), e só no campo adversário. Em vez de prender cada um exatamente na linha (o que achatava funções diferentes numa linha reta), o site comprime quem passaria dela e quem está nos 15 logo abaixo nesse espaço, proporcionalmente: o mais avançado fica na linha e a ordem entre eles se mantém. Com o adversário ligado, isso pode conter os **nossos** atacantes na linha dele nas fases com bola — o tooltip avisa "contido pela linha de impedimento". Com o adversário desligado, nosso time não muda.
 
 Limitações: o adversário não tem instruções individuais nem características, e não reage à posição exata dos nossos jogadores além do impedimento.
 

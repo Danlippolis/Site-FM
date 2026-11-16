@@ -1170,3 +1170,22 @@ test('Alertas: Ala Completo (A) sem largura à frente e sem ajuda em Apoio/Defen
   const noHelp = xi.map((p) => (p.slot === 'DMCR' ? P('DMCR', 'segundo_volante', 'A') : p));
   assert.ok(alertIds(noHelp).includes('cwb_attack_no_support'));
 });
+
+test('Impedimento comprime em vez de achatar: o mais avançado fica na linha e a ordem se mantém', () => {
+  const P = (slot, role, duty) => ({ slot, role, duty });
+  const xi = [P('GK', 'sweeper_keeper', 'S'), P('DCL', 'ball_playing_defender', 'D'), P('DC', 'central_defender', 'Co'), P('DCR', 'ball_playing_defender', 'D'),
+    P('WBL', 'wing_back', 'S'), P('WBR', 'wing_back', 'S'), P('DMCL', 'segundo_volante', 'S'), P('DMCR', 'deep_lying_playmaker', 'S'),
+    P('AMCL', 'attacking_midfielder', 'S'), P('AMCR', 'advanced_playmaker', 'S'), P('STC', 'complete_forward', 'S')];
+  const opp = { enabled: true, styleId: 'pressao_alta', players: E.styleRoles(preset('4-3-3-dm-wide'), data, 'pressao_alta') };
+  const free = E.computeMatch(xi, data, {}, null).saindo, held = E.computeMatch(xi, data, {}, opp).saindo;
+  const y = (r, s) => byslot(r, s).y;
+  assert.equal(y(held, 'STC'), 50, 'o mais avançado fica na linha (meio-campo: a defesa dele está no nosso campo)');
+  // mesma ordem de antes, sem empate
+  const order = (r) => ['AMCR', 'AMCL', 'STC'].map((s) => y(r, s));
+  const [a, b, c] = order(held);
+  assert.ok(a < b && b < c, `AP ${a} < AM ${b} < CF ${c}`);
+  assert.deepEqual(['AMCR', 'AMCL', 'STC'].sort((s, t) => y(free, s) - y(free, t)), ['AMCR', 'AMCL', 'STC']);
+  // ninguém passa da linha, e quem estava bem atrás não muda
+  assert.ok(held.players.every((p) => p.band === 'GK' || p.y <= 50.01));
+  assert.equal(y(held, 'DCL'), y(free, 'DCL'));
+});

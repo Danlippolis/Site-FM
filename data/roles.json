@@ -11,12 +11,12 @@
     "label": "Goleiro Líbero",
     "en": "Sweeper Keeper",
     "abbr": "SK",
-    "desc": "Sai da área para cortar bolas longas e iniciar jogadas. D não se afasta muito da área; S fica logo fora dela; A sai bem longe.",
+    "desc": "Sai da área para cortar bolas longas e iniciar jogadas. D não se afasta muito da área; S fica logo fora dela; A sai bem longe. Sem a bola joga adiantado, cobrindo as costas da defesa (mais ainda na pressão alta); no bloco baixo, sem espaço atrás da defesa, fica no gol.",
     "slots": ["GK"],
     "duties": {
-      "D": { "saindo": {"y": 6}, "ataque": {"y": 12} },
-      "S": { "saindo": {"y": 8}, "ataque": {"y": 15} },
-      "A": { "saindo": {"y": 12}, "ataque": {"y": 20} }
+      "D": { "defendendo": {"dy": 2}, "pressao": {"dy": 2}, "bloco_baixo": {"dy": -2}, "saindo": {"y": 6}, "ataque": {"y": 12} },
+      "S": { "defendendo": {"dy": 4}, "pressao": {"dy": 4}, "bloco_baixo": {"dy": -4}, "saindo": {"y": 8}, "ataque": {"y": 15} },
+      "A": { "defendendo": {"dy": 6}, "pressao": {"dy": 6}, "bloco_baixo": {"dy": -6}, "saindo": {"y": 12}, "ataque": {"y": 20} }
     }
   },
   "central_defender": {
@@ -630,12 +630,12 @@
     "desc": "A primeira linha de defesa: pressiona quem tem a bola e é dos poucos atacantes que voltam para defender no próprio campo. D fica mais recuado e pressiona os volantes; A pressiona e também finaliza como avançado.",
     "slots": ["STCL", "STC", "STCR"],
     "duties": {
-      "D": { "locked": ["hold_position", "close_down_more"], "defendendo": {"dy": -4}, "bloco_baixo": {"dy": -8}, "saindo": {"y": 62}, "ataque": {"y": 82} },
-      "S": { "locked": ["close_down_more"], "bloco_baixo": {"dy": -8}, "saindo": {"y": 62}, "ataque": {"y": 86} },
+      "D": { "locked": ["hold_position", "close_down_more"], "defendendo": {"dy": -4}, "bloco_baixo": {"dy": -4}, "saindo": {"y": 62}, "ataque": {"y": 82} },
+      "S": { "locked": ["close_down_more"], "bloco_baixo": {"dy": -4}, "saindo": {"y": 62}, "ataque": {"y": 86} },
       "A": {
         "locked": ["roam_from_position", "get_further_forward", "close_down_more", "move_into_channels"],
         "defendendo": { "dy": 2 },
-        "bloco_baixo": { "dy": -8 },
+        "bloco_baixo": { "dy": -4 },
         "ataque": { "y": 90 }
       }
     }

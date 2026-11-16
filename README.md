@@ -27,8 +27,14 @@ São **6 fases**, organizadas por onde está a bola:
 
 Bloco médio, Saída e Ataque são as fases-base (tabela por faixa + regras das funções). As outras três são **derivadas** (`derive` em `formations.json`):
 - **Progressão** = mistura da Saída com o Ataque (`t` 0.45);
-- **Pressão alta** = Bloco médio deslocado para frente por faixa (atacantes sobem mais que a defesa), com +5 para quem tem "pressionar com mais urgência" (embutido ou instrução) e −5 para quem tem "com menos urgência";
-- **Bloco baixo** = Bloco médio com a linha de defesa ancorada perto da área (y 14), um pouco mais estreito.
+- **Pressão alta** = o Bloco médio inteiro sobe junto (+17, a última linha vai a ~47 m do gol com a linha defensiva padrão), com os atacantes um pouco mais à frente (+3) e o goleiro adiantado. Quem tem "pressionar com mais urgência" (embutido ou instrução) sobe +5 e quem tem "com menos urgência" fica −5, exceto os zagueiros, porque Stopper e Cobertura já têm a própria regra de altura;
+- **Bloco baixo** = a última linha ancorada perto da área (y 14) e as distâncias até ela encurtadas a 65% (linhas a ~8–10 m uma da outra), com o atacante mais avançado um pouco à frente para o contra-ataque e o bloco mais estreito.
+
+Nas três fases sem a bola, o bloco se move como um conjunto: com a linha defensiva padrão, ele mede ~37 m no bloco médio, ~40 m na pressão e ~28 m no bloco baixo, do zagueiro ao atacante mais avançado. Dois ajustes de forma valem nelas:
+- **volantes à frente da zaga:** quem não é zagueiro fica pelo menos 7 à frente da última linha (6 no bloco baixo), para quem pressiona menos não "entrar" na zaga;
+- **linha de 5:** os alas da faixa de volante (WBL/WBR) encaixam na linha de defesa, 2 à frente dela no bloco médio e 1 no bloco baixo. Assim, um 3-5-2 vira 5-1-2-2 sem a bola.
+
+A linha defensiva padrão fica a y 28 (~29 m do gol) no bloco médio, e cada opção mais alta ou mais baixa soma ou tira 5.
 
 Regras de função com a chave de uma fase derivada (`pressao`, `bloco_baixo`, `progressao`) entram como deslocamento extra (`dx`, `dy`); é o que o modo editar regra grava nessas fases. Transições (logo depois de perder/ganhar a bola) ficaram de fora: a posição depende de onde a bola foi perdida.
 

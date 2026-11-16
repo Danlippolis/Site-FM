@@ -35,16 +35,20 @@
       "hint": "adversário saindo com a bola no terço dele",
       "derive": {
         "from": "defendendo",
-        "shiftByBand": { "GK": 4, "D": 11, "DM": 13, "M": 16, "AM": 20, "ST": 19 },
+        "lineShift": 17,
+        "shiftByBand": { "GK": 5, "AM": 2, "ST": 3 },
         "press": { "more": 5, "less": -5 },
-        "pressShape": { "partnerGap": 2, "partnerX": 10, "wideAboveMid": 2 }
+        "pressShape": { "partnerGap": 2, "partnerX": 10, "wideAboveMid": 2 },
+        "minGap": 7
       },
       "ball": { "x": 46, "y": 86 }
     },
     "defendendo": {
       "label": "Bloco médio",
-      "y": { "GK": 4, "D": 25, "DM": 33, "M": 42, "AM": 50, "ST": 56 },
+      "y": { "GK": 6, "D": 28, "DM": 36, "M": 45, "AM": 52, "ST": 57 },
       "width": 0.75,
+      "wideDmLine": 2,
+      "minGap": 7,
       "withBall": false,
       "hint": "sem a bola, bola no meio-campo",
       "ball": { "x": 50, "y": 52 }
@@ -53,7 +57,7 @@
       "label": "Bloco baixo",
       "withBall": false,
       "hint": "adversário no nosso terço final",
-      "derive": { "from": "defendendo", "lineY": 14, "shiftByBand": {"AM": -2, "ST": -4}, "widthScale": 0.9 },
+      "derive": { "from": "defendendo", "lineY": 14, "compress": 0.65, "shiftByBand": { "GK": -1, "ST": 4 }, "widthScale": 0.85, "wideDmLine": 1, "minGap": 6 },
       "ball": { "x": 50, "y": 20 }
     },
     "saindo": {
@@ -288,5 +292,5 @@
     "gk": 0.4
   },
   "phaseGroups": { "sem": ["pressao", "defendendo", "bloco_baixo"], "com": ["saindo", "progressao", "ataque"] },
-  "phasesNote": "Fases com \"derive\" são calculadas a partir de outras: \"blend\" mistura duas fases (t = 0 → primeira, 1 → segunda); \"from\" desloca uma fase por faixa (shiftByBand), ancora a linha D (lineY), estreita (widthScale) e soma \"press\" para quem tem pressão embutida/instruída. Regras de função com a chave da fase derivada entram como deslocamento extra (dx/dy)."
+  "phasesNote": "Fases com \"derive\" são calculadas a partir de outras: \"blend\" mistura duas fases (t = 0 → primeira, 1 → segunda); \"from\" move o bloco inteiro a partir de outra fase: a última linha vai para lineY (absoluto) ou sobe lineShift, as distâncias até ela são mantidas ou encurtadas por compress, shiftByBand soma por faixa, widthScale estreita e \"press\" soma para quem tem pressão embutida/instruída. wideDmLine (também no bloco médio) põe os alas da faixa de volante (WBL/WBR) na linha de defesa, a essa distância à frente dela; minGap mantém os demais pelo menos essa distância à frente da defesa. Regras de função com a chave da fase derivada entram como deslocamento extra (dx/dy)."
 }

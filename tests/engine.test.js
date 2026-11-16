@@ -128,7 +128,7 @@ test('linha defensiva move o bloco; linha de pressão move só AM/ST', () => {
   const std = E.computePhase(p, 'defendendo', data, {});
   const high = E.computePhase(p, 'defendendo', data, { defensiveLine: 4 });
   const loe = E.computePhase(p, 'defendendo', data, { lineOfEngagement: 2 });
-  assert.equal(byslot(high, 'DCL').y, 35);
+  assert.equal(byslot(high, 'DCL').y, 38);
   assert.equal(byslot(high, 'MCL').y - byslot(std, 'MCL').y, 10);
   assert.equal(byslot(high, 'GK').y, byslot(std, 'GK').y);
   assert.equal(byslot(loe, 'MCL').y, byslot(std, 'MCL').y);
@@ -984,4 +984,49 @@ test('guia: tipos de atacante só citam atacantes e tarefas que existem; glossá
   assert.ok(withDesc.length >= 20, `${withDesc.length} atributos com explicação`);
   for (const k of ['first_touch', 'decisions', 'off_the_ball', 'positioning', 'teamwork', 'concentration']) assert.ok(guide.attributes[k].desc, k);
   assert.ok(/9 é a média/.test(guide.attributesNote));
+});
+
+// ---------- fases sem a bola: bloco que se move junto ----------
+
+const shapeOf = (pl, ph, ti) => E.teamShape(E.computePhase(pl, ph, data, ti || {}).players);
+
+test('Sem a bola: compactação em todos os atalhos (pressão até ~42 m, bloco médio até ~42 m, bloco baixo até ~32 m)', () => {
+  for (const p of data.formations.presets) {
+    const pr = shapeOf(p.players, 'pressao'), md = shapeOf(p.players, 'defendendo'), lo = shapeOf(p.players, 'bloco_baixo');
+    assert.ok(pr.metrics.length <= 44, `${p.id} pressão ${pr.metrics.length} m`);
+    assert.ok(md.metrics.length <= 42, `${p.id} bloco médio ${md.metrics.length} m`);
+    assert.ok(lo.metrics.length <= 32, `${p.id} bloco baixo ${lo.metrics.length} m`);
+    assert.ok(pr.metrics.length <= md.metrics.length + 10, `${p.id}: a pressão não pode esticar o bloco`);
+    assert.ok(pr.metrics.lastLine > md.metrics.lastLine + 10 && md.metrics.lastLine > lo.metrics.lastLine + 10, `${p.id}: linhas sobem e descem com a fase`);
+  }
+});
+
+test('Sem a bola: o bloco sobe junto na pressão (defesa e meio sobem quase o mesmo)', () => {
+  const p = preset('4-4-2');
+  const md = E.computePhase(p, 'defendendo', noCol, {}), pr = E.computePhase(p, 'pressao', noCol, {});
+  const up = (slot) => byslot(pr, slot).y - byslot(md, slot).y;
+  assert.ok(Math.abs(up('DCL') - up('ML')) <= 3 && up('DCL') >= 15, `defesa ${up('DCL')}, meio ${up('ML')}`);
+});
+
+test('Sem a bola: volantes ficam à frente da zaga; alas de linha de 3 fecham a linha de 5', () => {
+  for (const p of data.formations.presets) {
+    for (const ph of ['pressao', 'defendendo', 'bloco_baixo']) {
+      const r = E.computePhase(p.players, ph, noCol, {});
+      const line = Math.min(...r.players.filter((q) => q.band === 'D').map((q) => q.y));
+      for (const q of r.players) {
+        if (q.band === 'GK' || q.band === 'D' || (q.band === 'DM' && (q.lane === 'L' || q.lane === 'R'))) continue;
+        assert.ok(q.y >= line + 5.9, `${p.id}/${ph}: ${q.slot} a ${q.y - line} da zaga`);
+      }
+    }
+  }
+  assert.ok(shapeOf(preset('3-5-2-wb'), 'defendendo').shape.startsWith('5-'));
+  assert.ok(shapeOf(preset('3-5-2-wb'), 'bloco_baixo').shape.startsWith('5-'));
+});
+
+test('Goleiro Líbero: adiantado no bloco médio e na pressão, no gol no bloco baixo', () => {
+  const sk = preset('4-2-3-1-dm-wide'), gk = sk.map((p) => (p.slot === 'GK' ? P('GK', 'goalkeeper', 'D') : p));
+  const y = (pl, ph) => byslot(E.computePhase(pl, ph, noCol, {}), 'GK').y;
+  assert.ok(y(sk, 'defendendo') > y(gk, 'defendendo') && y(sk, 'pressao') > y(gk, 'pressao'));
+  assert.ok(y(sk, 'bloco_baixo') <= y(gk, 'bloco_baixo') + 1);
+  assert.ok(y(gk, 'pressao') <= 15, 'goleiro comum não sai da área');
 });

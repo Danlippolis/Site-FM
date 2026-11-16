@@ -240,18 +240,27 @@
     var role = roles[ruleRole(roles, p, occupied)];
     var dutyRules = role && role.duties && (role.duties[duty || p.duty] || role.duties[p.duty]);
     var rule = dutyRules && dutyRules[phase];
+    return resolveRule(rule, p, flags);
+  }
+
+  /**
+   * Resolve as variações de uma regra para o jogador:
+   *  - if (flag) / onlyBands: se não valem, usa `else` (outra regra) ou nenhuma;
+   *  - byBand: a parte da faixa sobrescreve a base (ex.: DLP no volante x no meio-campo);
+   *  - byLane: { wide, central } — a parte do corredor (aberto L/R ou central) sobrescreve a base.
+   */
+  function resolveRule(rule, p, flags) {
     if (!rule) return null;
-    if (rule.if && !flags[rule.if]) return null;
-    if (rule.onlyBands && rule.onlyBands.indexOf(p.band) < 0) return null;
-    if (rule.byBand) {
-      // variação por faixa (ex.: DLP no volante x no meio-campo): a parte da faixa sobrescreve a base
-      var merged = {};
-      Object.keys(rule).forEach(function (k) { if (k !== 'byBand') merged[k] = rule[k]; });
-      var extra = rule.byBand[p.band] || {};
-      Object.keys(extra).forEach(function (k) { merged[k] = extra[k]; });
-      return merged;
-    }
-    return rule;
+    var applies = (!rule.if || flags[rule.if]) && (!rule.onlyBands || rule.onlyBands.indexOf(p.band) >= 0);
+    if (!applies) return rule.else ? resolveRule(rule.else, p, flags) : null;
+    if (!rule.byBand && !rule.byLane && !rule.else) return rule;
+    var merged = {};
+    Object.keys(rule).forEach(function (k) { if (k !== 'byBand' && k !== 'byLane' && k !== 'else') merged[k] = rule[k]; });
+    [rule.byBand && rule.byBand[p.band],
+     rule.byLane && rule.byLane[p.lane === 'L' || p.lane === 'R' ? 'wide' : 'central']].forEach(function (extra) {
+      Object.keys(extra || {}).forEach(function (k) { merged[k] = extra[k]; });
+    });
+    return merged;
   }
 
   // ---------- instruções individuais (PIs) ----------

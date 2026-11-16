@@ -15,7 +15,7 @@
 
   var data = null, baseRoles = null, lastComputed = null;
   var state = null;
-  var ui = { ghost: false, shapes: true, edit: false, tab: 'saindo', group: 'todas', collapsed: false, selectedSlot: null, piOpen: null, info: {}, suggestion: null, undo: null };
+  var ui = { ghost: false, shapes: true, edit: false, tab: 'saindo', group: 'todas', collapsed: false, ballSide: 'C', selectedSlot: null, piOpen: null, info: {}, suggestion: null, undo: null };
   var anim = { on: false, step: 0, timer: null };
   var drag = null;
 
@@ -192,7 +192,7 @@
     return p;
   }
 
-  function saveState() { lsSet(LS_STATE, state); lsSet(LS_UI, { ghost: ui.ghost, shapes: ui.shapes, tab: ui.tab, group: ui.group, collapsed: ui.collapsed }); }
+  function saveState() { lsSet(LS_STATE, state); lsSet(LS_UI, { ghost: ui.ghost, shapes: ui.shapes, tab: ui.tab, group: ui.group, collapsed: ui.collapsed, ballSide: ui.ballSide }); }
 
   /** Fases do grupo escolhido (desktop): sem a bola, com a bola ou todas. */
   function groupPhases() {
@@ -285,6 +285,10 @@
     $('layout').classList.toggle('collapsed', ui.collapsed);
 
     $('animate').addEventListener('click', toggleAnim);
+    document.querySelectorAll('#ballSide .tab').forEach(function (b) {
+      b.addEventListener('click', function () { ui.ballSide = b.dataset.side; syncBallSide(); renderAll(); });
+    });
+    syncBallSide();
     $('suggestBtn').addEventListener('click', runSuggestion);
 
     $('exportTactic').addEventListener('click', function () {
@@ -451,6 +455,10 @@
     document.querySelectorAll('#tiForm select').forEach(function (s) { s.value = String(state.ti[s.dataset.key]); });
     document.querySelectorAll('#tiForm input[data-flag]').forEach(function (cb) { cb.checked = !!(state.ti.flags || {})[cb.dataset.flag]; });
     $('preset').value = state.presetId;
+  }
+
+  function syncBallSide() {
+    document.querySelectorAll('#ballSide .tab').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.side === ui.ballSide)); });
   }
 
   function syncTabs() {
@@ -1288,7 +1296,8 @@
     var extra = [], alerts = [];
     if (v.ok) {
       var opp = oppConfig();
-      lastComputed = E.computeMatch(state.players, data, state.ti, opp);
+      // o lado da bola é opção de visualização: entra no cálculo das posições, não no índice de equilíbrio
+      lastComputed = E.computeMatch(state.players, data, Object.assign({}, state.ti, { ballSide: ui.ballSide }), opp);
       E.PHASES.forEach(function (ph) { extra = extra.concat(lastComputed[ph].warnings); });
       alerts = E.tacticalAlerts(state.players, data, state.ti, opp ? opp.players : null);
     }
@@ -1377,6 +1386,7 @@
       if (E.PHASES.indexOf(savedUi.tab) >= 0) ui.tab = savedUi.tab;
       if (['sem', 'com', 'todas'].indexOf(savedUi.group) >= 0) ui.group = savedUi.group;
       if (savedUi.shapes === false) ui.shapes = false;
+      if (['L', 'C', 'R'].indexOf(savedUi.ballSide) >= 0) ui.ballSide = savedUi.ballSide;
 
       var saved = lsGet(LS_STATE);
       if (saved && Array.isArray(saved.players) && E.validate(saved.players, data).ok) {

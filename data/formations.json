@@ -280,6 +280,13 @@
     }
   ],
   "defaultPreset": "4-2-3-1-dm-wide",
+  "ballSide": {
+    "note": "Bola de um lado (seletor 'Bola' na tela). Book of Roles (Carrilero): a formação é sempre relativa à bola; com a bola na esquerda do campo adversário, o time todo desliza um pouco para a esquerda. Sem a bola o deslocamento é maior e o lado oposto fecha para o meio (farTuck); com a bola é menor e o lado oposto mantém a largura. shift = fração de (x da bola − 50) somada a todos; gk = fração disso para o goleiro. Os números são estimativa, não medida.",
+    "x": { "L": 20, "C": 50, "R": 80 },
+    "shift": { "sem": 0.35, "com": 0.15 },
+    "farTuck": { "sem": 0.2, "com": 0 },
+    "gk": 0.4
+  },
   "phaseGroups": { "sem": ["pressao", "defendendo", "bloco_baixo"], "com": ["saindo", "progressao", "ataque"] },
   "phasesNote": "Fases com \"derive\" são calculadas a partir de outras: \"blend\" mistura duas fases (t = 0 → primeira, 1 → segunda); \"from\" desloca uma fase por faixa (shiftByBand), ancora a linha D (lineY), estreita (widthScale) e soma \"press\" para quem tem pressão embutida/instruída. Regras de função com a chave da fase derivada entram como deslocamento extra (dx/dy)."
 }

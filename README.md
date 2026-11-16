@@ -48,6 +48,11 @@ A bola desenhada vai junto. O adversário desliza para o mesmo lado do campo (pa
 
 O botão **i** ao lado de cada jogador (e o link **Sobre a função →** no detalhe do jogador no campo) abre um guia da função: resumo, o que cada tarefa muda, atributos-chave da tarefa, combinações (clicáveis), riscos e dicas. O seletor no topo do painel mostra qualquer outra função.
 
+Dentro do painel:
+
+- **atributos com explicação** (sublinhados): tocar num deles mostra o que o livro diz sobre ele (páginas 2 a 6, 24 atributos), junto com a régua de comparação entre divisões (9 é a média da divisão mais baixa, mais 2 a cada acesso);
+- **tipo de atacante** (só nas funções de atacante): em qual dos três tipos do livro a função entra (criativo, de apoio ou puro, conforme a tarefa) e um quadro com os três tipos, as funções de cada um (clicáveis) e as perguntas do livro para escolher (p. 121–122). O Trequartista e o Atacante de Pressão (D) não entram em nenhum dos tipos, e o painel diz isso.
+
 O conteúdo está em `data/role-guide.json` e é um **resumo próprio** do *Book of Roles* (Daljit Singh, FM23), com a página de origem, e não o texto do livro. A tradução dos atributos é do site e pode não bater exatamente com a do jogo (o nome em inglês aparece ao passar o mouse). O livro não cobre o Zagueiro Aberto nem o Lateral Invertido; para eles o painel mostra só a descrição do site. Se o arquivo não carregar, o site funciona normalmente, só sem o painel.
 
 ## Estrutura e medidas

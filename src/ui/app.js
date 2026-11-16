@@ -744,6 +744,53 @@
     $('guideBody').scrollTop = 0;
   }
 
+  /** Tipos de atacante (Book of Roles): onde esta função entra e o panorama dos três tipos. */
+  function renderForwardTypes(section, role, duty) {
+    var ft = data.guide.forwardTypes;
+    var fs = section('Tipo de atacante');
+    var mine = [];
+    ft.types.forEach(function (t) {
+      t.roles.forEach(function (r) {
+        if (r.role === role && (!r.duty || r.duty === duty)) mine.push({ type: t, entry: r });
+      });
+    });
+    if (mine.length) {
+      var ul = el('ul');
+      mine.forEach(function (m) {
+        var li = el('li');
+        li.appendChild(el('b', null, m.type.label + ': '));
+        li.appendChild(document.createTextNode(m.entry.note));
+        ul.appendChild(li);
+      });
+      fs.appendChild(ul);
+    } else {
+      fs.appendChild(el('p', { class: 'guide-note' }, 'O livro não põe esta função' + (data.roles[role].duties[duty] && Object.keys(data.roles[role].duties).length > 1 ? ', nesta tarefa,' : '') + ' em nenhum dos três tipos.'));
+    }
+    var det = el('details', { class: 'guide-details' });
+    det.appendChild(el('summary', null, 'Os três tipos e como escolher'));
+    det.appendChild(el('p', null, ft.intro));
+    ft.types.forEach(function (t) {
+      var p = el('p');
+      p.appendChild(el('b', null, t.label + '. '));
+      p.appendChild(document.createTextNode(t.desc + ' '));
+      t.roles.forEach(function (r, i) {
+        var other = data.roles[r.role];
+        if (!other) return;
+        var b = el('button', { class: 'link-btn', type: 'button' }, other.label + (r.duty ? ' (' + (E.DUTIES[r.duty] || { label: r.duty }).label + ')' : ''));
+        b.addEventListener('click', function () { openGuide(r.role, r.duty || null); });
+        p.appendChild(b);
+        p.appendChild(document.createTextNode(i < t.roles.length - 1 ? ', ' : '.'));
+      });
+      det.appendChild(p);
+    });
+    det.appendChild(el('p', { class: 'guide-sub' }, 'Perguntas para escolher:'));
+    var q = el('ul');
+    ft.questions.forEach(function (x) { q.appendChild(el('li', null, x)); });
+    det.appendChild(q);
+    if (ft.note) det.appendChild(el('p', { class: 'guide-hint' }, ft.note + ' (Book of Roles, p. ' + ft.page + ')'));
+    fs.appendChild(det);
+  }
+
   function renderGuide() {
     var g = data.guide, role = guideState.role, duty = guideState.duty;
     var roleDef = data.roles[role], entry = g.roles[role] || { notCovered: true };
@@ -794,12 +841,30 @@
       var perDuty = !Array.isArray(entry.attributes);
       var as = section('Atributos-chave' + (perDuty ? ' (' + (E.DUTIES[duty] || { label: duty }).label + ')' : ''));
       var chips = el('div', { class: 'attr-chips' });
+      var descBox = el('p', { class: 'attr-desc', hidden: true });
       attrs.forEach(function (k) {
         var a = g.attributes[k] || { label: k, en: k };
-        chips.appendChild(el('span', { class: 'attr', title: a.en }, a.label));
+        if (!a.desc) { chips.appendChild(el('span', { class: 'attr', title: a.en }, a.label)); return; }
+        // com explicação do livro: toque/clique mostra (no celular não existe "passar o mouse")
+        var b = el('button', { class: 'attr has-desc', type: 'button', title: a.en, 'aria-expanded': 'false' }, a.label);
+        b.addEventListener('click', function () {
+          var open = b.getAttribute('aria-expanded') === 'true';
+          chips.querySelectorAll('.attr.has-desc').forEach(function (x) { x.setAttribute('aria-expanded', 'false'); });
+          if (open) { descBox.hidden = true; return; }
+          b.setAttribute('aria-expanded', 'true');
+          descBox.textContent = '';
+          descBox.appendChild(el('b', null, a.label + ' (' + a.en + '): '));
+          descBox.appendChild(document.createTextNode(a.desc));
+          descBox.hidden = false;
+        });
+        chips.appendChild(b);
       });
       as.appendChild(chips);
+      as.appendChild(descBox);
+      if (g.attributesNote) as.appendChild(el('p', { class: 'guide-hint' }, 'Toque num atributo sublinhado para ver a explicação. ' + g.attributesNote));
     }
+
+    if (g.forwardTypes && (roleDef.slots || []).some(function (sl) { return /^ST/.test(sl); })) renderForwardTypes(section, role, duty);
 
     if (entry.combos && entry.combos.length) {
       var cs = section('Combina com');

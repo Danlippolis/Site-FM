@@ -966,3 +966,22 @@ test('Bola de um lado: o adversário desliza para o mesmo lado do campo', () => 
   assert.ok(mean({ ballSide: 'L' }) < mean({}) - 2);
   assert.ok(mean({ ballSide: 'R' }) > mean({}) + 2);
 });
+
+test('guia: tipos de atacante só citam atacantes e tarefas que existem; glossário cobre atributos usados', () => {
+  const guide = require('../data/role-guide.json');
+  const ft = guide.forwardTypes;
+  assert.deepEqual(ft.types.map((t) => t.key), ['creative', 'support', 'pure']);
+  for (const t of ft.types) {
+    assert.ok(t.label && t.desc && t.roles.length, t.key);
+    for (const r of t.roles) {
+      const role = data.roles[r.role];
+      assert.ok(role && role.slots.some((s) => s.startsWith('ST')), `${t.key}: ${r.role} é atacante`);
+      if (r.duty) assert.ok(role.duties[r.duty], `${t.key}: ${r.role}-${r.duty}`);
+      assert.ok(r.note, `${t.key}: ${r.role} tem nota`);
+    }
+  }
+  const withDesc = Object.entries(guide.attributes).filter(([, a]) => a.desc).map(([k]) => k);
+  assert.ok(withDesc.length >= 20, `${withDesc.length} atributos com explicação`);
+  for (const k of ['first_touch', 'decisions', 'off_the_ball', 'positioning', 'teamwork', 'concentration']) assert.ok(guide.attributes[k].desc, k);
+  assert.ok(/9 é a média/.test(guide.attributesNote));
+});

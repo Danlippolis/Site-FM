@@ -1097,9 +1097,17 @@
       var tq = byRole('trequartista').filter(function (p) { return p.band === 'AM' && !wide(p); });
       if (tq.length) add('treq_press', tq);
     }
-    byRole('wing_back').forEach(function (wb) {
+    byRole('wing_back').concat(byRole('complete_wing_back')).forEach(function (wb) {
       if (wb.duty !== 'A') return;
       if (!ps.some(function (q) { return q.side === wb.side && wide(q) && (q.band === 'M' || q.band === 'AM'); })) add('wb_attack_no_width', [wb]);
+    });
+    // Ala Completo (A): sem ninguém em Apoio/Defender do mesmo lado no meio-campo para ajudá-lo (Book of Roles, p. 25-26)
+    byRole('complete_wing_back').forEach(function (cwb) {
+      if (cwb.duty !== 'A') return;
+      var help = ps.some(function (q) {
+        return q !== cwb && q.side === cwb.side && ['DM', 'M', 'AM'].indexOf(q.band) >= 0 && (q.duty === 'S' || q.duty === 'D');
+      });
+      if (!help) add('cwb_attack_no_support', [cwb]);
     });
     var ss = byRole('shadow_striker');
     if (ss.length && oppPlayers) {

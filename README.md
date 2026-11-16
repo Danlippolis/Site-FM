@@ -68,7 +68,7 @@ Com **Mostrar linhas de estrutura e medidas** (Visualização), cada campo liga 
 - **comprimento** do bloco (do jogador de linha mais recuado ao mais avançado), **largura** e **altura da última linha** a partir do próprio gol, em metros (campo 68 × 105);
 - com o adversário ligado, a forma e o comprimento dele.
 
-As linhas partem da faixa do slot (defesa, volantes, meio, meia ofensivo, ataque), quebram onde houver um buraco de 8 ou mais em y e se juntam quando ficam a menos de 4 (máximo 5 linhas) — `teamShape` no motor. Por isso um volante que fica a 5 da defesa aparece como linha própria, e um lateral que sobe ao ataque entra na linha de cima.
+Na mesma linha, vizinhos com mais de 5 de diferença de altura são ligados por um traço pontilhado (jogador escalonado, mas contado na linha). As linhas partem da faixa do slot (defesa, volantes, meio, meia ofensivo, ataque), quebram onde houver um buraco de 8 ou mais em y e se juntam quando ficam a menos de 4 (máximo 5 linhas) — `teamShape` no motor. Por isso um volante que fica a 5 da defesa aparece como linha própria, e um lateral que sobe ao ataque entra na linha de cima.
 
 ## Estrutura
 
@@ -214,7 +214,8 @@ A caixa de avisos do card **Formação** mostra, em verde, riscos de combinaçã
 | Volante que deambula sem proteção | quem deambula na faixa de volante sem ninguém segurando a posição à frente da defesa |
 | Mezzala (A) sem proteção | idem, com Mezzala em Ataque |
 | Trequartista na pressão | Trequartista central na meia com linha de pressão alta |
-| Ala em Ataque sem largura | Ala (A) sem ninguém aberto à frente do mesmo lado |
+| Ala em Ataque sem largura | Ala (A) ou Ala Completo (A) sem ninguém aberto à frente do mesmo lado |
+| Ala Completo (A) sem ajuda | ninguém em Apoio ou Defender do mesmo lado, na faixa de volante, meio ou meia (p. 26) |
 | Segundo Atacante contra dois volantes | com o adversário ligado e dois volantes centrais nele |
 | Raumdeuter sem sobrecarga | menos de 2 jogadores em Ataque no lado oposto |
 

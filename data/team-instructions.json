@@ -30,9 +30,9 @@
     "en": "Line of Engagement",
     "default": 1,
     "options": [
-      { "label": "Mais baixa", "en": "Lower", "dy": -8 },
-      { "label": "Padrão", "en": "Standard", "dy": 0 },
-      { "label": "Mais alta", "en": "Higher", "dy": 8 }
+      { "label": "Bloco baixo", "en": "Low Block", "dy": -8 },
+      { "label": "Bloco médio", "en": "Mid Block", "dy": 0 },
+      { "label": "Pressão alta", "en": "High Press", "dy": 8 }
     ]
   },
   "widthInPossession": {
@@ -48,13 +48,27 @@
     ]
   },
   "defensiveWidth": {
-    "label": "Largura defensiva",
-    "en": "Defensive Width",
+    "label": "Armadilha de pressão",
+    "en": "Pressing Trap",
+    "note": "FM23 trocou a Largura defensiva por instruções de armadilha de pressão fora do próprio terço: por fora (estreita o time e empurra o adversário para os lados) ou por dentro (abre o time e empurra para o meio). Os nomes em inglês são lembrança do jogo; a página oficial da SI descreve a função mas não os nomes. O fator de largura é estimativa.",
     "default": 1,
     "options": [
-      { "label": "Mais estreita", "en": "Narrower", "factor": 0.65 },
-      { "label": "Padrão", "en": "Standard", "factor": 0.75 },
-      { "label": "Mais larga", "en": "Wider", "factor": 0.85 }
+      { "label": "Armadilha por fora", "en": "Trap Outside", "factor": 0.65 },
+      { "label": "Nenhuma", "en": "None", "factor": 0.75 },
+      { "label": "Armadilha por dentro", "en": "Trap Inside", "factor": 0.85 }
+    ]
+  },
+  "crosses": {
+    "label": "Cruzamentos",
+    "en": "Crosses",
+    "note": "FM23 (página oficial da SI): 'set your players to be narrow and defend the cross, or ask your full-backs to stop the cross at the source'. Vale no bloco baixo (perto do próprio gol). Os deslocamentos são estimativa.",
+    "default": 0,
+    "phases": ["bloco_baixo"],
+    "effects": { "stop": { "wideOut": 6 }, "invite": { "allIn": 5 } },
+    "options": [
+      { "label": "Padrão", "en": "Default" },
+      { "label": "Impedir na origem (laterais saem)", "en": "Stop Crosses", "run": "stop" },
+      { "label": "Defender o cruzamento (fechar por dentro)", "en": "Invite Crosses", "run": "invite" }
     ]
   },
   "runsLeft": {

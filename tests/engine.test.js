@@ -1120,3 +1120,40 @@ test('Revisão: correções da revisão geral', () => {
   const cmD = at(sw(preset('4-4-2'), ['MCL', 'central_midfielder', 'D']), 'defendendo', 'MCL').y, cmS = at(sw(preset('4-4-2'), ['MCL', 'central_midfielder', 'S']), 'defendendo', 'MCL').y;
   assert.ok(cmD < cmS);
 });
+
+// ---------- FM23 (página oficial da SI) e calibração com dados do jogo ----------
+
+test('FM23: Mezzala, Construtor Avançado e Médio Centro (A) mais altos nos meios-espaços na saída com volante atrás', () => {
+  const sw = (base, role, duty) => base.map((p) => (p.slot === 'MCL' ? P('MCL', role, duty) : p));
+  for (const [role, duty] of [['mezzala', 'S'], ['mezzala', 'A'], ['advanced_playmaker', 'S'], ['advanced_playmaker', 'A'], ['central_midfielder', 'A']]) {
+    const withDm = byslot(E.computePhase(sw(preset('4-3-3-dm-wide'), role, duty), 'saindo', noCol, {}), 'MCL');
+    const noDm = byslot(E.computePhase(sw(preset('4-4-2'), role, duty), 'saindo', noCol, {}), 'MCL');
+    assert.ok(withDm.y >= noDm.y + 4 && withDm.x <= 32, `${role}-${duty}: ${withDm.x},${withDm.y} x ${noDm.x},${noDm.y}`);
+  }
+  // o Médio Centro (S) não é citado pela SI e não muda
+  const cmS = (base) => byslot(E.computePhase(sw(base, 'central_midfielder', 'S'), 'saindo', noCol, {}), 'MCL').y;
+  assert.equal(cmS(preset('4-3-3-dm-wide')), cmS(preset('4-4-2')));
+});
+
+test('FM23: instrução de cruzamentos no bloco baixo (impedir abre os laterais; defender fecha a linha)', () => {
+  const x = (ti, slot) => byslot(E.computePhase(preset('4-4-2'), 'bloco_baixo', noCol, ti), slot).x;
+  assert.ok(x({ crosses: 1 }, 'DL') < x({}, 'DL') && x({ crosses: 1 }, 'DCL') === x({}, 'DCL'));
+  assert.ok(x({ crosses: 2 }, 'DL') > x({}, 'DL') && x({ crosses: 2 }, 'DCL') > x({}, 'DCL'));
+  // não muda o bloco médio
+  assert.equal(byslot(E.computePhase(preset('4-4-2'), 'defendendo', noCol, { crosses: 1 }), 'DL').x, byslot(E.computePhase(preset('4-4-2'), 'defendendo', noCol, {}), 'DL').x);
+  // linha de pressão e armadilha com os nomes do FM23
+  assert.deepEqual(data.instructions.lineOfEngagement.options.map((o) => o.en), ['Low Block', 'Mid Block', 'High Press']);
+  assert.deepEqual(data.instructions.defensiveWidth.options.map((o) => o.en), ['Trap Outside', 'None', 'Trap Inside']);
+});
+
+test('measurements.json: formato válido e comparador roda', () => {
+  const M = require('../data/measurements.json');
+  const PH = ['pressao', 'defendendo', 'bloco_baixo', 'saindo', 'progressao', 'ataque'];
+  for (const [id, t] of Object.entries(M.tactics)) assert.ok(E.validate(t.players, data).ok, id);
+  for (const m of M.measurements) {
+    assert.ok(M.tactics[m.tactic], `tática ${m.tactic}`);
+    assert.ok(PH.includes(m.phase) && data.formations.slots[m.slot] && typeof m.x === 'number' && typeof m.y === 'number', JSON.stringify(m));
+  }
+  const rows = require('../tools/compare.js').compare();
+  assert.ok(rows.every((r) => !r.error), JSON.stringify(rows.filter((r) => r.error)));
+});

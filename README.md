@@ -79,7 +79,10 @@ src/ui/app.js            interface (vanilla JS + SVG)
 src/ui/styles.css
 data/formations.json     grade de slots, transformações por fase, atalhos de formação
 data/roles.json          funções, slots válidos, tarefas, regras por fase e instruções embutidas
-data/team-instructions.json  mentalidade, linha defensiva, linha de pressão, larguras com/sem bola, overlap/underlap por lado, parâmetros do motor
+data/team-instructions.json  mentalidade, linha defensiva, linha de pressão (Low/Mid Block, High Press), largura com bola, armadilha de pressão, cruzamentos, overlap/underlap por lado, parâmetros do motor
+data/measurements.json   posições medidas no FM23 (prints do usuário) para comparar com o modelo
+tools/measure_pitch.py   acha o campo numa captura do FM23 e desenha a grade de 10% para medir
+tools/compare.js         compara o modelo com data/measurements.json (npm run compare)
 data/alerts.json         alertas de combinação (texto, página do Book of Roles e função ligada ao guia; a detecção fica em tacticalAlerts)
 data/player-instructions.json  instruções individuais (PIs): disponibilidade, exclusões e efeito por fase
 data/opponent.json       adversário: correspondência de fases, estilos de jogo e impedimento
@@ -292,6 +295,13 @@ Limitações: o adversário não tem instruções individuais nem característic
 
    **Não aplicado:** as listas de instruções embutidas do livro divergem do site em alguns pontos: sem "deambular" no Avançado, no Atacante Recuado e no Atacante de Pressão (A); sem "corridas pelos canais" no Atacante Completo (S); com "corridas pelos canais" no Raumdeuter; sem "pressionar menos" no Âncora. Como as listas do livro têm erros de copiar e colar (a do Ponta repete a do Meia Aberto), ficam para conferir no jogo. Também ficaram de fora medidas de uma captura só (Mezzala mais aberta na progressão, Meia Ofensivo (S) mais recuado sem a bola, Ala Invertido (S) mais aberto no ataque).
 
+11. **[Página oficial da SI sobre a IA de partida do FM23](https://www.footballmanager.com/features/match-ai-and-animation)** (Sports Interactive, 30/09/2022), a fonte mais próxima do motor. Dela vieram:
+   - **instruções de equipe do FM23**: a linha de pressão virou *Low Block / Mid Block / High Press*; a largura defensiva foi substituída por armadilhas de pressão fora do próprio terço (por fora / por dentro) e por instruções de cruzamento ("set your players to be narrow and defend the cross, or ask your full-backs to stop the cross at the source"); a armadilha de impedimento virou *Drop Off / Hold the Line*, que segundo a SI só afeta os lances no limite e por isso não muda a posição no site;
+   - **Mezzala, Construtor Avançado e Médio Centro (Ataque)** "position them higher in the half-spaces during build-up play in certain formations, such as 4-3-3": no site, quando há volante (DMC/DMCL/DMCR), sobem 6 na saída e vão para o meio-espaço (x 31); o tamanho é estimativa;
+   - também citados, sem mudança no site: alas numa linha de 5 pressionam mais agressivamente; o Extremo dá largura com mais consistência (o site já o mantém colado na linha).
+
+   O manual oficial (community.sports-interactive.com) e os guias do FM23 no footballmanager.com não puderam ser lidos (bloqueio ou páginas removidas).
+
 **Nenhuma fonte dá coordenadas.** As descrições ("recua um pouco", "sobe para pressionar") foram convertidas por mim em números, que servem de ponto de partida para calibrar. O fórum da SI, o FMInside, o Passion4FM e o sortitoutsi bloqueiam acesso automatizado e não foram lidos.
 
 ## Decisões que diferem/complementam a spec
@@ -306,13 +316,25 @@ Limitações: o adversário não tem instruções individuais nem característic
 8. **Lateral Invertido** (fora da spec): vira terceiro zagueiro na construção (x 20, y 15) e o efeito `ifb_back_three` desliza os DCs 10 para o outro lado.
 9. **Zagueiro Simples** ganhou a tarefa Stopper (fora da spec).
 
+## Calibrar com dados do FM23
+
+O site não reproduz o motor do jogo (que é fechado); os números são aproximações a partir das fontes acima. Para chegar mais perto, o caminho é medir o próprio FM23:
+
+1. **Táticas:** escolha 2–3 táticas que cubram as funções que você usa e anote, para cada uma, a escalação (slot, função, tarefa) e as instruções de equipe com os mesmos nomes do site.
+2. **Capturas:**
+   - **posições médias** da partida (tela de análise/Data Hub); se o jogo separar com e sem a bola, mande as duas;
+   - **2D por fase** (vários frames de cada, de partidas diferentes): goleiro/zagueiros com a bola (saída), bola no meio-campo com a posse (progressão), bola no terço final (ataque), adversário saindo com a bola no terço dele (pressão alta), adversário com a bola no meio-campo (bloco médio) e no nosso terço (bloco baixo). Campo inteiro na tela, câmera 2D sem zoom, e anote para que lado o seu time ataca.
+3. **Medição:** `python3 tools/measure_pitch.py <prints> <saída>` acha o campo e desenha a grade de 10%; as posições lidas vão para `data/measurements.json` (formato descrito no próprio arquivo), com a tática e a fase.
+4. **Comparação:** `npm run compare` mostra, para cada medida, a posição do modelo na mesma tática e o erro, e resume o erro médio por função e por fase. As regras são ajustadas onde o erro for consistente entre medidas, e o teste de `measurements.json` garante que o arquivo continua válido.
+
 ## A confirmar no jogo
 
 - **Líbero:** Apoio/Ataque no FM23 (spec, FMScout e Seif Khaled); o Rate My Tactic (era FM24) dá Defender/Apoio — provavelmente mudou no FM24.
 - Lateral Invertido junto com Half-Back na construção gera uma linha de 4 atrás; o efeito combinado ainda não foi calibrado.
-- Os nomes em português das instruções são traduções minhas.
+- Os nomes em português das instruções são traduções minhas. Os nomes em inglês das armadilhas de pressão e das instruções de cruzamento (*Trap Outside/Inside*, *Stop/Invite Crosses*) são lembrança do jogo: a página da SI descreve a função, não os nomes.
+- Os tamanhos dos efeitos das instruções do FM23 (armadilha: fator de largura 0,65/0,85; cruzamentos: laterais 6 para fora ou linha 5 para dentro; meios-espaços na saída: +6) são estimativas; a direção vem da SI.
 - Todos os valores numéricos são pontos de partida; calibre com o modo editar regra.
 
 ## Fora do escopo (v1)
 
-Lado da bola, transições, bola parada, leitura de arquivos do jogo. Funções/instruções individuais do adversário.
+Transições, bola parada, leitura de arquivos do jogo. Funções/instruções individuais do adversário.

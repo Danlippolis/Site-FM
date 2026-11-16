@@ -1,0 +1,5 @@
+{
+  "note": "Posições medidas no FM23 (prints do usuário: posições médias ou 2D por fase). Cada entrada é um jogador numa fase, com a escalação e as instruções de equipe daquela tática, para comparar com o modelo (npm run compare). x/y nas coordenadas do site: y 0 = nosso gol, x 0 = nossa esquerda. kind: 'media' (posição média da partida/fase) ou 'instante' (um frame do 2D). Use tools/measure_pitch.py para ler as capturas.",
+  "tactics": {},
+  "measurements": []
+}

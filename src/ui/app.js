@@ -112,6 +112,7 @@
       lineOfEngagement: ins.lineOfEngagement.default,
       widthInPossession: ins.widthInPossession.default,
       defensiveWidth: ins.defensiveWidth ? ins.defensiveWidth.default : undefined,
+      crosses: ins.crosses ? ins.crosses.default : undefined,
       runsLeft: ins.runsLeft ? ins.runsLeft.default : undefined,
       runsRight: ins.runsRight ? ins.runsRight.default : undefined,
       flags: flags
@@ -351,7 +352,7 @@
 
   function buildTIForm() {
     var form = $('tiForm'), ins = data.instructions;
-    ['mentality', 'defensiveLine', 'lineOfEngagement', 'widthInPossession', 'defensiveWidth', 'runsLeft', 'runsRight'].forEach(function (key) {
+    ['mentality', 'defensiveLine', 'lineOfEngagement', 'widthInPossession', 'defensiveWidth', 'crosses', 'runsLeft', 'runsRight'].forEach(function (key) {
       var def = ins[key];
       if (!def) return;
       var lab = el('label', null, def.label + ' (' + def.en + ')');

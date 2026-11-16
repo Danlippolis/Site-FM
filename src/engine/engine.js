@@ -136,6 +136,7 @@
       loeDy: pick(instructions.lineOfEngagement, ti.lineOfEngagement).dy,
       widthFactor: pick(instructions.widthInPossession, ti.widthInPossession).factor,
       defWidthFactor: instructions.defensiveWidth ? pick(instructions.defensiveWidth, ti.defensiveWidth).factor : null,
+      crosses: instructions.crosses ? pick(instructions.crosses, ti.crosses).run || null : null,
       mentalityIdx: instructions.mentality.options[ti.mentality] ? ti.mentality : instructions.mentality.default,
       ballSide: ti.ballSide === 'L' || ti.ballSide === 'R' ? ti.ballSide : 'C',
       runs: {
@@ -240,24 +241,29 @@
     var role = roles[ruleRole(roles, p, occupied)];
     var dutyRules = role && role.duties && (role.duties[duty || p.duty] || role.duties[p.duty]);
     var rule = dutyRules && dutyRules[phase];
-    return resolveRule(rule, p, flags);
+    return resolveRule(rule, p, flags, occupied);
   }
 
   /**
    * Resolve as variações de uma regra para o jogador:
    *  - if (flag) / onlyBands: se não valem, usa `else` (outra regra) ou nenhuma;
    *  - byBand: a parte da faixa sobrescreve a base (ex.: DLP no volante x no meio-campo);
-   *  - byLane: { wide, central } — a parte do corredor (aberto L/R ou central) sobrescreve a base.
+   *  - byLane: { wide, central } — a parte do corredor (aberto L/R ou central) sobrescreve a base;
+   *  - withSlots: { slots, bands?, add } — se algum dos slots estiver ocupado na formação (e o jogador estiver
+   *    numa das faixas), `add` sobrescreve (ex.: Mezzala mais alta na saída quando há volante atrás, FM23).
    */
-  function resolveRule(rule, p, flags) {
+  function resolveRule(rule, p, flags, occupied) {
     if (!rule) return null;
     var applies = (!rule.if || flags[rule.if]) && (!rule.onlyBands || rule.onlyBands.indexOf(p.band) >= 0);
-    if (!applies) return rule.else ? resolveRule(rule.else, p, flags) : null;
-    if (!rule.byBand && !rule.byLane && !rule.else) return rule;
+    if (!applies) return rule.else ? resolveRule(rule.else, p, flags, occupied) : null;
+    if (!rule.byBand && !rule.byLane && !rule.else && !rule.withSlots) return rule;
     var merged = {};
-    Object.keys(rule).forEach(function (k) { if (k !== 'byBand' && k !== 'byLane' && k !== 'else') merged[k] = rule[k]; });
+    Object.keys(rule).forEach(function (k) { if (['byBand', 'byLane', 'else', 'withSlots'].indexOf(k) < 0) merged[k] = rule[k]; });
+    var ws = rule.withSlots;
+    var wsOn = ws && occupied && (ws.slots || []).some(function (s) { return occupied[s]; }) && (!ws.bands || ws.bands.indexOf(p.band) >= 0);
     [rule.byBand && rule.byBand[p.band],
-     rule.byLane && rule.byLane[p.lane === 'L' || p.lane === 'R' ? 'wide' : 'central']].forEach(function (extra) {
+     rule.byLane && rule.byLane[p.lane === 'L' || p.lane === 'R' ? 'wide' : 'central'],
+     wsOn ? ws.add : null].forEach(function (extra) {
       Object.keys(extra || {}).forEach(function (k) { merged[k] = extra[k]; });
     });
     return merged;
@@ -477,6 +483,25 @@
     });
   }
 
+  /**
+   * Cruzamentos (instrução de equipe do FM23, perto do próprio gol): "impedir na origem" põe os defensores
+   * dos corredores (laterais/alas) mais abertos, saindo no homem que cruza; "defender o cruzamento" fecha a
+   * linha por dentro. Vale nas fases listadas em crosses.phases.
+   */
+  function applyCrosses(list, phase, ti, instructions) {
+    var cfg = instructions.crosses;
+    if (!cfg || !ti.crosses || (cfg.phases || []).indexOf(phase) < 0) return;
+    var eff = (cfg.effects || {})[ti.crosses];
+    if (!eff) return;
+    list.forEach(function (p) {
+      var back = p.band === 'D' || (p.band === 'DM' && (p.lane === 'L' || p.lane === 'R'));
+      if (!back || p.side === 'C') return;
+      var toCentre = p.side === 'L' ? 1 : -1;
+      if (eff.wideOut && (p.lane === 'L' || p.lane === 'R')) p.x -= toCentre * eff.wideOut;
+      if (eff.allIn) p.x += toCentre * eff.allIn;
+    });
+  }
+
   function computeDerived(players, phase, data, tiState) {
     var formations = data.formations, roles = data.roles;
     var ph = formations.phases[phase], d = ph.derive;
@@ -517,6 +542,7 @@
       });
       if (d.pressShape) applyPressShape(list, d.pressShape);
       applyDefShape(list, d);
+      applyCrosses(list, phase, ti, data.instructions);
     }
     var occD = {};
     players.forEach(function (p) { occD[p.slot] = true; });

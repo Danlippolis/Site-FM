@@ -210,6 +210,160 @@
    "y": 62.1,
    "kind": "instante",
    "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "GK",
+   "x": 57.7,
+   "y": 7.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "DC",
+   "x": 55.7,
+   "y": 27.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "DCL",
+   "x": 33.7,
+   "y": 31.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "DCR",
+   "x": 77.1,
+   "y": 39.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "WBL",
+   "x": 16.4,
+   "y": 55.6,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "WBR",
+   "x": 99.5,
+   "y": 52.4,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "DMCL",
+   "x": 51.6,
+   "y": 48.5,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "DMCR",
+   "x": 70.0,
+   "y": 44.5,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "AMCL",
+   "x": 41.9,
+   "y": 55.9,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "AMCR",
+   "x": 83.9,
+   "y": 54.0,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "STC",
+   "x": 54.0,
+   "y": 62.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
   }
  ]
 }

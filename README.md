@@ -264,17 +264,29 @@ Limitações: o adversário não tem instruções individuais nem característic
 9. **[Guide to Football — Tactical theory](https://fm.guidetofootball.com/tactical-theory/)**: framework teórico (528 conceitos) do qual vieram os nomes e as definições das notas de estrutura. O próprio site avisa que não foi testado no jogo e que sua aplicação a uma versão do FM é ao FM26.
 
 10. **The Book of Roles, de Daljit Singh (FM23, 2023)** (PDF de 152 páginas enviado pelo usuário; ficou na `main` entre os PRs #17 e #19 e foi removido do repositório por tamanho, 49 MB — continua no histórico, no commit `db1de74`): movimento de cada função por fase, em texto e em ~177 capturas do jogo. As capturas 2D foram medidas: um script acha o campo pelas linhas brancas e desenha uma grade de 10% sobre ele, e a posição da função destacada (círculo vermelho ou legenda) foi lida em coordenadas do site, com a direção de ataque tirada do goleiro de cada time. Cada captura é um instante, não a média, então só entrou o que diverge bastante ou se repete em mais de uma imagem. Ajustes (entre parênteses, o que as capturas mostram):
-   - **Lateral (S)** segura na progressão: −6 (y 29–37 com a bola no meio); **Ala (D)** acima do Lateral (S): saída y 30, ataque y 70 (72–74 em três capturas);
+   - **Lateral (S)** segura na progressão: −6 (y 29–37 com a bola no meio); **Ala (D)** acima do Lateral (S): saída y 30, ataque y 70 (72–74 em três capturas; depois da revisão, o Ala (S) foi a 76 e o Ala Completo (S) a 78, para manter as tarefas em ordem);
    - **Volante (D)** sem "pressionar menos" embutido (sai para pressionar ~20 acima dos zagueiros) e, com o **Âncora**, uns 10 acima dos zagueiros no ataque: y 56 e 55 (+9 a +14);
    - **Half Back** um pouco à frente dos zagueiros no ataque (y 50) e no terço adversário com Alas em Apoio/Ataque (y 64; captura: ~66), efeito `hb_push_with_wingbacks`;
    - **Regista** alto no ataque: y 74 (76–78); **Construtor Móvel** acampa na entrada da área: y 74;
-   - **Segundo Volante** sobe já na progressão: (A) saída y 34 e +12 na progressão (~68, "quase na linha do ponta"), ataque y 80; (S) +8 na progressão, ataque y 70;
-   - **Box-to-Box** com o time instalado no campo adversário: y 78 (80); **Carrilero** na entrada da área: y 76 (78);
+   - **Segundo Volante** sobe já na progressão: (A) saída y 34 e +12 na progressão (~68, "quase na linha do ponta"), ataque y 80; (S) ataque y 70. O +8 na progressão que eu tinha dado ao (S) foi retirado na revisão: vinha de uma captura sem legenda, e o livro mostra o (S) atrás da bola;
+   - **Box-to-Box** com o time instalado no campo adversário: y 78 (80); **Carrilero** y 70 no ataque: a captura mostra 78, mas a da p. 63 mostra ele só ~3 acima do Médio Centro (S), e a ordem Médio Centro (S) < Carrilero < Mezzala (S) vale mais que o número absoluto;
    - **Meia Aberto (S)** no meio-espaço: saída x 22 e ataque x 24, y 72 (x 20–33, y 72–83);
    - **Trequartista** recua até o meio-campo na saída: y 40 (29–37; na progressão o modelo dá 57–62, como as capturas);
-   - **Segundo Atacante** recua na construção: saída y 46 (41–44);
+   - **Segundo Atacante** recua na construção: saída y 46 e −8 na progressão (41–44 nas capturas, na altura da bola);
    - **Atacante Recuado** e **Pivô** recuam para segurar a bola: saída y 56 (S) / 60 (A) (Recuado 58 e Pivô 46–61 na progressão);
    - **Atacante de Pressão** volta para defender: (D) −4 no bloco médio, todas as tarefas −8 no bloco baixo, e (D)/(S) recuam para y 62 na saída (59 na progressão).
+
+   **Revisão geral** (depois de um erro apontado pelo usuário no Segundo Volante): uma tabela com toda função × tarefa × slot × fase, mais duas checagens automáticas (ordem das tarefas e simetria esquerda/direita, ambas agora testes), achou e corrigiu:
+   - **Ala Invertido (D)** não fechava para dentro em nenhuma fase: agora vai para a faixa de volante na saída (x 35, y 28) e segura a posição (ataque x 36, y 50);
+   - **Construtor Avançado aberto** ficava colado na linha no ataque: agora fecha (x 30), como o livro descreve. Também fecham o **Trequartista aberto** (x 24); e o **Construtor Avançado (S)** na meia central fica no bolsão, na altura do Meia Ofensivo (S);
+   - **Matador** ficava à frente do Avançado (93 x 92): o livro diz que o Avançado é o mais avançado, então o Matador foi a 91;
+   - **Lateral (D)** ficava na altura dos zagueiros no ataque: agora sobe à intermediária (y 55) para cruzar de trás; **Lateral Simples** e **Lateral Invertido** ficavam abaixo dos zagueiros (40) e agora ficam na linha deles (45 e 44);
+   - **Construtor Recuado (D)** no meio ficava mais alto que o (S) na saída: −5 (recurso novo `else` nas regras);
+   - **Recuperador (D)** virou o mais recuado do meio quando o Âncora e o Volante (D) subiram: na faixa de volante, +1 no ataque;
+   - **Mezzala (S)** abaixo do Carrilero: Mezzala (S) a 74;
+   - **Falso 9** recuava menos que o Atacante Recuado: saída 54 (era 58); **Atacante Completo (S)** saída 60 (era 66);
+   - **Extremo Defensivo (D)** tinha uma altura absoluta da época da linha a 25, que ficou sem efeito: agora −10 relativo;
+   - **Médio Centro (D)** ficava na altura do (S) sem a bola: −3 ("senta mais recuado", pelo livro).
 
    **Conferidos e mantidos** (as capturas batem com o modelo): Construtor Recuado, Meia Aberto (D) sem a bola, Defensive Winger, Meia Central (S), Mezzala no ataque, Construtor Aberto, Ponta, Enganche, Falso 9, Avançado e Matador.
 

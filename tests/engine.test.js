@@ -694,7 +694,11 @@ test('pressão alta: 4-2-3-1 pressiona em 4-4-2 (meia central ao lado do centroa
 test('zona à frente da defesa: um volante protege; sem ninguém ali o critério zera', () => {
   const z = (pl) => E.evaluateBalance(pl, data, {}).parts.find((p) => p.key === 'zona').score;
   assert.ok(z(preset('4-1-4-1-dm-wide')) >= 0.8);
-  assert.equal(z(preset('3-4-3')), 0, '3-4-3 sem ninguém por dentro logo à frente da defesa');
+  // 3-4-3 com os dois meias centrais em Apoio: ninguém por dentro logo à frente da defesa
+  const noScreen = preset('3-4-3').map((x) => (x.slot === 'MCL' ? { ...x, role: 'central_midfielder', duty: 'S' } : x));
+  assert.equal(z(noScreen), 0, '3-4-3 sem ninguém por dentro logo à frente da defesa');
+  // com o Médio Centro (D), que senta mais recuado (Book of Roles), a zona passa a ter proteção
+  assert.ok(z(preset('3-4-3')) > 0);
 });
 
 test('atacante adequado: contra bloco baixo pontua o Pivô, contra Gegenpress pontua o Avançado', () => {
@@ -1029,4 +1033,90 @@ test('Goleiro Líbero: adiantado no bloco médio e na pressão, no gol no bloco 
   assert.ok(y(sk, 'defendendo') > y(gk, 'defendendo') && y(sk, 'pressao') > y(gk, 'pressao'));
   assert.ok(y(sk, 'bloco_baixo') <= y(gk, 'bloco_baixo') + 1);
   assert.ok(y(gk, 'pressao') <= 15, 'goleiro comum não sai da área');
+});
+
+// ---------- revisão geral: invariantes e correções ----------
+
+test('Invariante: em todas as funções, Ataque ≥ Apoio ≥ Defender com a bola e o contrário sem a bola', () => {
+  const PH_COM = ['saindo', 'progressao', 'ataque'], PH_SEM = ['pressao', 'defendendo', 'bloco_baixo'];
+  let n = 0;
+  for (const [rk, r] of Object.entries(data.roles)) {
+    for (const slot of r.slots) {
+      const base = data.formations.presets.find((p) => p.players.some((q) => q.slot === slot));
+      if (!base) continue;
+      const order = ['D', 'S', 'A'].filter((x) => r.duties[x]);
+      const ys = {};
+      for (const duty of order) {
+        const xi = base.players.map((q) => (q.slot === slot ? P(slot, rk, duty) : q));
+        if (!E.validate(xi, data).ok) continue;
+        ys[duty] = {};
+        for (const ph of PH_COM.concat(PH_SEM)) ys[duty][ph] = byslot(E.computePhase(xi, ph, noCol, {}), slot).y;
+      }
+      for (let i = 1; i < order.length; i++) {
+        const lo = ys[order[i - 1]], hi = ys[order[i]];
+        if (!lo || !hi) continue;
+        for (const ph of PH_COM.concat(PH_SEM)) { n++; assert.ok(hi[ph] >= lo[ph] - 0.5, `${rk} ${slot} ${ph}: ${order[i - 1]} ${lo[ph]} > ${order[i]} ${hi[ph]}`); }
+      }
+    }
+  }
+  assert.ok(n > 200, `${n} comparações`);
+});
+
+test('Invariante: toda função no lado esquerdo é o espelho do lado direito', () => {
+  const base = [P('GK', 'goalkeeper', 'D'), P('DL', 'full_back', 'S'), P('DCL', 'central_defender', 'D'), P('DCR', 'central_defender', 'D'), P('DR', 'full_back', 'S'),
+    P('DMCL', 'defensive_midfielder', 'S'), P('DMCR', 'defensive_midfielder', 'S'), P('AML', 'winger', 'S'), P('AMC', 'attacking_midfielder', 'S'), P('AMR', 'winger', 'S'), P('STC', 'pressing_forward', 'S')];
+  const mirror = { DL: 'DR', DCL: 'DCR', DMCL: 'DMCR', AML: 'AMR' };
+  for (const [sl, sr] of Object.entries(mirror)) {
+    for (const [rk, r] of Object.entries(data.roles)) {
+      if (!r.slots.includes(sl)) continue;
+      for (const duty of Object.keys(r.duties)) {
+        const L = base.map((p) => (p.slot === sl ? P(sl, rk, duty) : p)), R = base.map((p) => (p.slot === sr ? P(sr, rk, duty) : p));
+        if (!E.validate(L, data).ok) continue;
+        for (const ph of E.PHASES) {
+          const a = byslot(E.computePhase(L, ph, noCol, {}), sl), b = byslot(E.computePhase(R, ph, noCol, {}), sr);
+          assert.ok(Math.abs(a.x - (100 - b.x)) < 0.6 && Math.abs(a.y - b.y) < 0.6, `${rk}-${duty} ${sl}/${sr} ${ph}`);
+        }
+      }
+    }
+  }
+});
+
+test('Revisão: correções da revisão geral', () => {
+  const b4231 = preset('4-2-3-1-dm-wide'), b433 = preset('4-3-3-dm-wide');
+  const sw = (base, ...ch) => base.map((p) => { const c = ch.find((x) => x[0] === p.slot); return c ? P(c[0], c[1], c[2]) : p; });
+  const at = (xi, ph, slot) => byslot(E.computePhase(xi, ph, noCol, {}), slot);
+  // Segundo Volante: (S) perto da bola na progressão; (A) bem acima
+  const sv = (duty) => at(sw(b4231, ['DMCL', 'segundo_volante', duty]), 'progressao', 'DMCL').y;
+  assert.ok(sv('S') <= 52 && sv('A') >= 60, `SV(S) ${sv('S')}, SV(A) ${sv('A')}`);
+  // Segundo Atacante na altura da bola na progressão
+  assert.ok(Math.abs(at(sw(b4231, ['AMC', 'shadow_striker', 'A']), 'progressao', 'AMC').y - 50) <= 8);
+  // Ala Invertido (D) fecha para dentro e segura a posição abaixo do (S)
+  const iwbD = sw(b433, ['DL', 'inverted_wing_back', 'D']), iwbS = sw(b433, ['DL', 'inverted_wing_back', 'S']);
+  assert.ok(at(iwbD, 'saindo', 'DL').x >= 30 && at(iwbD, 'ataque', 'DL').x >= 30);
+  assert.ok(at(iwbD, 'ataque', 'DL').y < at(iwbS, 'ataque', 'DL').y);
+  // Construtor Avançado aberto fecha; (S) no bolsão como o Meia Ofensivo (S)
+  assert.ok(at(sw(b4231, ['AML', 'advanced_playmaker', 'S']), 'ataque', 'AML').x >= 25);
+  assert.ok(Math.abs(at(sw(b4231, ['AMC', 'advanced_playmaker', 'S']), 'ataque', 'AMC').y - at(sw(b4231, ['AMC', 'attacking_midfielder', 'S']), 'ataque', 'AMC').y) <= 2);
+  // Avançado é o mais avançado
+  assert.ok(at(sw(b4231, ['STC', 'poacher', 'A']), 'ataque', 'STC').y < at(b4231, 'ataque', 'STC').y);
+  // Laterais no ataque: (D) acima dos zagueiros e abaixo do (S); Simples e Invertido na linha dos zagueiros
+  const cb = at(b4231, 'ataque', 'DCL').y;
+  const fbD = at(sw(b4231, ['DL', 'full_back', 'D']), 'ataque', 'DL').y, fbS = at(sw(b4231, ['DL', 'full_back', 'S']), 'ataque', 'DL').y;
+  assert.ok(fbD >= cb + 5 && fbD < fbS, `FB(D) ${fbD}`);
+  assert.ok(at(sw(b4231, ['DL', 'no_nonsense_fb', 'D']), 'ataque', 'DL').y >= cb - 1);
+  // Carrilero entre o Médio Centro (S) e a Mezzala (S); Mezzala (S) abaixo da (A)
+  const m = (role, duty) => at(sw(preset('4-3-3-dm-wide'), ['MCR', role, duty]), 'ataque', 'MCR').y;
+  assert.ok(m('central_midfielder', 'S') < m('carrilero', 'S') && m('carrilero', 'S') < m('mezzala', 'S') && m('mezzala', 'S') < m('mezzala', 'A'));
+  // Ala (D) < (S) < (A); Ala Completo (S) acima do Ala (S)
+  const wb = (role, duty) => at(sw(b4231, ['DL', role, duty]), 'ataque', 'DL').y;
+  assert.ok(wb('wing_back', 'D') < wb('wing_back', 'S') && wb('wing_back', 'S') < wb('wing_back', 'A') && wb('complete_wing_back', 'S') > wb('wing_back', 'S'));
+  // Recuperador (D) não fica abaixo do Âncora na faixa de volante
+  assert.ok(at(sw(b4231, ['DMCL', 'ball_winning_midfielder', 'D']), 'ataque', 'DMCL').y >= at(sw(b4231, ['DMCL', 'anchor', 'D']), 'ataque', 'DMCL').y);
+  // Falso 9 recua mais que o Atacante Recuado (S)
+  assert.ok(at(sw(b4231, ['STC', 'false_nine', 'S']), 'saindo', 'STC').y < at(sw(b4231, ['STC', 'deep_lying_forward', 'S']), 'saindo', 'STC').y);
+  // Extremo Defensivo (D) entre a defesa e o meio sem a bola; Médio Centro (D) abaixo do (S)
+  const dw = at(sw(preset('4-4-2'), ['ML', 'defensive_winger', 'D']), 'defendendo', 'ML').y;
+  assert.ok(dw > at(preset('4-4-2'), 'defendendo', 'DL').y + 5 && dw < at(preset('4-4-2'), 'defendendo', 'MR').y);
+  const cmD = at(sw(preset('4-4-2'), ['MCL', 'central_midfielder', 'D']), 'defendendo', 'MCL').y, cmS = at(sw(preset('4-4-2'), ['MCL', 'central_midfielder', 'S']), 'defendendo', 'MCL').y;
+  assert.ok(cmD < cmS);
 });

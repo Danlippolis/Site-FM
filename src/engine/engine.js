@@ -250,20 +250,26 @@
    *  - byBand: a parte da faixa sobrescreve a base (ex.: DLP no volante x no meio-campo);
    *  - byLane: { wide, central } — a parte do corredor (aberto L/R ou central) sobrescreve a base;
    *  - withSlots: { slots, bands?, add } — se algum dos slots estiver ocupado na formação (e o jogador estiver
-   *    numa das faixas), `add` sobrescreve (ex.: Mezzala mais alta na saída quando há volante atrás, FM23).
+   *    numa das faixas), `add` sobrescreve (ex.: Mezzala mais alta na saída quando há volante atrás, FM23);
+   *  - ifSideEmpty: { L: [...], R: [...], bands?, add } — se nenhum dos slots do lado do jogador estiver ocupado
+   *    (e ele estiver numa das faixas), `add` sobrescreve (ex.: CJA (S) da meia abre só com o corredor vazio).
    */
   function resolveRule(rule, p, flags, occupied) {
     if (!rule) return null;
     var applies = (!rule.if || flags[rule.if]) && (!rule.onlyBands || rule.onlyBands.indexOf(p.band) >= 0);
     if (!applies) return rule.else ? resolveRule(rule.else, p, flags, occupied) : null;
-    if (!rule.byBand && !rule.byLane && !rule.else && !rule.withSlots) return rule;
+    if (!rule.byBand && !rule.byLane && !rule.else && !rule.withSlots && !rule.ifSideEmpty) return rule;
     var merged = {};
-    Object.keys(rule).forEach(function (k) { if (['byBand', 'byLane', 'else', 'withSlots'].indexOf(k) < 0) merged[k] = rule[k]; });
+    Object.keys(rule).forEach(function (k) { if (['byBand', 'byLane', 'else', 'withSlots', 'ifSideEmpty'].indexOf(k) < 0) merged[k] = rule[k]; });
     var ws = rule.withSlots;
     var wsOn = ws && occupied && (ws.slots || []).some(function (s) { return occupied[s]; }) && (!ws.bands || ws.bands.indexOf(p.band) >= 0);
+    var se = rule.ifSideEmpty;
+    var seOn = se && occupied && (p.side === 'L' || p.side === 'R') && (!se.bands || se.bands.indexOf(p.band) >= 0) &&
+      !(se[p.side] || []).some(function (s) { return occupied[s]; });
     [rule.byBand && rule.byBand[p.band],
      rule.byLane && rule.byLane[p.lane === 'L' || p.lane === 'R' ? 'wide' : 'central'],
-     wsOn ? ws.add : null].forEach(function (extra) {
+     wsOn ? ws.add : null,
+     seOn ? se.add : null].forEach(function (extra) {
       Object.keys(extra || {}).forEach(function (k) { merged[k] = extra[k]; });
     });
     return merged;

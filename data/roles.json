@@ -348,7 +348,7 @@
     "slots": ["MCL", "MC", "MCR", "AMCL", "AMC", "AMCR", "AML", "AMR"],
     "duties": {
       "S": {
-        "saindo": { "byBand": {"AM": {"dy": -6, "x": 25}, "M": {"dy": -2}}, "byLane": {"wide": {"x": 6}}, "lateral": 6, "withSlots": { "slots": ["DMC", "DMCL", "DMCR"], "bands": ["M"], "add": { "dy": 4, "x": 31 } } },
+        "saindo": { "byBand": {"AM": {"dy": -6}, "M": {"dy": -2}}, "ifSideEmpty": { "L": ["ML", "AML"], "R": ["MR", "AMR"], "bands": ["AM"], "add": { "x": 25 } }, "lateral": 6, "withSlots": { "slots": ["DMC", "DMCL", "DMCR"], "bands": ["M"], "add": { "dy": 4, "x": 31 } } },
         "ataque": { "dy": 2, "lateral": 6, "byBand": {"AM": {"dy": -4}}, "byLane": {"wide": {"x": 30}} }
       },
       "A": {

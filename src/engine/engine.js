@@ -250,20 +250,26 @@
    *  - byBand: a parte da faixa sobrescreve a base (ex.: DLP no volante x no meio-campo);
    *  - byLane: { wide, central } — a parte do corredor (aberto L/R ou central) sobrescreve a base;
    *  - withSlots: { slots, bands?, add } — se algum dos slots estiver ocupado na formação (e o jogador estiver
-   *    numa das faixas), `add` sobrescreve (ex.: Mezzala mais alta na saída quando há volante atrás, FM23).
+   *    numa das faixas), `add` sobrescreve (ex.: Mezzala mais alta na saída quando há volante atrás, FM23);
+   *  - ifSideEmpty: { L: [...], R: [...], bands?, add } — se nenhum dos slots do lado do jogador estiver ocupado
+   *    (e ele estiver numa das faixas), `add` sobrescreve (ex.: CJA (S) da meia abre só com o corredor vazio).
    */
   function resolveRule(rule, p, flags, occupied) {
     if (!rule) return null;
     var applies = (!rule.if || flags[rule.if]) && (!rule.onlyBands || rule.onlyBands.indexOf(p.band) >= 0);
     if (!applies) return rule.else ? resolveRule(rule.else, p, flags, occupied) : null;
-    if (!rule.byBand && !rule.byLane && !rule.else && !rule.withSlots) return rule;
+    if (!rule.byBand && !rule.byLane && !rule.else && !rule.withSlots && !rule.ifSideEmpty) return rule;
     var merged = {};
-    Object.keys(rule).forEach(function (k) { if (['byBand', 'byLane', 'else', 'withSlots'].indexOf(k) < 0) merged[k] = rule[k]; });
+    Object.keys(rule).forEach(function (k) { if (['byBand', 'byLane', 'else', 'withSlots', 'ifSideEmpty'].indexOf(k) < 0) merged[k] = rule[k]; });
     var ws = rule.withSlots;
     var wsOn = ws && occupied && (ws.slots || []).some(function (s) { return occupied[s]; }) && (!ws.bands || ws.bands.indexOf(p.band) >= 0);
+    var se = rule.ifSideEmpty;
+    var seOn = se && occupied && (p.side === 'L' || p.side === 'R') && (!se.bands || se.bands.indexOf(p.band) >= 0) &&
+      !(se[p.side] || []).some(function (s) { return occupied[s]; });
     [rule.byBand && rule.byBand[p.band],
      rule.byLane && rule.byLane[p.lane === 'L' || p.lane === 'R' ? 'wide' : 'central'],
-     wsOn ? ws.add : null].forEach(function (extra) {
+     wsOn ? ws.add : null,
+     seOn ? se.add : null].forEach(function (extra) {
       Object.keys(extra || {}).forEach(function (k) { merged[k] = extra[k]; });
     });
     return merged;
@@ -761,17 +767,32 @@
    * Impedimento: quem ataca não passa do último defensor de linha rival (ignora o goleiro),
    * e a regra só vale no campo adversário. Mexe só nos atacantes. Retorna quantos foram contidos.
    */
+  /**
+   * Impedimento: ninguém passa da linha do último defensor (nem da linha do meio, que limita quando a defesa
+   * dele está no nosso campo). Em vez de prender cada um exatamente na linha (o que achata funções diferentes
+   * numa linha reta), comprime quem passaria da linha e quem está na faixa logo abaixo dela (OFFSIDE_BAND)
+   * nesse espaço, proporcionalmente: o mais avançado fica na linha e a ordem entre eles se mantém.
+   */
+  var OFFSIDE_BAND = 15;
   function applyOffside(attackers, defenders, attackingUp) {
     var outfield = defenders.filter(function (p) { return p.band !== 'GK'; });
     if (!outfield.length) return 0;
-    var n = 0;
-    if (attackingUp) {
-      var line = Math.max(50, Math.max.apply(null, outfield.map(function (p) { return p.y; })));
-      attackers.forEach(function (p) { if (p.band !== 'GK' && p.y > line) { p.y = line; p.offside = true; n++; } });
-    } else {
-      var lineD = Math.min(50, Math.min.apply(null, outfield.map(function (p) { return p.y; })));
-      attackers.forEach(function (p) { if (p.band !== 'GK' && p.y < lineD) { p.y = lineD; p.offside = true; n++; } });
-    }
+    var field = attackers.filter(function (p) { return p.band !== 'GK'; });
+    if (!field.length) return 0;
+    // trabalha sempre "para cima": no outro sentido, espelha y
+    var up = function (y) { return attackingUp ? y : 100 - y; };
+    var line = attackingUp ? Math.max(50, Math.max.apply(null, outfield.map(function (p) { return p.y; })))
+      : 100 - Math.min(50, Math.min.apply(null, outfield.map(function (p) { return p.y; })));
+    var top = Math.max.apply(null, field.map(function (p) { return up(p.y); }));
+    if (top <= line) return 0;
+    var floor = line - OFFSIDE_BAND, n = 0;
+    field.forEach(function (p) {
+      var y = up(p.y);
+      if (y <= floor) return;
+      var ny = floor + (y - floor) * (line - floor) / (top - floor);
+      if (y > line) { p.offside = true; n++; }
+      p.y = attackingUp ? ny : 100 - ny;
+    });
     return n;
   }
 

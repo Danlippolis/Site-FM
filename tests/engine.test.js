@@ -373,14 +373,16 @@ test('DLP (S) no volante fica à frente dos zagueiros no ataque; no meio-campo, 
   assert.ok(byslot(r2, 'MCL').y < byslot(r2, 'MCR').y, 'DLP no MC abaixo do Box-to-Box');
 });
 
-test('na saída de bola o Construtor Avançado recua para receber e o Meia Ofensivo (A) fica alto', () => {
+test('na saída de bola o Construtor Avançado (S) fica um pouco abaixo do Meia Ofensivo (A), como medido no FM23', () => {
   const p = preset('3-5-2-wb').map((x) => ({ ...x }));
   // dois meias ofensivos lado a lado, como no 3-4-2-1 do usuário
   const i1 = p.findIndex((x) => x.slot === 'MCL'), i2 = p.findIndex((x) => x.slot === 'MCR');
   p[i1] = { slot: 'AMCL', role: 'attacking_midfielder', duty: 'A' };
   p[i2] = { slot: 'AMCR', role: 'advanced_playmaker', duty: 'S' };
   const res = E.computePhase(p, 'saindo', noCol, {});
-  assert.ok(byslot(res, 'AMCL').y - byslot(res, 'AMCR').y >= 8, `${byslot(res, 'AMCL').y} vs ${byslot(res, 'AMCR').y}`);
+  // no jogo (Nizza x Milan, 5 frames de construção): MO (A) 2-3 acima do CJA (S)
+  const gap = byslot(res, 'AMCL').y - byslot(res, 'AMCR').y;
+  assert.ok(gap >= 1 && gap <= 7, `${byslot(res, 'AMCL').y} vs ${byslot(res, 'AMCR').y}`);
 });
 
 test('guia FM23 (Seif Khaled): corridas laterais do AP/Carrilero e corredores embutidos nos atacantes', () => {
@@ -1143,7 +1145,7 @@ test('FM23: instrução de cruzamentos no bloco baixo (impedir abre os laterais;
   assert.equal(byslot(E.computePhase(preset('4-4-2'), 'defendendo', noCol, { crosses: 1 }), 'DL').x, byslot(E.computePhase(preset('4-4-2'), 'defendendo', noCol, {}), 'DL').x);
   // linha de pressão e armadilha com os nomes do FM23
   assert.deepEqual(data.instructions.lineOfEngagement.options.map((o) => o.en), ['Low Block', 'Mid Block', 'High Press']);
-  assert.deepEqual(data.instructions.defensiveWidth.options.map((o) => o.en), ['Trap Outside', 'None', 'Trap Inside']);
+  assert.deepEqual(data.instructions.defensiveWidth.options.map((o) => o.en), ['Force Opposition Outside', 'None', 'Force Opposition Inside']);
 });
 
 test('measurements.json: formato válido e comparador roda', () => {
@@ -1156,6 +1158,10 @@ test('measurements.json: formato válido e comparador roda', () => {
   }
   const rows = require('../tools/compare.js').compare();
   assert.ok(rows.every((r) => !r.error), JSON.stringify(rows.filter((r) => r.error)));
+  for (const a of M.averages || []) {
+    assert.ok(M.tactics[a.tactic], `média ${a.id}: tática ${a.tactic}`);
+    for (const [slot, v] of Object.entries(a.positions)) assert.ok(data.formations.slots[slot] && typeof v.x === 'number' && typeof v.y === 'number', `${a.id} ${slot}`);
+  }
 });
 
 test('Alertas: Ala Completo (A) sem largura à frente e sem ajuda em Apoio/Defender do mesmo lado', () => {
@@ -1169,4 +1175,58 @@ test('Alertas: Ala Completo (A) sem largura à frente e sem ajuda em Apoio/Defen
   assert.ok(!ids.includes('cwb_attack_no_support'), 'o DLP (S) do mesmo lado conta como ajuda');
   const noHelp = xi.map((p) => (p.slot === 'DMCR' ? P('DMCR', 'segundo_volante', 'A') : p));
   assert.ok(alertIds(noHelp).includes('cwb_attack_no_support'));
+});
+
+test('Impedimento comprime em vez de achatar: o mais avançado fica na linha e a ordem se mantém', () => {
+  const P = (slot, role, duty) => ({ slot, role, duty });
+  const xi = [P('GK', 'sweeper_keeper', 'S'), P('DCL', 'ball_playing_defender', 'D'), P('DC', 'central_defender', 'Co'), P('DCR', 'ball_playing_defender', 'D'),
+    P('WBL', 'wing_back', 'S'), P('WBR', 'wing_back', 'S'), P('DMCL', 'segundo_volante', 'S'), P('DMCR', 'deep_lying_playmaker', 'S'),
+    P('AMCL', 'attacking_midfielder', 'S'), P('AMCR', 'advanced_playmaker', 'S'), P('STC', 'complete_forward', 'S')];
+  const opp = { enabled: true, styleId: 'pressao_alta', players: E.styleRoles(preset('4-3-3-dm-wide'), data, 'pressao_alta') };
+  const free = E.computeMatch(xi, data, {}, null).saindo, held = E.computeMatch(xi, data, {}, opp).saindo;
+  const y = (r, s) => byslot(r, s).y;
+  assert.equal(y(held, 'STC'), 50, 'o mais avançado fica na linha (meio-campo: a defesa dele está no nosso campo)');
+  // mesma ordem de antes, sem empate
+  const order = (r) => ['AMCR', 'AMCL', 'STC'].map((s) => y(r, s));
+  const [a, b, c] = order(held);
+  assert.ok(a < b && b < c, `AP ${a} < AM ${b} < CF ${c}`);
+  assert.deepEqual(['AMCR', 'AMCL', 'STC'].sort((s, t) => y(free, s) - y(free, t)), ['AMCR', 'AMCL', 'STC']);
+  // ninguém passa da linha, e quem estava bem atrás não muda
+  assert.ok(held.players.every((p) => p.band === 'GK' || p.y <= 50.01));
+  assert.equal(y(held, 'DCL'), y(free, 'DCL'));
+});
+
+test('FM23 medido: na construção o MO (A) fica abaixo do AC (S) e o CJA (S) abre para perto do corredor', () => {
+  const M = require('../data/measurements.json');
+  const t = M.tactics['milan-3421-expressivo'];
+  // no jogo: MO − AC = -6, -6, -3, -3 nos frames de saída; CJA x 71-84
+  const sa = E.computePhase(t.players, 'saindo', noCol, t.ti);
+  assert.ok(byslot(sa, 'AMCL').y < byslot(sa, 'STC').y, `MO ${byslot(sa, 'AMCL').y} x AC ${byslot(sa, 'STC').y}`);
+  assert.ok(byslot(sa, 'AMCR').x >= 70, `CJA x ${byslot(sa, 'AMCR').x}`);
+  // no ataque o MO (A) alcança o atacante (jogo: +1 e +6)
+  const at = E.computePhase(t.players, 'ataque', noCol, t.ti);
+  assert.ok(byslot(at, 'AMCL').y >= byslot(at, 'STC').y);
+  // e as medidas de saída concordam com o sinal
+  for (const f of ['nizza-milan-0647', 'nizza-milan-0652', 'nizza-milan-1641', 'nizza-milan-1642']) {
+    const g = (s) => M.measurements.find((m) => m.frame === f && m.slot === s);
+    assert.ok(g('AMCL').y < g('STC').y && g('AMCR').x >= 70, f);
+  }
+});
+
+test('CJA (S) da meia só abre para o corredor na saída se não houver ninguém aberto à frente do mesmo lado', () => {
+  const sw = (base, ...ch) => base.map((p) => { const c = ch.find((x) => x[0] === p.slot); return c ? P(c[0], c[1], c[2]) : p; });
+  const M = require('../data/measurements.json');
+  const t = M.tactics['milan-3421-expressivo'];
+  // na tática medida (corredor direito vazio à frente): abre
+  assert.ok(byslot(E.computePhase(t.players, 'saindo', noCol, t.ti), 'AMCR').x >= 70);
+  // Extremo na AMR e o CJA (S) na AMCR: não abre; sem ninguém na AMR: abre
+  const xi = [P('GK', 'goalkeeper', 'D'), P('DL', 'full_back', 'S'), P('DCL', 'central_defender', 'D'), P('DCR', 'central_defender', 'D'), P('DR', 'full_back', 'S'),
+    P('DMCL', 'defensive_midfielder', 'D'), P('DMCR', 'deep_lying_playmaker', 'S'), P('AML', 'winger', 'S'), P('AMCL', 'attacking_midfielder', 'S'),
+    P('AMCR', 'advanced_playmaker', 'S'), P('AMR', 'winger', 'A')];
+  assert.ok(E.validate(xi, data).ok);
+  assert.ok(byslot(E.computePhase(xi, 'saindo', noCol, {}), 'AMCR').x < 70, 'com Extremo do mesmo lado fica no meio-espaço');
+  const empty = xi.filter((p) => p.slot !== 'AMR').concat([P('STC', 'advanced_forward', 'A')]);
+  assert.ok(byslot(E.computePhase(empty, 'saindo', noCol, {}), 'AMCR').x >= 70, 'corredor vazio: abre');
+  // o CJA (S) aberto (AML) continua aberto
+  assert.ok(byslot(E.computePhase(sw(preset('4-2-3-1-dm-wide'), ['AML', 'advanced_playmaker', 'S']), 'saindo', noCol, {}), 'AML').x <= 10);
 });

@@ -1,5 +1,1194 @@
 {
-  "note": "Posições medidas no FM23 (prints do usuário: posições médias ou 2D por fase). Cada entrada é um jogador numa fase, com a escalação e as instruções de equipe daquela tática, para comparar com o modelo (npm run compare). x/y nas coordenadas do site: y 0 = nosso gol, x 0 = nossa esquerda. kind: 'media' (posição média da partida/fase) ou 'instante' (um frame do 2D). Use tools/measure_pitch.py para ler as capturas.",
-  "tactics": {},
-  "measurements": []
+ "note": "Posições medidas no FM23 (prints do usuário: posições médias ou 2D por fase). Cada entrada é um jogador numa fase, com a escalação e as instruções de equipe daquela tática, para comparar com o modelo (npm run compare). x/y nas coordenadas do site: y 0 = nosso gol, x 0 = nossa esquerda. kind: 'media' (posição média da partida/fase) ou 'instante' (um frame do 2D). Use tools/measure_pitch.py para ler as capturas. averages: posições médias de uma partida (todas as fases misturadas); o comparador procura a mistura de fases do modelo que melhor as reproduz e mostra o que sobra de erro.",
+ "tactics": {
+  "milan-3421-expressivo": {
+   "note": "Tática do usuário no FM23 (Nizza x Milan): 3-4-2-1 Expressivo Var. Instruções do print: mentalidade Positiva; com bola: passes mais curtos, passar para o espaço, jogar a partir da defesa, levar a bola até a área, ser mais expressivo, ritmo ligeiramente mais elevado, razoavelmente estreito; sem bola: linha defensiva mais alta, pressão alta, pressionar com mais frequência, evitar distribuição curta do GR, obrigar a jogar por fora, impedir cruzamentos.",
+   "players": [
+    {
+     "slot": "GK",
+     "role": "sweeper_keeper",
+     "duty": "S"
+    },
+    {
+     "slot": "DCL",
+     "role": "ball_playing_defender",
+     "duty": "D"
+    },
+    {
+     "slot": "DC",
+     "role": "central_defender",
+     "duty": "Co"
+    },
+    {
+     "slot": "DCR",
+     "role": "ball_playing_defender",
+     "duty": "D"
+    },
+    {
+     "slot": "WBL",
+     "role": "wing_back",
+     "duty": "S"
+    },
+    {
+     "slot": "WBR",
+     "role": "wing_back",
+     "duty": "A"
+    },
+    {
+     "slot": "DMCL",
+     "role": "segundo_volante",
+     "duty": "S"
+    },
+    {
+     "slot": "DMCR",
+     "role": "deep_lying_playmaker",
+     "duty": "S"
+    },
+    {
+     "slot": "AMCL",
+     "role": "attacking_midfielder",
+     "duty": "A"
+    },
+    {
+     "slot": "AMCR",
+     "role": "advanced_playmaker",
+     "duty": "S"
+    },
+    {
+     "slot": "STC",
+     "role": "complete_forward",
+     "duty": "S"
+    }
+   ],
+   "ti": {
+    "mentality": 4,
+    "defensiveLine": 3,
+    "lineOfEngagement": 2,
+    "widthInPossession": 1,
+    "defensiveWidth": 0,
+    "crosses": 1
+   }
+  }
+ },
+ "measurements": [
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "GK",
+   "x": 51.8,
+   "y": 11.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "DC",
+   "x": 55.1,
+   "y": 30.4,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "DCR",
+   "x": 76.7,
+   "y": 34.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "WBL",
+   "x": 12.2,
+   "y": 53.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "WBR",
+   "x": 94.4,
+   "y": 57.0,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "DMCL",
+   "x": 41.2,
+   "y": 47.8,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "DMCR",
+   "x": 63.0,
+   "y": 45.7,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "AMCL",
+   "x": 36.3,
+   "y": 56.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "AMCR",
+   "x": 75.3,
+   "y": 53.7,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "STC",
+   "x": 55.7,
+   "y": 62.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "GK",
+   "x": 57.7,
+   "y": 7.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "DC",
+   "x": 55.7,
+   "y": 27.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "DCL",
+   "x": 33.7,
+   "y": 31.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "DCR",
+   "x": 77.1,
+   "y": 39.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "WBL",
+   "x": 16.4,
+   "y": 55.6,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "WBR",
+   "x": 99.5,
+   "y": 52.4,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "DMCL",
+   "x": 51.6,
+   "y": 48.5,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "DMCR",
+   "x": 70.0,
+   "y": 44.5,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "AMCL",
+   "x": 41.9,
+   "y": 55.9,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "AMCR",
+   "x": 83.9,
+   "y": 54.0,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0652",
+   "ball": {
+    "x": 77.1,
+    "y": 39.3
+   },
+   "slot": "STC",
+   "x": 54.0,
+   "y": 62.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:52, 2D (foto da tela). Bola com o DCR (Todibo) a y 39, x 77. Última linha do Nice a ~y 63-65. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1249",
+   "ball": {
+    "x": 11.3,
+    "y": 69.1
+   },
+   "slot": "GK",
+   "x": 37.6,
+   "y": 22.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 12:49, 2D (foto da tela). Bola em voo no corredor esquerdo (x 11, y 69), do Van de Ven (DCL, que acabara de passar, adiantado pela esquerda) para o Theo. Outro lance (não é o dos frames de 06:47/06:52). Última linha do Nice a ~y 83-86. Medido com os 4 cantos do campo."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1249",
+   "ball": {
+    "x": 11.3,
+    "y": 69.1
+   },
+   "slot": "DC",
+   "x": 42.5,
+   "y": 58.6,
+   "kind": "instante",
+   "source": "Nizza x Milan, 12:49, 2D (foto da tela). Bola em voo no corredor esquerdo (x 11, y 69), do Van de Ven (DCL, que acabara de passar, adiantado pela esquerda) para o Theo. Outro lance (não é o dos frames de 06:47/06:52). Última linha do Nice a ~y 83-86. Medido com os 4 cantos do campo."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1249",
+   "ball": {
+    "x": 11.3,
+    "y": 69.1
+   },
+   "slot": "DCL",
+   "x": 16.0,
+   "y": 62.4,
+   "kind": "instante",
+   "source": "Nizza x Milan, 12:49, 2D (foto da tela). Bola em voo no corredor esquerdo (x 11, y 69), do Van de Ven (DCL, que acabara de passar, adiantado pela esquerda) para o Theo. Outro lance (não é o dos frames de 06:47/06:52). Última linha do Nice a ~y 83-86. Medido com os 4 cantos do campo."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1249",
+   "ball": {
+    "x": 11.3,
+    "y": 69.1
+   },
+   "slot": "DCR",
+   "x": 64.3,
+   "y": 55.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 12:49, 2D (foto da tela). Bola em voo no corredor esquerdo (x 11, y 69), do Van de Ven (DCL, que acabara de passar, adiantado pela esquerda) para o Theo. Outro lance (não é o dos frames de 06:47/06:52). Última linha do Nice a ~y 83-86. Medido com os 4 cantos do campo."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1249",
+   "ball": {
+    "x": 11.3,
+    "y": 69.1
+   },
+   "slot": "WBL",
+   "x": 10.8,
+   "y": 77.7,
+   "kind": "instante",
+   "source": "Nizza x Milan, 12:49, 2D (foto da tela). Bola em voo no corredor esquerdo (x 11, y 69), do Van de Ven (DCL, que acabara de passar, adiantado pela esquerda) para o Theo. Outro lance (não é o dos frames de 06:47/06:52). Última linha do Nice a ~y 83-86. Medido com os 4 cantos do campo."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1249",
+   "ball": {
+    "x": 11.3,
+    "y": 69.1
+   },
+   "slot": "WBR",
+   "x": 76.1,
+   "y": 78.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 12:49, 2D (foto da tela). Bola em voo no corredor esquerdo (x 11, y 69), do Van de Ven (DCL, que acabara de passar, adiantado pela esquerda) para o Theo. Outro lance (não é o dos frames de 06:47/06:52). Última linha do Nice a ~y 83-86. Medido com os 4 cantos do campo."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1249",
+   "ball": {
+    "x": 11.3,
+    "y": 69.1
+   },
+   "slot": "DMCL",
+   "x": 31.0,
+   "y": 71.0,
+   "kind": "instante",
+   "source": "Nizza x Milan, 12:49, 2D (foto da tela). Bola em voo no corredor esquerdo (x 11, y 69), do Van de Ven (DCL, que acabara de passar, adiantado pela esquerda) para o Theo. Outro lance (não é o dos frames de 06:47/06:52). Última linha do Nice a ~y 83-86. Medido com os 4 cantos do campo."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1249",
+   "ball": {
+    "x": 11.3,
+    "y": 69.1
+   },
+   "slot": "DMCR",
+   "x": 40.1,
+   "y": 71.9,
+   "kind": "instante",
+   "source": "Nizza x Milan, 12:49, 2D (foto da tela). Bola em voo no corredor esquerdo (x 11, y 69), do Van de Ven (DCL, que acabara de passar, adiantado pela esquerda) para o Theo. Outro lance (não é o dos frames de 06:47/06:52). Última linha do Nice a ~y 83-86. Medido com os 4 cantos do campo."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1249",
+   "ball": {
+    "x": 11.3,
+    "y": 69.1
+   },
+   "slot": "AMCL",
+   "x": 40.0,
+   "y": 85.7,
+   "kind": "instante",
+   "source": "Nizza x Milan, 12:49, 2D (foto da tela). Bola em voo no corredor esquerdo (x 11, y 69), do Van de Ven (DCL, que acabara de passar, adiantado pela esquerda) para o Theo. Outro lance (não é o dos frames de 06:47/06:52). Última linha do Nice a ~y 83-86. Medido com os 4 cantos do campo."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1249",
+   "ball": {
+    "x": 11.3,
+    "y": 69.1
+   },
+   "slot": "AMCR",
+   "x": 55.6,
+   "y": 82.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 12:49, 2D (foto da tela). Bola em voo no corredor esquerdo (x 11, y 69), do Van de Ven (DCL, que acabara de passar, adiantado pela esquerda) para o Theo. Outro lance (não é o dos frames de 06:47/06:52). Última linha do Nice a ~y 83-86. Medido com os 4 cantos do campo."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1249",
+   "ball": {
+    "x": 11.3,
+    "y": 69.1
+   },
+   "slot": "STC",
+   "x": 45.3,
+   "y": 84.5,
+   "kind": "instante",
+   "source": "Nizza x Milan, 12:49, 2D (foto da tela). Bola em voo no corredor esquerdo (x 11, y 69), do Van de Ven (DCL, que acabara de passar, adiantado pela esquerda) para o Theo. Outro lance (não é o dos frames de 06:47/06:52). Última linha do Nice a ~y 83-86. Medido com os 4 cantos do campo."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1641",
+   "ball": {
+    "x": 58.6,
+    "y": 43.9
+   },
+   "slot": "GK",
+   "x": 53.6,
+   "y": 20.4,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:41 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto) (x 58.6, y 43.9). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1641",
+   "ball": {
+    "x": 58.6,
+    "y": 43.9
+   },
+   "slot": "DC",
+   "x": 58.6,
+   "y": 43.9,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:41 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto) (x 58.6, y 43.9). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1641",
+   "ball": {
+    "x": 58.6,
+    "y": 43.9
+   },
+   "slot": "DCL",
+   "x": 22.8,
+   "y": 47.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:41 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto) (x 58.6, y 43.9). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1641",
+   "ball": {
+    "x": 58.6,
+    "y": 43.9
+   },
+   "slot": "DCR",
+   "x": 78.0,
+   "y": 48.9,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:41 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto) (x 58.6, y 43.9). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1641",
+   "ball": {
+    "x": 58.6,
+    "y": 43.9
+   },
+   "slot": "WBL",
+   "x": 8.6,
+   "y": 65.6,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:41 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto) (x 58.6, y 43.9). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1641",
+   "ball": {
+    "x": 58.6,
+    "y": 43.9
+   },
+   "slot": "WBR",
+   "x": 93.8,
+   "y": 66.5,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:41 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto) (x 58.6, y 43.9). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1641",
+   "ball": {
+    "x": 58.6,
+    "y": 43.9
+   },
+   "slot": "DMCL",
+   "x": 47.3,
+   "y": 55.4,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:41 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto) (x 58.6, y 43.9). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1641",
+   "ball": {
+    "x": 58.6,
+    "y": 43.9
+   },
+   "slot": "DMCR",
+   "x": 63.2,
+   "y": 56.4,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:41 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto) (x 58.6, y 43.9). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1641",
+   "ball": {
+    "x": 58.6,
+    "y": 43.9
+   },
+   "slot": "AMCL",
+   "x": 38.3,
+   "y": 69.0,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:41 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto) (x 58.6, y 43.9). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1641",
+   "ball": {
+    "x": 58.6,
+    "y": 43.9
+   },
+   "slot": "AMCR",
+   "x": 74.2,
+   "y": 63.6,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:41 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto) (x 58.6, y 43.9). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1641",
+   "ball": {
+    "x": 58.6,
+    "y": 43.9
+   },
+   "slot": "STC",
+   "x": 52.8,
+   "y": 71.9,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:41 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto) (x 58.6, y 43.9). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1642",
+   "ball": {
+    "x": 56.0,
+    "y": 45.5
+   },
+   "slot": "GK",
+   "x": 49.4,
+   "y": 21.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:42 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto, avaliando opções) (x 56.0, y 45.5). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1642",
+   "ball": {
+    "x": 56.0,
+    "y": 45.5
+   },
+   "slot": "DC",
+   "x": 56.0,
+   "y": 45.5,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:42 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto, avaliando opções) (x 56.0, y 45.5). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1642",
+   "ball": {
+    "x": 56.0,
+    "y": 45.5
+   },
+   "slot": "DCL",
+   "x": 22.3,
+   "y": 47.7,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:42 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto, avaliando opções) (x 56.0, y 45.5). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1642",
+   "ball": {
+    "x": 56.0,
+    "y": 45.5
+   },
+   "slot": "DCR",
+   "x": 75.4,
+   "y": 49.5,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:42 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto, avaliando opções) (x 56.0, y 45.5). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1642",
+   "ball": {
+    "x": 56.0,
+    "y": 45.5
+   },
+   "slot": "WBL",
+   "x": 5.7,
+   "y": 66.9,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:42 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto, avaliando opções) (x 56.0, y 45.5). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1642",
+   "ball": {
+    "x": 56.0,
+    "y": 45.5
+   },
+   "slot": "WBR",
+   "x": 92.3,
+   "y": 67.4,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:42 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto, avaliando opções) (x 56.0, y 45.5). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1642",
+   "ball": {
+    "x": 56.0,
+    "y": 45.5
+   },
+   "slot": "DMCL",
+   "x": 43.0,
+   "y": 57.4,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:42 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto, avaliando opções) (x 56.0, y 45.5). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1642",
+   "ball": {
+    "x": 56.0,
+    "y": 45.5
+   },
+   "slot": "DMCR",
+   "x": 56.9,
+   "y": 57.4,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:42 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto, avaliando opções) (x 56.0, y 45.5). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1642",
+   "ball": {
+    "x": 56.0,
+    "y": 45.5
+   },
+   "slot": "AMCL",
+   "x": 36.1,
+   "y": 69.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:42 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto, avaliando opções) (x 56.0, y 45.5). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1642",
+   "ball": {
+    "x": 56.0,
+    "y": 45.5
+   },
+   "slot": "AMCR",
+   "x": 70.8,
+   "y": 65.9,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:42 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto, avaliando opções) (x 56.0, y 45.5). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-1642",
+   "ball": {
+    "x": 56.0,
+    "y": 45.5
+   },
+   "slot": "STC",
+   "x": 52.2,
+   "y": 71.8,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:42 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DC (Bueno Prieto, avaliando opções) (x 56.0, y 45.5). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "progressao",
+   "frame": "nizza-milan-1644",
+   "ball": {
+    "x": 35.8,
+    "y": 56.6
+   },
+   "slot": "GK",
+   "x": 42.9,
+   "y": 20.7,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:44 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DMCL (Rodri, passe rasteiro) (x 35.8, y 56.6). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "progressao",
+   "frame": "nizza-milan-1644",
+   "ball": {
+    "x": 35.8,
+    "y": 56.6
+   },
+   "slot": "DC",
+   "x": 50.1,
+   "y": 44.0,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:44 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DMCL (Rodri, passe rasteiro) (x 35.8, y 56.6). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "progressao",
+   "frame": "nizza-milan-1644",
+   "ball": {
+    "x": 35.8,
+    "y": 56.6
+   },
+   "slot": "DCL",
+   "x": 22.2,
+   "y": 48.5,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:44 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DMCL (Rodri, passe rasteiro) (x 35.8, y 56.6). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "progressao",
+   "frame": "nizza-milan-1644",
+   "ball": {
+    "x": 35.8,
+    "y": 56.6
+   },
+   "slot": "DCR",
+   "x": 72.2,
+   "y": 49.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:44 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DMCL (Rodri, passe rasteiro) (x 35.8, y 56.6). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "progressao",
+   "frame": "nizza-milan-1644",
+   "ball": {
+    "x": 35.8,
+    "y": 56.6
+   },
+   "slot": "WBL",
+   "x": 5.3,
+   "y": 66.6,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:44 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DMCL (Rodri, passe rasteiro) (x 35.8, y 56.6). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "progressao",
+   "frame": "nizza-milan-1644",
+   "ball": {
+    "x": 35.8,
+    "y": 56.6
+   },
+   "slot": "WBR",
+   "x": 88.6,
+   "y": 67.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:44 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DMCL (Rodri, passe rasteiro) (x 35.8, y 56.6). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "progressao",
+   "frame": "nizza-milan-1644",
+   "ball": {
+    "x": 35.8,
+    "y": 56.6
+   },
+   "slot": "DMCL",
+   "x": 35.8,
+   "y": 56.6,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:44 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DMCL (Rodri, passe rasteiro) (x 35.8, y 56.6). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "progressao",
+   "frame": "nizza-milan-1644",
+   "ball": {
+    "x": 35.8,
+    "y": 56.6
+   },
+   "slot": "DMCR",
+   "x": 49.7,
+   "y": 58.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:44 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DMCL (Rodri, passe rasteiro) (x 35.8, y 56.6). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "progressao",
+   "frame": "nizza-milan-1644",
+   "ball": {
+    "x": 35.8,
+    "y": 56.6
+   },
+   "slot": "AMCL",
+   "x": 30.3,
+   "y": 69.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:44 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DMCL (Rodri, passe rasteiro) (x 35.8, y 56.6). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "progressao",
+   "frame": "nizza-milan-1644",
+   "ball": {
+    "x": 35.8,
+    "y": 56.6
+   },
+   "slot": "AMCR",
+   "x": 65.3,
+   "y": 67.0,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:44 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DMCL (Rodri, passe rasteiro) (x 35.8, y 56.6). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "progressao",
+   "frame": "nizza-milan-1644",
+   "ball": {
+    "x": 35.8,
+    "y": 56.6
+   },
+   "slot": "STC",
+   "x": 48.4,
+   "y": 70.5,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:44 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: DMCL (Rodri, passe rasteiro) (x 35.8, y 56.6). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1646",
+   "ball": {
+    "x": 32.0,
+    "y": 85.8
+   },
+   "slot": "GK",
+   "x": 43.4,
+   "y": 22.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:46 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: AMCL (De Ketelaere) recebendo (x 32.0, y 85.8). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1646",
+   "ball": {
+    "x": 32.0,
+    "y": 85.8
+   },
+   "slot": "DC",
+   "x": 46.3,
+   "y": 49.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:46 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: AMCL (De Ketelaere) recebendo (x 32.0, y 85.8). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1646",
+   "ball": {
+    "x": 32.0,
+    "y": 85.8
+   },
+   "slot": "DCL",
+   "x": 21.4,
+   "y": 51.5,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:46 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: AMCL (De Ketelaere) recebendo (x 32.0, y 85.8). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1646",
+   "ball": {
+    "x": 32.0,
+    "y": 85.8
+   },
+   "slot": "DCR",
+   "x": 70.6,
+   "y": 51.9,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:46 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: AMCL (De Ketelaere) recebendo (x 32.0, y 85.8). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1646",
+   "ball": {
+    "x": 32.0,
+    "y": 85.8
+   },
+   "slot": "WBL",
+   "x": 11.1,
+   "y": 77.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:46 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: AMCL (De Ketelaere) recebendo (x 32.0, y 85.8). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1646",
+   "ball": {
+    "x": 32.0,
+    "y": 85.8
+   },
+   "slot": "WBR",
+   "x": 84.9,
+   "y": 70.9,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:46 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: AMCL (De Ketelaere) recebendo (x 32.0, y 85.8). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1646",
+   "ball": {
+    "x": 32.0,
+    "y": 85.8
+   },
+   "slot": "DMCL",
+   "x": 36.7,
+   "y": 59.8,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:46 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: AMCL (De Ketelaere) recebendo (x 32.0, y 85.8). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1646",
+   "ball": {
+    "x": 32.0,
+    "y": 85.8
+   },
+   "slot": "DMCR",
+   "x": 47.8,
+   "y": 64.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:46 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: AMCL (De Ketelaere) recebendo (x 32.0, y 85.8). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1646",
+   "ball": {
+    "x": 32.0,
+    "y": 85.8
+   },
+   "slot": "AMCL",
+   "x": 32.3,
+   "y": 82.6,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:46 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: AMCL (De Ketelaere) recebendo (x 32.0, y 85.8). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1646",
+   "ball": {
+    "x": 32.0,
+    "y": 85.8
+   },
+   "slot": "AMCR",
+   "x": 60.6,
+   "y": 74.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:46 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: AMCL (De Ketelaere) recebendo (x 32.0, y 85.8). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-1646",
+   "ball": {
+    "x": 32.0,
+    "y": 85.8
+   },
+   "slot": "STC",
+   "x": 48.2,
+   "y": 76.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 16:46 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: AMCL (De Ketelaere) recebendo (x 32.0, y 85.8). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  }
+ ],
+ "averages": [
+  {
+   "id": "nizza-milan-28min",
+   "tactic": "milan-3421-expressivo",
+   "minutes": 28,
+   "score": "0-6",
+   "source": "Tela de táticas do FM23 ('apresenta posições médias') após 28 minutos de Nizza x Milan. Mistura todos os momentos (com e sem a bola). Medido com os 4 cantos do campo (correção de perspectiva bilinear); o time ataca para cima na tela.",
+   "positions": {
+    "GK": {
+     "x": 48.0,
+     "y": 13.4
+    },
+    "DC": {
+     "x": 47.5,
+     "y": 46.6
+    },
+    "DCR": {
+     "x": 61.3,
+     "y": 43.2
+    },
+    "DCL": {
+     "x": 33.0,
+     "y": 49.2
+    },
+    "WBL": {
+     "x": 24.6,
+     "y": 62.3
+    },
+    "WBR": {
+     "x": 68.8,
+     "y": 56.8
+    },
+    "DMCL": {
+     "x": 38.7,
+     "y": 61.6
+    },
+    "DMCR": {
+     "x": 51.5,
+     "y": 59.3
+    },
+    "AMCL": {
+     "x": 35.2,
+     "y": 68.9
+    },
+    "AMCR": {
+     "x": 54.9,
+     "y": 65.6
+    },
+    "STC": {
+     "x": 45.5,
+     "y": 70.5
+    }
+   }
+  }
+ ]
 }

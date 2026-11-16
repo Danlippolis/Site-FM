@@ -48,14 +48,14 @@
     ]
   },
   "defensiveWidth": {
-    "label": "Armadilha de pressão",
-    "en": "Pressing Trap",
-    "note": "FM23 trocou a Largura defensiva por instruções de armadilha de pressão fora do próprio terço: por fora (estreita o time e empurra o adversário para os lados) ou por dentro (abre o time e empurra para o meio). Os nomes em inglês são lembrança do jogo; a página oficial da SI descreve a função mas não os nomes. O fator de largura é estimativa.",
+    "label": "Obrigar a jogar",
+    "en": "Force Opposition",
+    "note": "FM23 trocou a Largura defensiva por instruções de armadilha de pressão fora do próprio terço (página oficial da SI): obrigar a jogar por fora (estreita o time e empurra o adversário para os lados) ou por dentro (abre o time e empurra para o meio). O nome 'Obrigar a jogar por fora' vem de um print do jogo do usuário (FM23 em português de Portugal); 'por dentro' segue o mesmo padrão. O fator de largura é estimativa.",
     "default": 1,
     "options": [
-      { "label": "Armadilha por fora", "en": "Trap Outside", "factor": 0.65 },
+      { "label": "Obrigar a jogar por fora", "en": "Force Opposition Outside", "factor": 0.65 },
       { "label": "Nenhuma", "en": "None", "factor": 0.75 },
-      { "label": "Armadilha por dentro", "en": "Trap Inside", "factor": 0.85 }
+      { "label": "Obrigar a jogar por dentro", "en": "Force Opposition Inside", "factor": 0.85 }
     ]
   },
   "crosses": {
@@ -67,8 +67,8 @@
     "effects": { "stop": { "wideOut": 6 }, "invite": { "allIn": 5 } },
     "options": [
       { "label": "Padrão", "en": "Default" },
-      { "label": "Impedir na origem (laterais saem)", "en": "Stop Crosses", "run": "stop" },
-      { "label": "Defender o cruzamento (fechar por dentro)", "en": "Invite Crosses", "run": "invite" }
+      { "label": "Impedir cruzamentos", "en": "Stop Crosses", "run": "stop" },
+      { "label": "Convidar cruzamentos (fechar por dentro)", "en": "Invite Crosses", "run": "invite" }
     ]
   },
   "runsLeft": {

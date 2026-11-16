@@ -47,6 +47,10 @@
       "role": "wing_back", "page": 25,
       "text": "{slots}: ala em Ataque como única largura daquele lado tende a ter os cruzamentos bloqueados (sai mais escanteio que cruzamento). Considere Apoio."
     },
+    "cwb_attack_no_support": {
+      "role": "complete_wing_back", "page": 26,
+      "text": "{slots}: Ala Completo em Ataque sem ninguém em Apoio ou Defender do mesmo lado para ajudá-lo. O livro avisa que ele fica longe na transição defensiva e leva cartões tentando parar o adversário."
+    },
     "ss_vs_two_dm": {
       "role": "shadow_striker", "page": 104,
       "text": "{slots}: o adversário joga com dois volantes, e o Segundo Atacante sofre com a falta de espaço."

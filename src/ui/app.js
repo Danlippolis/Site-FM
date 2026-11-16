@@ -257,7 +257,7 @@
     legend.appendChild(el('span', null, '• ponto branco = jogador com instruções individuais'));
     legend.appendChild(el('span', null, '◌ área sombreada = zona de deambulação'));
     legend.appendChild(el('span', null, '▢ quadrado claro = adversário (ataca para baixo)'));
-    legend.appendChild(el('span', null, '— linhas brancas = linhas do time (estrutura)'));
+    legend.appendChild(el('span', null, '— linhas brancas = linhas do time (estrutura); pontilhado = jogador da mesma linha, escalonado à frente ou atrás'));
     legend.appendChild(el('span', null, 'Linhas tracejadas = terços do campo'));
 
     document.querySelectorAll('#groups .tab').forEach(function (b) {
@@ -535,12 +535,13 @@
       [[result.players, false], [result.opponent ? result.opponent.players : null, true]].forEach(function (t) {
         if (!t[0]) return;
         E.teamShape(t[0], { attackingDown: t[1] }).lines.forEach(function (line) {
-          // liga só vizinhos (por x) que estão quase na mesma altura: evita zigue-zague em linhas escalonadas
+          // liga os vizinhos (por x) da mesma linha: traço cheio quando estão quase na mesma altura,
+          // pontilhado quando um está escalonado (mais de 5 à frente ou atrás), mas ainda conta na mesma linha
           for (var i = 1; i < line.length; i++) {
             var a = line[i - 1], b = line[i];
-            if (Math.abs(a.y - b.y) > 5) continue;
+            var stagger = Math.abs(a.y - b.y) > 5;
             var ca = toSvg(a.x, a.y), cb = toSvg(b.x, b.y);
-            svgEl('line', { x1: ca[0], y1: ca[1], x2: cb[0], y2: cb[1], class: t[1] ? 'shape-line-opp' : 'shape-line-us' }, shapes);
+            svgEl('line', { x1: ca[0], y1: ca[1], x2: cb[0], y2: cb[1], class: (t[1] ? 'shape-line-opp' : 'shape-line-us') + (stagger ? ' stagger' : '') }, shapes);
           }
         });
       });

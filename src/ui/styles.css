@@ -284,6 +284,8 @@ svg.pitch.editing { touch-action: none; }
 .prow .num.opp-num { background: #f3f4f6; border: 1px solid #111827; border-radius: 4px; width: 18px; height: 18px; }
 .pitch .shape-line-us { fill: none; stroke: rgba(255, 255, 255, .55); stroke-width: .35; stroke-linejoin: round; }
 .pitch .shape-line-opp { fill: none; stroke: rgba(17, 24, 39, .45); stroke-width: .3; stroke-dasharray: 1 .6; stroke-linejoin: round; }
+.pitch .shape-line-us.stagger { stroke-dasharray: .25 .9; stroke-linecap: round; stroke-width: .45; }
+.pitch .shape-line-opp.stagger { stroke-dasharray: .25 .9; stroke-linecap: round; }
 .pitch .pi-dot { fill: #fff; stroke: #0f1512; stroke-width: .2; }
 .pitch .pl.hl .pc { stroke: #ffeb3b; stroke-width: .55; }
 

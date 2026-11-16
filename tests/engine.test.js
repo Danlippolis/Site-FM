@@ -1157,3 +1157,16 @@ test('measurements.json: formato válido e comparador roda', () => {
   const rows = require('../tools/compare.js').compare();
   assert.ok(rows.every((r) => !r.error), JSON.stringify(rows.filter((r) => r.error)));
 });
+
+test('Alertas: Ala Completo (A) sem largura à frente e sem ajuda em Apoio/Defender do mesmo lado', () => {
+  const P = (slot, role, duty) => ({ slot, role, duty });
+  // 3-4-1-2 do usuário: CWB (A) à direita, DLP (S) do mesmo lado
+  const xi = [P('GK', 'sweeper_keeper', 'S'), P('DCL', 'ball_playing_defender', 'D'), P('DC', 'central_defender', 'Co'), P('DCR', 'ball_playing_defender', 'D'),
+    P('WBL', 'wing_back', 'S'), P('WBR', 'complete_wing_back', 'A'), P('DMCL', 'segundo_volante', 'S'), P('DMCR', 'deep_lying_playmaker', 'S'),
+    P('AMCL', 'attacking_midfielder', 'S'), P('AMCR', 'advanced_playmaker', 'A'), P('STC', 'complete_forward', 'A')];
+  const ids = alertIds(xi);
+  assert.ok(ids.includes('wb_attack_no_width'), 'única largura do lado direito');
+  assert.ok(!ids.includes('cwb_attack_no_support'), 'o DLP (S) do mesmo lado conta como ajuda');
+  const noHelp = xi.map((p) => (p.slot === 'DMCR' ? P('DMCR', 'segundo_volante', 'A') : p));
+  assert.ok(alertIds(noHelp).includes('cwb_attack_no_support'));
+});

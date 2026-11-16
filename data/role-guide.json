@@ -6,47 +6,131 @@
     "game": "FM23",
     "note": "Resumo próprio do livro (não é o texto original). Os atributos estão em português com o nome em inglês na dica; a tradução é do site e pode não bater exatamente com a do jogo."
   },
+  "attributesNote": "Os atributos são relativos à divisão: 15 de Primeiro toque é excelente numa liga de ponta e sobre-humano numa divisão baixa. A régua do autor: 9 é a média da divisão mais baixa, e some 2 a cada acesso. Compare o elenco com a liga a cada temporada (Book of Roles, p. 3).",
+  "forwardTypes": {
+    "page": 121,
+    "intro": "O livro divide os atacantes em três tipos. Mais do que o rótulo, olhe o que a função faz com e sem a bola.",
+    "questions": [
+      "Quer que ele corra pelos canais, o espaço entre zagueiro e lateral?",
+      "Quer que ele segure a posição, como uma referência fixa?",
+      "Quer que ele corte para dentro para usar o outro pé num lance específico?",
+      "Precisa de uma movimentação bem específica, como fechar e deambular para o espaço?"
+    ],
+    "note": "Não é preciso usar funções simples em divisões baixas: os atributos são relativos à liga.",
+    "types": [
+      {
+        "key": "creative",
+        "label": "Criativo",
+        "desc": "Recua e procura o passe em profundidade. Serve a sistemas com muitas tarefas de Apoio.",
+        "roles": [
+          {
+            "role": "false_nine",
+            "note": "O mais criativo: recua, põe os colegas no jogo e tem técnica para isso."
+          },
+          {
+            "role": "deep_lying_forward",
+            "duty": "S",
+            "note": "Recua, liga o jogo e dá o passe em profundidade."
+          },
+          {
+            "role": "complete_forward",
+            "note": "Faz de tudo; espere o inesperado."
+          }
+        ]
+      },
+      {
+        "key": "support",
+        "label": "De apoio",
+        "desc": "Recua ou segura a bola para pôr os outros no jogo. Qualquer atacante que recua ou arrisca passes pode cumprir esse papel.",
+        "roles": [
+          {
+            "role": "pressing_forward",
+            "duty": "S",
+            "note": "Às vezes recua, mas fica central; bom em sistemas de um atacante para os outros aproveitarem o movimento, e também faz muitos gols. Subestimado no FM23."
+          },
+          {
+            "role": "pressing_forward",
+            "duty": "A",
+            "note": "Abre pelos canais: no 3-5-2 recebe aberto e solta para o ala cruzar livre."
+          },
+          {
+            "role": "target_forward",
+            "note": "Recua muito para segurar a bola e pôr os outros no jogo."
+          },
+          {
+            "role": "deep_lying_forward",
+            "note": "Segura a bola e põe os outros no jogo nas duas tarefas; também conta como criativo."
+          },
+          {
+            "role": "complete_forward",
+            "duty": "S",
+            "note": "Recua, segura a bola e abre pelos canais; um pouco mais criativo, mas menos que o Falso 9."
+          }
+        ]
+      },
+      {
+        "key": "pure",
+        "label": "Puro",
+        "desc": "Não se afasta muito da área.",
+        "roles": [
+          {
+            "role": "pressing_forward",
+            "duty": "S",
+            "note": "Não abre pelos canais nem se afasta da última linha; o autor chegou a 100 gols de um atacante nessa função."
+          },
+          {
+            "role": "advanced_forward",
+            "note": "Ótimo para bloco médio ou baixo que lança nas costas. Sozinho, é o foco do ataque; em dupla, um dos dois às vezes recua na progressão."
+          },
+          {
+            "role": "poacher",
+            "note": "Fica na área, não abre e nunca tenta o passe em profundidade, então devolve a bola e põe os outros no jogo. Pivô + Matador continua muito bom no FM23."
+          }
+        ]
+      }
+    ]
+  },
   "attributes": {
-    "acceleration": { "label": "Aceleração", "en": "Acceleration" },
-    "aerial_ability": { "label": "Alcance aéreo", "en": "Aerial Ability" },
-    "aggression": { "label": "Agressividade", "en": "Aggression" },
+    "acceleration": { "label": "Aceleração", "en": "Acceleration", "desc": "Quanto tempo o jogador leva para chegar à velocidade máxima: é o que vence o marcador na arrancada. Contra marcação apertada em sistemas fluidos, junte Sem bola, Primeiro toque, Equilíbrio e Drible." },
+    "aerial_ability": { "label": "Alcance aéreo", "en": "Aerial Ability", "desc": "Até onde o goleiro alcança com as mãos ao saltar. Nos jogadores de linha, o equivalente é a Impulsão." },
+    "aggression": { "label": "Agressividade", "en": "Aggression", "desc": "Mal compreendido: é bom para defensores desde que venha com bom Desarme, Antecipação, Concentração e Decisões. A chance de uma entrada violenta depende de atributos ocultos (jogo sujo e espírito esportivo), não deste." },
     "agility": { "label": "Agilidade", "en": "Agility" },
-    "anticipation": { "label": "Antecipação", "en": "Anticipation" },
-    "balance": { "label": "Equilíbrio", "en": "Balance" },
-    "bravery": { "label": "Bravura", "en": "Bravery" },
-    "command_of_area": { "label": "Domínio da área", "en": "Command of Area" },
+    "anticipation": { "label": "Antecipação", "en": "Anticipation", "desc": "Defensivo e ofensivo. Com Aceleração e Sem bola, faz bons jogadores para atacar os canais; ajuda o zagueiro lento com bom Posicionamento a chegar antes na cobertura." },
+    "balance": { "label": "Equilíbrio", "en": "Balance", "desc": "Manter-se em pé sob pressão, com e sem a bola. Com velocidade de drible, faz o jogador girar sobre o marcador (Maradona, Gascoigne); fica mais perigoso com bom Primeiro toque." },
+    "bravery": { "label": "Bravura", "en": "Bravery", "desc": "Disposição para ações que podem machucar. Com bravura baixa, o jogador evita ajudar quando há risco de se lesionar. Bravura e Condição física natural baixas juntas são uma combinação a evitar na contratação." },
+    "command_of_area": { "label": "Domínio da área", "en": "Command of Area", "desc": "O quanto o goleiro manda na área. Sair bem nas bolas altas também depende de Alcance aéreo, Segurar a bola, Antecipação, Decisões e Posicionamento." },
     "communication": { "label": "Comunicação", "en": "Communication" },
-    "composure": { "label": "Compostura", "en": "Composure" },
-    "concentration": { "label": "Concentração", "en": "Concentration" },
+    "composure": { "label": "Compostura", "en": "Composure", "desc": "Como o jogador lida com a pressão. Com Primeiro toque, domina rápido e segura a bola sob pressão para distribuir; importante para construtores e para quem liga o jogo nas transições." },
+    "concentration": { "label": "Concentração", "en": "Concentration", "desc": "Foco lance a lance ao longo do jogo. Essencial para volantes e defensores, que sem ele só veem o perigo tarde demais. Desde o FM19 vale para todos os jogadores de linha e pesa quando as transições falham." },
     "crossing": { "label": "Cruzamento", "en": "Crossing" },
-    "decisions": { "label": "Decisões", "en": "Decisions" },
-    "determination": { "label": "Determinação", "en": "Determination" },
+    "decisions": { "label": "Decisões", "en": "Decisions", "desc": "Como o jogador avalia as opções; a Visão determina quantas ele enxerga. Passe, Visão e Decisões formam o trio do construtor." },
+    "determination": { "label": "Determinação", "en": "Determination", "desc": "Vontade de se esforçar mesmo perdendo: time com pouca determinação em posições-chave desaba depois de sofrer gols. Para o autor é o atributo mais importante, porque afeta a personalidade, o desenvolvimento e o rendimento." },
     "dribbling": { "label": "Drible", "en": "Dribbling" },
-    "eccentricity": { "label": "Excentricidade", "en": "Eccentricity" },
+    "eccentricity": { "label": "Excentricidade", "en": "Eccentricity", "desc": "Tendência do goleiro a fazer coisas inesperadas e arriscadas. É um atributo negativo." },
     "finishing": { "label": "Finalização", "en": "Finishing" },
-    "first_touch": { "label": "Primeiro toque", "en": "First Touch" },
-    "flair": { "label": "Talento", "en": "Flair" },
-    "handling": { "label": "Segurar a bola", "en": "Handling" },
+    "first_touch": { "label": "Primeiro toque", "en": "First Touch", "desc": "Essencial para manter a bola e distribuir sob pressão, e bom também para atacantes. É quase obrigatório para criadores e um dos atributos que mais pesam em táticas de posse. Para defensores de apoio é secundário: lá, Concentração pesa mais." },
+    "flair": { "label": "Talento", "en": "Flair", "desc": "O extraordinário: dribles e fintas inesperados que pegam o adversário desprevenido. Bom para funções criativas, como o Trequartista." },
+    "handling": { "label": "Segurar a bola", "en": "Handling", "desc": "Se o goleiro segura a bola depois de defender, em vez de soltá-la." },
     "heading": { "label": "Cabeceio", "en": "Heading" },
     "jumping_reach": { "label": "Impulsão", "en": "Jumping Reach" },
-    "kicking": { "label": "Chute (goleiro)", "en": "Kicking" },
+    "kicking": { "label": "Chute (goleiro)", "en": "Kicking", "desc": "Até onde o goleiro chuta. A precisão depende de Decisões, Técnica, Trabalho em equipe e Visão." },
     "long_shots": { "label": "Chute de longe", "en": "Long Shots" },
     "marking": { "label": "Marcação", "en": "Marking" },
-    "natural_fitness": { "label": "Condição física natural", "en": "Natural Fitness" },
-    "off_the_ball": { "label": "Sem bola", "en": "Off the Ball" },
+    "natural_fitness": { "label": "Condição física natural", "en": "Natural Fitness", "desc": "Como o jogador mantém a forma lesionado ou sem treinar, e por quanto tempo conserva os atributos físicos depois do auge. Importante para veteranos." },
+    "off_the_ball": { "label": "Sem bola", "en": "Off the Ball", "desc": "Movimentação sem a bola para dar opção de passe ou abrir espaço. Talvez o atributo mais importante para sistemas fluidos, em que os jogadores entram e saem de triângulos de passe." },
     "one_on_one": { "label": "Um contra um", "en": "One on Ones" },
-    "pace": { "label": "Velocidade", "en": "Pace" },
+    "pace": { "label": "Velocidade", "en": "Pace", "desc": "Velocidade máxima, depois de atingida. Para contra-atacar de trás, junte Velocidade, Aceleração, Primeiro toque, Equilíbrio e Drible." },
     "passing": { "label": "Passe", "en": "Passing" },
-    "positioning": { "label": "Posicionamento", "en": "Positioning" },
+    "positioning": { "label": "Posicionamento", "en": "Positioning", "desc": "O equivalente defensivo do Sem bola: ler o lance e se colocar no lugar certo quando o time não tem a bola. Toda tarefa de Defender pede bom posicionamento; sem ele, o jogador precisa de Aceleração e Concentração para voltar a tempo." },
     "reflexes": { "label": "Reflexos", "en": "Reflexes" },
-    "rushing_out": { "label": "Saídas do gol", "en": "Rushing Out" },
+    "rushing_out": { "label": "Saídas do gol", "en": "Rushing Out", "desc": "Com Velocidade e Aceleração, define o quanto o goleiro sai da área para fechar ou jogar de líbero. Com boa Antecipação, Primeiro toque, Compostura e Decisões, pode ser um bom Goleiro Líbero." },
     "stamina": { "label": "Resistência", "en": "Stamina" },
     "strength": { "label": "Força", "en": "Strength" },
     "tackling": { "label": "Desarme", "en": "Tackling" },
-    "teamwork": { "label": "Trabalho em equipe", "en": "Teamwork" },
-    "technique": { "label": "Técnica", "en": "Technique" },
+    "teamwork": { "label": "Trabalho em equipe", "en": "Teamwork", "desc": "Chave para o time jogar como unidade: o jogador abre mão da glória pessoal. Desde o FM19 também mede o quanto ele segue as instruções táticas. Se um lado fica exposto, olhe Índice de trabalho, Trabalho em equipe e Bravura de quem devia cobrir." },
+    "technique": { "label": "Técnica", "en": "Technique", "desc": "Execução de ações difíceis: voleios, dominar bolas difíceis, desarmes complicados, dribles e lançamentos longos em diagonal." },
     "throwing": { "label": "Reposição com as mãos", "en": "Throwing" },
-    "vision": { "label": "Visão", "en": "Vision" },
+    "vision": { "label": "Visão", "en": "Vision", "desc": "Quantas opções o jogador enxerga. As Decisões dizem como ele as processa." },
     "work_rate": { "label": "Índice de trabalho", "en": "Work Rate" }
   },
   "roles": {

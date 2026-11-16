@@ -18,11 +18,11 @@
     "en": "Defensive Line",
     "default": 2,
     "options": [
-      { "label": "Muito mais baixa", "en": "Much Deeper", "y": 15 },
-      { "label": "Mais baixa", "en": "Deeper", "y": 20 },
-      { "label": "Padrão", "en": "Standard", "y": 25 },
-      { "label": "Mais alta", "en": "Higher", "y": 30 },
-      { "label": "Muito mais alta", "en": "Much Higher", "y": 35 }
+      { "label": "Muito mais baixa", "en": "Much Deeper", "y": 18 },
+      { "label": "Mais baixa", "en": "Deeper", "y": 23 },
+      { "label": "Padrão", "en": "Standard", "y": 28 },
+      { "label": "Mais alta", "en": "Higher", "y": 33 },
+      { "label": "Muito mais alta", "en": "Much Higher", "y": 38 }
     ]
   },
   "lineOfEngagement": {

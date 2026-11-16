@@ -448,6 +448,26 @@
     });
   }
 
+  /**
+   * Forma sem a bola: alas na faixa de volante (WBL/WBR) encaixam na última linha (wideDmLine = quanto
+   * à frente dela; linha de 5) e os demais jogadores de linha ficam pelo menos minGap à frente da defesa
+   * (quem pressiona menos não "entra" na zaga).
+   */
+  function applyDefShape(list, cfg) {
+    if (!cfg || (cfg.wideDmLine == null && cfg.minGap == null)) return;
+    var ds = list.filter(function (p) { return p.band === 'D'; });
+    if (!ds.length) return;
+    var line = Math.min.apply(null, ds.map(function (p) { return p.y; }));
+    list.forEach(function (p) {
+      if (p.band === 'GK' || p.band === 'D') return;
+      var before = p.y;
+      if (p.band === 'DM' && (p.lane === 'L' || p.lane === 'R') && cfg.wideDmLine != null) p.y = line + cfg.wideDmLine;
+      else if (cfg.minGap != null && p.y < line + cfg.minGap) p.y = line + cfg.minGap;
+      // mantém a inversa do modo editar consistente
+      if (p.y !== before && p.dy != null) p.dy += p.y - before;
+    });
+  }
+
   function computeDerived(players, phase, data, tiState) {
     var formations = data.formations, roles = data.roles;
     var ph = formations.phases[phase], d = ph.derive;
@@ -468,23 +488,26 @@
       });
     } else {
       list = computePhase(players, d.from, data, tiState).players.map(function (p) { return Object.assign({}, p, { offside: false }); });
-      var anchor = 0;
-      if (d.lineY != null) {
-        var defs = list.filter(function (p) { return p.band === 'D'; });
-        if (!defs.length) defs = list.filter(function (p) { return p.band !== 'GK'; });
-        anchor = d.lineY - Math.min.apply(null, defs.map(function (p) { return p.y; }));
-      }
+      // o bloco se move junto: a última linha vai para lineY (absoluto) ou sobe lineShift; as distâncias
+      // até ela são mantidas (compress = 1) ou encurtadas (compress < 1, ex.: bloco baixo com linhas próximas)
+      var defs = list.filter(function (p) { return p.band === 'D'; });
+      if (!defs.length) defs = list.filter(function (p) { return p.band !== 'GK'; });
+      var lineOld = Math.min.apply(null, defs.map(function (p) { return p.y; }));
+      var anchor = d.lineY != null ? d.lineY - lineOld : d.lineShift || 0;
+      var comp = d.compress == null ? 1 : d.compress;
       list.forEach(function (p) {
         if (p.band === 'GK') { p.y += (d.shiftByBand && d.shiftByBand.GK) || 0; return; }
-        p.y += anchor + ((d.shiftByBand && d.shiftByBand[p.band]) || 0);
+        p.y = lineOld + anchor + (p.y - lineOld) * comp + ((d.shiftByBand && d.shiftByBand[p.band]) || 0);
         if (d.widthScale) p.x = 50 + (p.x - 50) * d.widthScale;
-        if (d.press) {
+        // zagueiros ficam de fora: Stopper e Cobertura já têm a própria regra de altura
+        if (d.press && p.band !== 'D') {
           var keys = (p.instructions || []).concat(p.locked || []);
           if (keys.indexOf('close_down_more') >= 0) p.y += d.press.more || 0;
           if (keys.indexOf('close_down_less') >= 0) p.y += d.press.less || 0;
         }
       });
       if (d.pressShape) applyPressShape(list, d.pressShape);
+      applyDefShape(list, d);
     }
     var occD = {};
     players.forEach(function (p) { occD[p.slot] = true; });
@@ -636,6 +659,9 @@
       }
       p.x = x; p.y = y;
     });
+
+    // 4a. forma sem a bola (alas na linha de 5, volantes à frente da zaga)
+    if (!withBall) applyDefShape(list, ph);
 
     // 4b. bola de um lado: o time desliza para ela
     var bs = ballSideCfg(formations, phase, ti.ballSide);
@@ -1206,8 +1232,17 @@
     var out = players.filter(function (p) { return p.band !== 'GK'; });
     if (!out.length) return { lines: [], shape: '', metrics: null };
     var groups = [];
-    ['D', 'DM', 'M', 'AM', 'ST'].forEach(function (b) {
-      var g = out.filter(function (p) { return p.band === b; }).sort(function (a, c) { return a.y - c.y; });
+    // os alas da faixa de volante (WBL/WBR) formam grupo próprio: sem a bola entram na linha de 5,
+    // com a bola sobem com o meio, sem arrastar o volante central junto
+    var bandKeys = [['D'], ['DM', 'c'], ['DM', 'w'], ['M'], ['AM'], ['ST']];
+    bandKeys.forEach(function (bk) {
+      var b = bk[0];
+      var g = out.filter(function (p) {
+        if (p.band !== b) return false;
+        if (!bk[1]) return true;
+        var wide = p.lane === 'L' || p.lane === 'R';
+        return bk[1] === 'w' ? wide : !wide;
+      }).sort(function (a, c) { return a.y - c.y; });
       var cur = [];
       g.forEach(function (p) {
         if (cur.length && p.y - cur[cur.length - 1].y >= split) { groups.push(cur); cur = []; }

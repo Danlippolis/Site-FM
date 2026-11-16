@@ -373,14 +373,16 @@ test('DLP (S) no volante fica à frente dos zagueiros no ataque; no meio-campo, 
   assert.ok(byslot(r2, 'MCL').y < byslot(r2, 'MCR').y, 'DLP no MC abaixo do Box-to-Box');
 });
 
-test('na saída de bola o Construtor Avançado recua para receber e o Meia Ofensivo (A) fica alto', () => {
+test('na saída de bola o Construtor Avançado (S) fica um pouco abaixo do Meia Ofensivo (A), como medido no FM23', () => {
   const p = preset('3-5-2-wb').map((x) => ({ ...x }));
   // dois meias ofensivos lado a lado, como no 3-4-2-1 do usuário
   const i1 = p.findIndex((x) => x.slot === 'MCL'), i2 = p.findIndex((x) => x.slot === 'MCR');
   p[i1] = { slot: 'AMCL', role: 'attacking_midfielder', duty: 'A' };
   p[i2] = { slot: 'AMCR', role: 'advanced_playmaker', duty: 'S' };
   const res = E.computePhase(p, 'saindo', noCol, {});
-  assert.ok(byslot(res, 'AMCL').y - byslot(res, 'AMCR').y >= 8, `${byslot(res, 'AMCL').y} vs ${byslot(res, 'AMCR').y}`);
+  // no jogo (Nizza x Milan, 5 frames de construção): MO (A) 2-3 acima do CJA (S)
+  const gap = byslot(res, 'AMCL').y - byslot(res, 'AMCR').y;
+  assert.ok(gap >= 1 && gap <= 7, `${byslot(res, 'AMCL').y} vs ${byslot(res, 'AMCR').y}`);
 });
 
 test('guia FM23 (Seif Khaled): corridas laterais do AP/Carrilero e corredores embutidos nos atacantes', () => {
@@ -1188,4 +1190,21 @@ test('Impedimento comprime em vez de achatar: o mais avançado fica na linha e a
   // ninguém passa da linha, e quem estava bem atrás não muda
   assert.ok(held.players.every((p) => p.band === 'GK' || p.y <= 50.01));
   assert.equal(y(held, 'DCL'), y(free, 'DCL'));
+});
+
+test('FM23 medido: na construção o MO (A) fica abaixo do AC (S) e o CJA (S) abre para perto do corredor', () => {
+  const M = require('../data/measurements.json');
+  const t = M.tactics['milan-3421-expressivo'];
+  // no jogo: MO − AC = -6, -6, -3, -3 nos frames de saída; CJA x 71-84
+  const sa = E.computePhase(t.players, 'saindo', noCol, t.ti);
+  assert.ok(byslot(sa, 'AMCL').y < byslot(sa, 'STC').y, `MO ${byslot(sa, 'AMCL').y} x AC ${byslot(sa, 'STC').y}`);
+  assert.ok(byslot(sa, 'AMCR').x >= 70, `CJA x ${byslot(sa, 'AMCR').x}`);
+  // no ataque o MO (A) alcança o atacante (jogo: +1 e +6)
+  const at = E.computePhase(t.players, 'ataque', noCol, t.ti);
+  assert.ok(byslot(at, 'AMCL').y >= byslot(at, 'STC').y);
+  // e as medidas de saída concordam com o sinal
+  for (const f of ['nizza-milan-0647', 'nizza-milan-0652', 'nizza-milan-1641', 'nizza-milan-1642']) {
+    const g = (s) => M.measurements.find((m) => m.frame === f && m.slot === s);
+    assert.ok(g('AMCL').y < g('STC').y && g('AMCR').x >= 70, f);
+  }
 });

@@ -348,7 +348,7 @@
     "slots": ["MCL", "MC", "MCR", "AMCL", "AMC", "AMCR", "AML", "AMR"],
     "duties": {
       "S": {
-        "saindo": { "byBand": {"AM": {"dy": -6}, "M": {"dy": -2}}, "lateral": 6, "withSlots": { "slots": ["DMC", "DMCL", "DMCR"], "bands": ["M"], "add": { "dy": 4, "x": 31 } } },
+        "saindo": { "byBand": {"AM": {"dy": -6, "x": 25}, "M": {"dy": -2}}, "byLane": {"wide": {"x": 6}}, "lateral": 6, "withSlots": { "slots": ["DMC", "DMCL", "DMCR"], "bands": ["M"], "add": { "dy": 4, "x": 31 } } },
         "ataque": { "dy": 2, "lateral": 6, "byBand": {"AM": {"dy": -4}}, "byLane": {"wide": {"x": 30}} }
       },
       "A": {
@@ -475,11 +475,11 @@
     "label": "Meia Ofensivo",
     "en": "Attacking Midfielder",
     "abbr": "AM",
-    "desc": "Joga à frente do meio. S fica nos bolsões para ligar o jogo; A também aparece na área.",
+    "desc": "Joga à frente do meio. S fica nos bolsões para ligar o jogo; A também aparece na área. Na saída de bola fica abaixo do atacante e só o alcança no terço final (medido no FM23).",
     "slots": ["AMCL", "AMC", "AMCR"],
     "duties": {
-      "S": { "saindo": {"dy": -1}, "ataque": {"dy": -4} },
-      "A": { "locked": ["get_further_forward"], "saindo": {"dy": 4}, "ataque": {"dy": 6} }
+      "S": { "saindo": {"dy": -4}, "ataque": {"dy": -4} },
+      "A": { "locked": ["get_further_forward"], "saindo": {"dy": -2}, "ataque": {"dy": 6} }
     }
   },
   "shadow_striker": {

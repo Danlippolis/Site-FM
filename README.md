@@ -326,7 +326,11 @@ O site não reproduz o motor do jogo (que é fechado); os números são aproxima
    - **posições médias** da partida (tela de análise/Data Hub); se o jogo separar com e sem a bola, mande as duas;
    - **2D por fase** (vários frames de cada, de partidas diferentes): goleiro/zagueiros com a bola (saída), bola no meio-campo com a posse (progressão), bola no terço final (ataque), adversário saindo com a bola no terço dele (pressão alta), adversário com a bola no meio-campo (bloco médio) e no nosso terço (bloco baixo). Campo inteiro na tela, câmera 2D sem zoom, e anote para que lado o seu time ataca.
 3. **Medição:** `python3 tools/measure_pitch.py <prints> <saída>` acha o campo e desenha a grade de 10%; as posições lidas vão para `data/measurements.json` (formato descrito no próprio arquivo), com a tática e a fase.
-4. **Primeira medida** (`data/measurements.json`): um frame da saída de bola num Nizza x Milan com o 3-4-2-1 do usuário. Bate em goleiro, zagueiros e volantes (até ~3); no jogo o AC fica colado na última linha do adversário e o MO (A) e o CJA (S) ~6–8 atrás dele, na mesma altura, com o CJA aberto à direita (x 75); os alas sobem cedo. Por ser um instante só, as regras ainda não foram mudadas por ele.
+4. **Medidas até agora** (`data/measurements.json`): 7 frames de 3 lances de um Nizza x Milan com o 3-4-2-1 do usuário (76 posições). Os cantos do campo de cada foto são achados automaticamente (validados contra a medição manual) e a perspectiva é corrigida pelos 4 cantos. O que mudou no site por causa delas (padrão repetido em dois lances independentes):
+   - **Meia Ofensivo (A)** na saída: fica abaixo do atacante (no jogo, MO − AC = −6, −6, −3, −3) e só o alcança no terço final (+1, +6): saída de +4 para −2 sobre a faixa; o MO (S) foi a −4 para manter a ordem das tarefas;
+   - **Construtor Avançado (S)** saindo da meia (AMCL/AMCR) abre para perto do corredor na construção (x 71–84 no jogo): saída x 25/75; no ataque continua fechando.
+
+   Visto mas não aplicado: com o adversário recuado (lance de 16:41), o bloco do Milan inteiro joga ~8–10 mais alto que o modelo; com o adversário mais alto (06:47), bate. A altura do bloco depende de onde o adversário defende, e o site ainda não modela isso.
 5. **Comparação:** `npm run compare` mostra, para cada medida, a posição do modelo na mesma tática e o erro, e resume o erro médio por função e por fase. As regras são ajustadas onde o erro for consistente entre medidas, e o teste de `measurements.json` garante que o arquivo continua válido.
 
 ## A confirmar no jogo

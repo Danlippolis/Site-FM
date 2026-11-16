@@ -1,5 +1,215 @@
 {
-  "note": "Posições medidas no FM23 (prints do usuário: posições médias ou 2D por fase). Cada entrada é um jogador numa fase, com a escalação e as instruções de equipe daquela tática, para comparar com o modelo (npm run compare). x/y nas coordenadas do site: y 0 = nosso gol, x 0 = nossa esquerda. kind: 'media' (posição média da partida/fase) ou 'instante' (um frame do 2D). Use tools/measure_pitch.py para ler as capturas.",
-  "tactics": {},
-  "measurements": []
+ "note": "Posições medidas no FM23 (prints do usuário: posições médias ou 2D por fase). Cada entrada é um jogador numa fase, com a escalação e as instruções de equipe daquela tática, para comparar com o modelo (npm run compare). x/y nas coordenadas do site: y 0 = nosso gol, x 0 = nossa esquerda. kind: 'media' (posição média da partida/fase) ou 'instante' (um frame do 2D). Use tools/measure_pitch.py para ler as capturas.",
+ "tactics": {
+  "milan-3421-expressivo": {
+   "note": "Tática do usuário no FM23 (Nizza x Milan): 3-4-2-1 Expressivo Var. Instruções do print: mentalidade Positiva; com bola: passes mais curtos, passar para o espaço, jogar a partir da defesa, levar a bola até a área, ser mais expressivo, ritmo ligeiramente mais elevado, razoavelmente estreito; sem bola: linha defensiva mais alta, pressão alta, pressionar com mais frequência, evitar distribuição curta do GR, obrigar a jogar por fora, impedir cruzamentos.",
+   "players": [
+    {
+     "slot": "GK",
+     "role": "sweeper_keeper",
+     "duty": "S"
+    },
+    {
+     "slot": "DCL",
+     "role": "ball_playing_defender",
+     "duty": "D"
+    },
+    {
+     "slot": "DC",
+     "role": "central_defender",
+     "duty": "Co"
+    },
+    {
+     "slot": "DCR",
+     "role": "ball_playing_defender",
+     "duty": "D"
+    },
+    {
+     "slot": "WBL",
+     "role": "wing_back",
+     "duty": "S"
+    },
+    {
+     "slot": "WBR",
+     "role": "wing_back",
+     "duty": "A"
+    },
+    {
+     "slot": "DMCL",
+     "role": "segundo_volante",
+     "duty": "S"
+    },
+    {
+     "slot": "DMCR",
+     "role": "deep_lying_playmaker",
+     "duty": "S"
+    },
+    {
+     "slot": "AMCL",
+     "role": "attacking_midfielder",
+     "duty": "A"
+    },
+    {
+     "slot": "AMCR",
+     "role": "advanced_playmaker",
+     "duty": "S"
+    },
+    {
+     "slot": "STC",
+     "role": "complete_forward",
+     "duty": "S"
+    }
+   ],
+   "ti": {
+    "mentality": 4,
+    "defensiveLine": 3,
+    "lineOfEngagement": 2,
+    "widthInPossession": 1,
+    "defensiveWidth": 0,
+    "crosses": 1
+   }
+  }
+ },
+ "measurements": [
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "GK",
+   "x": 51.8,
+   "y": 11.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "DC",
+   "x": 55.1,
+   "y": 30.4,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "DCR",
+   "x": 76.7,
+   "y": 34.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "WBL",
+   "x": 12.2,
+   "y": 53.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "WBR",
+   "x": 94.4,
+   "y": 57.0,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "DMCL",
+   "x": 41.2,
+   "y": 47.8,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "DMCR",
+   "x": 63.0,
+   "y": 45.7,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "AMCL",
+   "x": 36.3,
+   "y": 56.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "AMCR",
+   "x": 75.3,
+   "y": 53.7,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "saindo",
+   "frame": "nizza-milan-0647",
+   "ball": {
+    "x": 55.1,
+    "y": 30.4
+   },
+   "slot": "STC",
+   "x": 55.7,
+   "y": 62.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 06:47, 2D (foto da tela). Bola com o DC (Bueno Prieto) a y 30; Van de Ven (DCL) fora: acabara de passar e voltava. Última linha do Nice a ~y 64. Medido com os 4 cantos do campo (correção de perspectiva bilinear)."
+  }
+ ]
 }

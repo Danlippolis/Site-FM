@@ -1143,7 +1143,7 @@ test('FM23: instrução de cruzamentos no bloco baixo (impedir abre os laterais;
   assert.equal(byslot(E.computePhase(preset('4-4-2'), 'defendendo', noCol, { crosses: 1 }), 'DL').x, byslot(E.computePhase(preset('4-4-2'), 'defendendo', noCol, {}), 'DL').x);
   // linha de pressão e armadilha com os nomes do FM23
   assert.deepEqual(data.instructions.lineOfEngagement.options.map((o) => o.en), ['Low Block', 'Mid Block', 'High Press']);
-  assert.deepEqual(data.instructions.defensiveWidth.options.map((o) => o.en), ['Trap Outside', 'None', 'Trap Inside']);
+  assert.deepEqual(data.instructions.defensiveWidth.options.map((o) => o.en), ['Force Opposition Outside', 'None', 'Force Opposition Inside']);
 });
 
 test('measurements.json: formato válido e comparador roda', () => {

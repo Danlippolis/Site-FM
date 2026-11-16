@@ -330,6 +330,8 @@ O site não reproduz o motor do jogo (que é fechado); os números são aproxima
    - **Meia Ofensivo (A)** na saída: fica abaixo do atacante (no jogo, MO − AC = −6, −6, −3, −3) e só o alcança no terço final (+1, +6): saída de +4 para −2 sobre a faixa; o MO (S) foi a −4 para manter a ordem das tarefas;
    - **Construtor Avançado (S)** saindo da meia (AMCL/AMCR) abre para perto do corredor na construção (x 71–84 no jogo): saída x 25/75; no ataque continua fechando.
 
+   Posições médias de 28 minutos do mesmo jogo (em `averages`; o comparador procura a mistura de fases do modelo que melhor as reproduz): confirmam o MO (A) logo abaixo do atacante e o CJA (S) abaixo do MO; mostram o CJA (S) e o CJ/DLP (S) centrais na média (x 55 e 52) e os alas mais fechados que o modelo, o que pode ser do contexto (largura estreita, obrigar a jogar por fora, Segundo Volante ao lado) e espera outra tática para separar função de contexto.
+
    Visto mas não aplicado: com o adversário recuado (lance de 16:41), o bloco do Milan inteiro joga ~8–10 mais alto que o modelo; com o adversário mais alto (06:47), bate. A altura do bloco depende de onde o adversário defende, e o site ainda não modela isso.
 5. **Comparação:** `npm run compare` mostra, para cada medida, a posição do modelo na mesma tática e o erro, e resume o erro médio por função e por fase. As regras são ajustadas onde o erro for consistente entre medidas, e o teste de `measurements.json` garante que o arquivo continua válido.
 

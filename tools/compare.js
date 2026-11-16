@@ -72,4 +72,41 @@ if (require.main === module) {
     console.log(`  ${key.padEnd(34)} ${ady.toFixed(1)}  ${adx.toFixed(1)}  (${rs.length})`);
   }
 }
-module.exports = { compare };
+/** Posições médias (todas as fases misturadas): acha a mistura de fases do modelo (pesos de 5% em 5%) que melhor as reproduz. */
+function compareAverages() {
+  const PH = ['pressao', 'defendendo', 'bloco_baixo', 'saindo', 'progressao', 'ataque'];
+  return (M.averages || []).map((a) => {
+    const t = M.tactics[a.tactic];
+    if (!t || !E.validate(t.players, data).ok) return { id: a.id, error: 'tática inválida ou ausente: ' + a.tactic };
+    const pos = {};
+    PH.forEach((ph) => { pos[ph] = E.computePhase(t.players, ph, data, t.ti || {}).players; });
+    const slots = Object.keys(a.positions);
+    const mix = (w, s) => PH.reduce((acc, ph, i) => {
+      const p = pos[ph].find((q) => q.slot === s);
+      return { x: acc.x + w[i] * 0.05 * p.x, y: acc.y + w[i] * 0.05 * p.y };
+    }, { x: 0, y: 0 });
+    let best = null;
+    const rec = (i, left, w) => {
+      if (i === PH.length - 1) {
+        w[i] = left;
+        let err = 0;
+        for (const s of slots) { const m = mix(w, s); err += (m.x - a.positions[s].x) ** 2 + (m.y - a.positions[s].y) ** 2; }
+        if (!best || err < best.err) best = { err, w: w.slice() };
+        return;
+      }
+      for (let k = 0; k <= left; k++) { w[i] = k; rec(i + 1, left - k, w); }
+    };
+    rec(0, 20, new Array(PH.length));
+    const rows = slots.map((s) => { const m = mix(best.w, s); return { slot: s, measured: a.positions[s], model: m, dx: m.x - a.positions[s].x, dy: m.y - a.positions[s].y }; });
+    return { id: a.id, weights: Object.fromEntries(PH.map((ph, i) => [ph, best.w[i] * 5])), rms: Math.sqrt(best.err / slots.length), rows };
+  });
+}
+
+if (require.main === module) {
+  for (const r of compareAverages()) {
+    if (r.error) { console.log('ERRO', r.id, r.error); continue; }
+    console.log(`\nMédias ${r.id}: mistura de fases que melhor as reproduz: ` + Object.entries(r.weights).filter(([, w]) => w).map(([ph, w]) => ph + ' ' + w + '%').join(', ') + `; erro médio ${r.rms.toFixed(1)}`);
+    for (const x of r.rows) console.log(`  ${x.slot.padEnd(5)} medido ${x.measured.x},${x.measured.y}  modelo ${x.model.x.toFixed(1)},${x.model.y.toFixed(1)}  dif ${x.dx.toFixed(1)},${x.dy.toFixed(1)}`);
+  }
+}
+module.exports = { compare, compareAverages };

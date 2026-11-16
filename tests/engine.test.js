@@ -1158,6 +1158,10 @@ test('measurements.json: formato válido e comparador roda', () => {
   }
   const rows = require('../tools/compare.js').compare();
   assert.ok(rows.every((r) => !r.error), JSON.stringify(rows.filter((r) => r.error)));
+  for (const a of M.averages || []) {
+    assert.ok(M.tactics[a.tactic], `média ${a.id}: tática ${a.tactic}`);
+    for (const [slot, v] of Object.entries(a.positions)) assert.ok(data.formations.slots[slot] && typeof v.x === 'number' && typeof v.y === 'number', `${a.id} ${slot}`);
+  }
 });
 
 test('Alertas: Ala Completo (A) sem largura à frente e sem ajuda em Apoio/Defender do mesmo lado', () => {

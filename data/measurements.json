@@ -1,5 +1,5 @@
 {
- "note": "Posições medidas no FM23 (prints do usuário: posições médias ou 2D por fase). Cada entrada é um jogador numa fase, com a escalação e as instruções de equipe daquela tática, para comparar com o modelo (npm run compare). x/y nas coordenadas do site: y 0 = nosso gol, x 0 = nossa esquerda. kind: 'media' (posição média da partida/fase) ou 'instante' (um frame do 2D). Use tools/measure_pitch.py para ler as capturas.",
+ "note": "Posições medidas no FM23 (prints do usuário: posições médias ou 2D por fase). Cada entrada é um jogador numa fase, com a escalação e as instruções de equipe daquela tática, para comparar com o modelo (npm run compare). x/y nas coordenadas do site: y 0 = nosso gol, x 0 = nossa esquerda. kind: 'media' (posição média da partida/fase) ou 'instante' (um frame do 2D). Use tools/measure_pitch.py para ler as capturas. averages: posições médias de uma partida (todas as fases misturadas); o comparador procura a mistura de fases do modelo que melhor as reproduz e mostra o que sobra de erro.",
  "tactics": {
   "milan-3421-expressivo": {
    "note": "Tática do usuário no FM23 (Nizza x Milan): 3-4-2-1 Expressivo Var. Instruções do print: mentalidade Positiva; com bola: passes mais curtos, passar para o espaço, jogar a partir da defesa, levar a bola até a área, ser mais expressivo, ritmo ligeiramente mais elevado, razoavelmente estreito; sem bola: linha defensiva mais alta, pressão alta, pressionar com mais frequência, evitar distribuição curta do GR, obrigar a jogar por fora, impedir cruzamentos.",
@@ -1134,6 +1134,61 @@
    "y": 76.3,
    "kind": "instante",
    "source": "Nizza x Milan, 16:46 (0-4), 2D (foto da tela). Lance de saída diferente dos de 06:47/06:52 e 12:49; Nice mais recuado. Bola: AMCL (De Ketelaere) recebendo (x 32.0, y 85.8). Cantos do campo detectados automaticamente (validados contra a medição manual dos frames anteriores, até ~3 px)."
+  }
+ ],
+ "averages": [
+  {
+   "id": "nizza-milan-28min",
+   "tactic": "milan-3421-expressivo",
+   "minutes": 28,
+   "score": "0-6",
+   "source": "Tela de táticas do FM23 ('apresenta posições médias') após 28 minutos de Nizza x Milan. Mistura todos os momentos (com e sem a bola). Medido com os 4 cantos do campo (correção de perspectiva bilinear); o time ataca para cima na tela.",
+   "positions": {
+    "GK": {
+     "x": 48.0,
+     "y": 13.4
+    },
+    "DC": {
+     "x": 47.5,
+     "y": 46.6
+    },
+    "DCR": {
+     "x": 61.3,
+     "y": 43.2
+    },
+    "DCL": {
+     "x": 33.0,
+     "y": 49.2
+    },
+    "WBL": {
+     "x": 24.6,
+     "y": 62.3
+    },
+    "WBR": {
+     "x": 68.8,
+     "y": 56.8
+    },
+    "DMCL": {
+     "x": 38.7,
+     "y": 61.6
+    },
+    "DMCR": {
+     "x": 51.5,
+     "y": 59.3
+    },
+    "AMCL": {
+     "x": 35.2,
+     "y": 68.9
+    },
+    "AMCR": {
+     "x": 54.9,
+     "y": 65.6
+    },
+    "STC": {
+     "x": 45.5,
+     "y": 70.5
+    }
+   }
   }
  ]
 }

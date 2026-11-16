@@ -137,12 +137,39 @@
       widthFactor: pick(instructions.widthInPossession, ti.widthInPossession).factor,
       defWidthFactor: instructions.defensiveWidth ? pick(instructions.defensiveWidth, ti.defensiveWidth).factor : null,
       mentalityIdx: instructions.mentality.options[ti.mentality] ? ti.mentality : instructions.mentality.default,
+      ballSide: ti.ballSide === 'L' || ti.ballSide === 'R' ? ti.ballSide : 'C',
       runs: {
         L: instructions.runsLeft ? pick(instructions.runsLeft, ti.runsLeft).run || null : null,
         R: instructions.runsRight ? pick(instructions.runsRight, ti.runsRight).run || null : null
       },
       flags: flags
     };
+  }
+
+  /** Bola no lado `side` ('L' | 'C' | 'R') na fase: posição da bola e parâmetros de deslocamento. */
+  function ballSideCfg(formations, phase, side) {
+    var cfg = formations.ballSide, ph = formations.phases[phase];
+    var base = (ph && ph.ball) || null;
+    if (!cfg || !side || side === 'C' || !cfg.x || cfg.x[side] == null) return { ball: base, active: false };
+    var g = isWithBall(formations, phase) ? 'com' : 'sem';
+    return {
+      active: true, bx: cfg.x[side],
+      k: (cfg.shift || {})[g] || 0, tuck: (cfg.farTuck || {})[g] || 0, gk: cfg.gk == null ? 1 : cfg.gk,
+      ball: base ? { x: cfg.x[side], y: base.y } : null
+    };
+  }
+
+  /** Desliza o time para o lado da bola; sem a bola, quem está no lado oposto também fecha para o meio. */
+  function applyBallSide(list, bs) {
+    if (!bs.active) return;
+    var dir = bs.bx - 50;
+    list.forEach(function (p) {
+      var d = bs.k * dir * (p.band === 'GK' ? bs.gk : 1);
+      if (p.band !== 'GK' && bs.tuck && (p.x - 50) * dir < 0) d += (50 - p.x) * bs.tuck;
+      p.x += d;
+      p.latShift = (p.latShift || 0) + d;
+      p.ballShift = d;
+    });
   }
 
   /**
@@ -475,7 +502,7 @@
       p.x = Math.round(clamp(p.x, lo, hi) * 10) / 10;
       p.y = Math.round(clamp(p.y, p.band === 'GK' ? lo : minOut, hi) * 10) / 10;
     });
-    return { phase: phase, players: list, ball: ph.ball || null, warnings: [], derived: true };
+    return { phase: phase, players: list, ball: ballSideCfg(formations, phase, ti.ballSide).ball, warnings: [], derived: true };
   }
 
   function computePhase(players, phase, data, tiState) {
@@ -610,6 +637,10 @@
       p.x = x; p.y = y;
     });
 
+    // 4b. bola de um lado: o time desliza para ela
+    var bs = ballSideCfg(formations, phase, ti.ballSide);
+    applyBallSide(list, bs);
+
     // 5. colisão e clamp
     resolveCollisions(list, eng.collisionMinDist, eng.collisionIterations, eng.collisionAspect);
     var lo = (eng.clamp || [2, 98])[0], hi = (eng.clamp || [2, 98])[1], minOut = eng.outfieldMinY == null ? 8 : eng.outfieldMinY;
@@ -619,7 +650,7 @@
       p.y = Math.round(clamp(p.y, p.band === 'GK' ? lo : minOut, hi) * 10) / 10;
     });
 
-    return { phase: phase, players: list, ball: ph.ball || null, warnings: warnings };
+    return { phase: phase, players: list, ball: bs.ball, warnings: warnings };
   }
 
   function computeAll(players, data, tiState) {
@@ -688,10 +719,12 @@
    * formação/funções dele + instruções de equipe do estilo, na fase correspondente
    * (data.opponent.phaseMap), deslocado em y pelo estilo e espelhado (ataca para baixo).
    */
-  function computeOpponentPhase(oppPlayers, ourPhase, data, styleId) {
+  function computeOpponentPhase(oppPlayers, ourPhase, data, styleId, ballSide) {
     var cfg = data.opponent, map = cfg.phaseMap[ourPhase];
     var style = opponentStyle(data, styleId);
-    var res = computePhase(oppPlayers, map.phase, data, style ? style.ti : {});
+    // ele ataca no sentido contrário: a nossa esquerda é a direita dele
+    var theirSide = ballSide === 'L' ? 'R' : ballSide === 'R' ? 'L' : 'C';
+    var res = computePhase(oppPlayers, map.phase, data, Object.assign({}, style ? style.ti : {}, { ballSide: theirSide }));
     var shift = style && style.shifts ? style.shifts[ourPhase] || 0 : 0;
     if (typeof shift === 'object' && shift.lineY != null) {
       // ancora a linha de defensores dele numa altura fixa (ex.: bloco baixo com a bola no nosso terço final)
@@ -721,7 +754,7 @@
     var eng = data.instructions.engine || {};
     var lo = (eng.clamp || [2, 98])[0], hi = (eng.clamp || [2, 98])[1];
     PHASES.forEach(function (ph) {
-      var o = computeOpponentPhase(opp.players, ph, data, opp.styleId);
+      var o = computeOpponentPhase(opp.players, ph, data, opp.styleId, tiState && tiState.ballSide);
       settleMatchPhase(out[ph].players, o.players, ph, data);
       out[ph].opponent = { players: o.players, style: o.style, label: o.label };
     });

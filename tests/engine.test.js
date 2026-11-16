@@ -917,3 +917,52 @@ test('alerts.json: toda regra detectada tem texto e aponta para uma função exi
     assert.ok(data.roles[r.role], `${id}: ${r.role}`);
   }
 });
+
+// ---------- bola de um lado ----------
+
+test('Bola no centro (ou sem lado) não muda nada', () => {
+  const pr = preset('4-2-3-1-dm-wide');
+  for (const ph of E.PHASES) {
+    const a = E.computePhase(pr, ph, data, {}), b = E.computePhase(pr, ph, data, { ballSide: 'C' });
+    assert.deepEqual(b.players.map((p) => [p.x, p.y]), a.players.map((p) => [p.x, p.y]), ph);
+    assert.deepEqual(b.ball, a.ball, ph);
+  }
+});
+
+test('Bola na esquerda: o time desliza para ela, mais sem a bola; o lado oposto fecha sem a bola', () => {
+  const pr = preset('4-4-2');
+  const meanX = (r) => r.players.filter((p) => p.band !== 'GK').reduce((t, p) => t + p.x, 0) / 10;
+  const shift = (ph) => meanX(E.computePhase(pr, ph, noCol, { ballSide: 'L' })) - meanX(E.computePhase(pr, ph, noCol, {}));
+  assert.ok(shift('defendendo') < -8, `sem a bola: ${shift('defendendo')}`);
+  assert.ok(shift('ataque') < -2 && shift('ataque') > shift('defendendo'), `com a bola: ${shift('ataque')}`);
+  // lado oposto: o lateral direito fecha mais do que o time desliza
+  const dr = (ti) => byslot(E.computePhase(pr, 'defendendo', noCol, ti), 'DR').x;
+  assert.ok(dr({}) - dr({ ballSide: 'L' }) > -shift('defendendo') + 3, 'lateral do lado oposto fecha');
+  // a bola desenhada vai junto
+  assert.ok(E.computePhase(pr, 'defendendo', noCol, { ballSide: 'L' }).ball.x < 30);
+  assert.ok(E.computePhase(pr, 'pressao', noCol, { ballSide: 'L' }).ball.x < 30, 'fase derivada também');
+});
+
+test('Bola na direita é o espelho da esquerda numa formação simétrica', () => {
+  const pr = preset('4-4-2').map((p) => ({ ...p, role: p.slot === 'MR' ? 'wide_midfielder' : p.role, duty: p.slot === 'MR' ? 'S' : p.duty }))
+    .map((p) => (p.slot === 'STCL' ? { ...p, role: 'advanced_forward', duty: 'A' } : p))
+    .map((p) => (p.slot === 'MCL' ? { ...p, role: 'central_midfielder', duty: 'S' } : p))
+    .map((p) => (p.slot === 'MCR' ? { ...p, role: 'central_midfielder', duty: 'S' } : p));
+  const L = E.computePhase(pr, 'defendendo', noCol, { ballSide: 'L' }), R = E.computePhase(pr, 'defendendo', noCol, { ballSide: 'R' });
+  const mirror = { DL: 'DR', DR: 'DL', DCL: 'DCR', DCR: 'DCL', ML: 'MR', MR: 'ML', MCL: 'MCR', MCR: 'MCL', STCL: 'STCR', STCR: 'STCL', GK: 'GK' };
+  for (const p of L.players) {
+    const q = byslot(R, mirror[p.slot]);
+    assert.ok(Math.abs(p.x - (100 - q.x)) < 0.2 && Math.abs(p.y - q.y) < 0.2, `${p.slot}: ${p.x} x ${100 - q.x}`);
+  }
+});
+
+test('Bola de um lado: o adversário desliza para o mesmo lado do campo', () => {
+  const pr = preset('4-2-3-1-dm-wide');
+  const opp = { enabled: true, styleId: data.opponent.styles[0].id, players: preset('4-4-2') };
+  const mean = (ti) => {
+    const m = E.computeMatch(pr, data, ti, opp).defendendo.opponent.players;
+    return m.reduce((t, p) => t + p.x, 0) / m.length;
+  };
+  assert.ok(mean({ ballSide: 'L' }) < mean({}) - 2);
+  assert.ok(mean({ ballSide: 'R' }) > mean({}) + 2);
+});

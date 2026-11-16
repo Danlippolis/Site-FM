@@ -34,6 +34,16 @@ Regras de função com a chave de uma fase derivada (`pressao`, `bloco_baixo`, `
 
 No desktop, o seletor **Sem a bola / Com a bola / Todas** escolhe os campos exibidos; no celular, as 6 fases ficam em abas.
 
+## Bola de um lado
+
+O seletor **Bola: Esq · Centro · Dir**, acima dos campos, põe a bola num dos lados. O time inteiro desliza para ela:
+
+- **sem a bola** (pressão, blocos médio e baixo): todos se deslocam 35% da distância da bola ao centro, cerca de 7 m com a bola encostada no lado, e quem está no lado oposto ainda fecha 20% em direção ao meio;
+- **com a bola** (saída, progressão, ataque): só 15%, cerca de 3 m, e o lado oposto mantém a largura para a virada;
+- o goleiro desloca 40% do que o time desloca.
+
+A bola desenhada vai junto. O adversário desliza para o mesmo lado do campo (para ele, a nossa esquerda é a direita dele). Fonte: Book of Roles, na seção do Carrilero ("a formação é sempre relativa à bola: com a bola na esquerda do campo adversário, o time todo desliza um pouco para a esquerda"); o resto é modelagem própria, com os números em `ballSide` no `formations.json`. O lado da bola é opção de visualização: fica salvo no navegador, não entra na tática exportada nem no índice de equilíbrio, que continua medido com a bola no centro.
+
 ## Sobre a função
 
 O botão **i** ao lado de cada jogador (e o link **Sobre a função →** no detalhe do jogador no campo) abre um guia da função: resumo, o que cada tarefa muda, atributos-chave da tarefa, combinações (clicáveis), riscos e dicas. O seletor no topo do painel mostra qualquer outra função.

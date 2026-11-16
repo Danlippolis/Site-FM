@@ -801,3 +801,25 @@ test('Capturas: Meia Aberto (S) no ataque fica no meio-espaço; Lateral (S) segu
   const prog = E.computePhase(book, 'progressao', noCol, {});
   assert.ok(byslot(prog, 'DL').y <= 40, `FB(S) na progressão: ${byslot(prog, 'DL').y} (livro 29-37)`);
 });
+
+// ---------- guia das funções (data/role-guide.json) ----------
+
+test('guia das funções: cobre todas as funções e só referencia funções, tarefas e atributos que existem', () => {
+  const guide = require('../data/role-guide.json');
+  const roles = data.roles;
+  assert.deepEqual(Object.keys(guide.roles).sort(), Object.keys(roles).sort());
+  for (const [key, g] of Object.entries(guide.roles)) {
+    if (g.notCovered) continue;
+    assert.ok(g.summary && g.page, `${key}: resumo e página`);
+    for (const d of Object.keys(g.duties)) assert.ok(roles[key].duties[d], `${key}: tarefa ${d}`);
+    const lists = Array.isArray(g.attributes) ? [g.attributes] : Object.entries(g.attributes).map(([d, l]) => {
+      assert.ok(roles[key].duties[d], `${key}: atributos da tarefa ${d}`);
+      return l;
+    });
+    for (const l of lists) for (const a of l) assert.ok(guide.attributes[a], `${key}: atributo ${a}`);
+    for (const c of g.combos || []) {
+      assert.ok(roles[c.role], `${key}: combinação ${c.role}`);
+      assert.notEqual(c.role, key, `${key}: combinação consigo mesmo`);
+    }
+  }
+});

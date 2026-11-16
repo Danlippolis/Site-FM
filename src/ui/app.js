@@ -79,16 +79,20 @@
   function loadData() {
     function inline(id) { var s = document.getElementById(id); return s ? JSON.parse(s.textContent) : null; }
     var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions'), pi = inline('data-player-instructions'), op = inline('data-opponent'), tr = inline('data-player-traits');
-    if (f && r && t && pi && op && tr) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi, opponent: op, playerTraits: tr });
+    if (f && r && t && pi && op && tr) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi, opponent: op, playerTraits: tr, guide: inline('data-role-guide') });
     var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json', 'data/player-instructions.json', 'data/opponent.json', 'data/player-traits.json'];
     var vm = document.querySelector('meta[name="fm23pv-version"]');
     var v = vm ? '?v=' + vm.content : '';
-    return Promise.all(urls.map(function (u) {
+    function get(u) {
       return fetch(u + v, { cache: 'no-cache' }).then(function (res) {
         if (!res.ok) throw new Error(u + ': HTTP ' + res.status);
         return res.json();
       });
-    })).then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3], opponent: a[4], playerTraits: a[5] }; });
+    }
+    // o guia das funções é opcional: sem ele o site funciona, só não mostra o painel
+    var guide = get('data/role-guide.json').catch(function () { return null; });
+    return Promise.all(urls.map(get).concat([guide]))
+      .then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3], opponent: a[4], playerTraits: a[5], guide: a[6] }; });
   }
 
   function isRolesObj(o) {
@@ -682,6 +686,128 @@
     if (cp.traits.length) txt += ' · características: ' + cp.traits.map(function (k) { return traitDefs()[k].label; }).join(', ');
     info.appendChild(document.createTextNode(txt));
     if (r && r.desc) info.appendChild(el('span', { class: 'desc' }, r.desc));
+    if (r && data.guide) {
+      var gl = el('button', { class: 'link-btn', type: 'button' }, 'Sobre a função →');
+      gl.addEventListener('click', function () { openGuide(cp.role, cp.duty); });
+      info.appendChild(gl);
+    }
+  }
+
+  // ---------- guia das funções (Book of Roles) ----------
+
+  var guideState = { role: null, duty: null };
+
+  function guideAttrs(entry, duty) {
+    var a = entry.attributes;
+    if (!a) return [];
+    if (Array.isArray(a)) return a;
+    return a[duty] || a[Object.keys(a)[0]] || [];
+  }
+
+  function openGuide(role, duty) {
+    var dlg = $('guide');
+    if (!data.guide || !dlg) return;
+    var sel = $('guideRole');
+    if (!sel.options.length) {
+      Object.keys(data.roles)
+        .sort(function (a, b) { return data.roles[a].label.localeCompare(data.roles[b].label, 'pt-BR'); })
+        .forEach(function (k) { sel.appendChild(el('option', { value: k }, data.roles[k].label + ' (' + data.roles[k].en + ')')); });
+      sel.addEventListener('change', function () { openGuide(sel.value, null); });
+      $('guideClose').addEventListener('click', function () { dlg.close(); });
+      // clique no fundo escuro fecha
+      dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+    }
+    var roleDef = data.roles[role];
+    if (!roleDef) return;
+    guideState.role = role;
+    guideState.duty = roleDef.duties[duty] ? duty : Object.keys(roleDef.duties)[0];
+    sel.value = role;
+    renderGuide();
+    if (!dlg.open) {
+      if (typeof dlg.showModal === 'function') dlg.showModal();
+      else dlg.setAttribute('open', '');
+    }
+    $('guideBody').scrollTop = 0;
+  }
+
+  function renderGuide() {
+    var g = data.guide, role = guideState.role, duty = guideState.duty;
+    var roleDef = data.roles[role], entry = g.roles[role] || { notCovered: true };
+    $('guideTitle').textContent = roleDef.label + (roleDef.abbr ? ' · ' + roleDef.abbr : '');
+
+    var duties = $('guideDuties');
+    duties.textContent = '';
+    Object.keys(roleDef.duties).forEach(function (d) {
+      var b = el('button', { class: 'chip', type: 'button', 'aria-pressed': String(d === duty) }, (E.DUTIES[d] || { label: d }).label);
+      b.addEventListener('click', function () { guideState.duty = d; renderGuide(); });
+      duties.appendChild(b);
+    });
+
+    var body = $('guideBody');
+    body.textContent = '';
+    function section(title) {
+      var s = el('section', { class: 'guide-sec' });
+      s.appendChild(el('h3', null, title));
+      body.appendChild(s);
+      return s;
+    }
+    function list(parent, items) {
+      var ul = el('ul');
+      items.forEach(function (t) { ul.appendChild(el('li', null, t)); });
+      parent.appendChild(ul);
+    }
+
+    if (entry.notCovered) {
+      body.appendChild(el('p', { class: 'guide-note' }, 'O Book of Roles não cobre esta função.'));
+      if (roleDef.desc) body.appendChild(el('p', null, roleDef.desc));
+      return;
+    }
+
+    body.appendChild(el('p', { class: 'guide-summary' }, entry.summary));
+
+    var ds = section('Tarefas');
+    var dl = el('dl', { class: 'guide-duty-list' });
+    Object.keys(entry.duties || {}).forEach(function (d) {
+      var dt = el('dt', d === duty ? { class: 'on' } : null, (E.DUTIES[d] || { label: d }).label);
+      var dd = el('dd', d === duty ? { class: 'on' } : null, entry.duties[d]);
+      dl.appendChild(dt);
+      dl.appendChild(dd);
+    });
+    ds.appendChild(dl);
+
+    var attrs = guideAttrs(entry, duty);
+    if (attrs.length) {
+      var perDuty = !Array.isArray(entry.attributes);
+      var as = section('Atributos-chave' + (perDuty ? ' (' + (E.DUTIES[duty] || { label: duty }).label + ')' : ''));
+      var chips = el('div', { class: 'attr-chips' });
+      attrs.forEach(function (k) {
+        var a = g.attributes[k] || { label: k, en: k };
+        chips.appendChild(el('span', { class: 'attr', title: a.en }, a.label));
+      });
+      as.appendChild(chips);
+    }
+
+    if (entry.combos && entry.combos.length) {
+      var cs = section('Combina com');
+      var ul = el('ul', { class: 'guide-combos' });
+      entry.combos.forEach(function (c) {
+        var li = el('li');
+        var other = data.roles[c.role];
+        var b = el('button', { class: 'link-btn', type: 'button' }, other ? other.label : c.role);
+        b.addEventListener('click', function () { openGuide(c.role, null); });
+        li.appendChild(b);
+        li.appendChild(document.createTextNode(' — ' + c.why));
+        ul.appendChild(li);
+      });
+      cs.appendChild(ul);
+    }
+
+    if (entry.risks && entry.risks.length) list(section('Riscos'), entry.risks);
+    if (entry.tips && entry.tips.length) list(section('Dicas'), entry.tips);
+
+    var src = g.source || {};
+    body.appendChild(el('p', { class: 'guide-source' },
+      'Fonte: ' + src.title + ' (' + src.author + ', ' + src.game + ')' + (entry.page ? ', p. ' + entry.page : '') + '. ' + (src.note || '')));
   }
   function onPlayerLeave(e) { e.currentTarget.classList.remove('hl'); }
 
@@ -848,6 +974,11 @@
       }, n ? 'PI ' + n : 'PI');
       pb.addEventListener('click', function () { ui.piOpen = open ? null : p.slot; renderPlayerList(); });
       row.appendChild(pb);
+      if (data.guide) {
+        var gb = el('button', { class: 'guide-btn', type: 'button', 'aria-label': 'Sobre a função de ' + p.slot, title: 'Sobre a função: atributos, combinações e riscos' }, 'i');
+        gb.addEventListener('click', function () { openGuide(p.role, p.duty); });
+        row.appendChild(gb);
+      }
       list.appendChild(row);
       if (open) list.appendChild(renderPIBox(p));
     });

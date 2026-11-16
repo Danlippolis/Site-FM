@@ -34,6 +34,12 @@ Regras de função com a chave de uma fase derivada (`pressao`, `bloco_baixo`, `
 
 No desktop, o seletor **Sem a bola / Com a bola / Todas** escolhe os campos exibidos; no celular, as 6 fases ficam em abas.
 
+## Sobre a função
+
+O botão **i** ao lado de cada jogador (e o link **Sobre a função →** no detalhe do jogador no campo) abre um guia da função: resumo, o que cada tarefa muda, atributos-chave da tarefa, combinações (clicáveis), riscos e dicas. O seletor no topo do painel mostra qualquer outra função.
+
+O conteúdo está em `data/role-guide.json` e é um **resumo próprio** do *Book of Roles* (Daljit Singh, FM23), com a página de origem, e não o texto do livro. A tradução dos atributos é do site e pode não bater exatamente com a do jogo (o nome em inglês aparece ao passar o mouse). O livro não cobre o Zagueiro Aberto nem o Lateral Invertido; para eles o painel mostra só a descrição do site. Se o arquivo não carregar, o site funciona normalmente, só sem o painel.
+
 ## Estrutura e medidas
 
 Com **Mostrar linhas de estrutura e medidas** (Visualização), cada campo liga os jogadores de cada linha do time (linha branca; a do adversário, tracejada escura) e mostra:
@@ -56,6 +62,7 @@ data/team-instructions.json  mentalidade, linha defensiva, linha de pressão, la
 data/player-instructions.json  instruções individuais (PIs): disponibilidade, exclusões e efeito por fase
 data/opponent.json       adversário: correspondência de fases, estilos de jogo e impedimento
 data/player-traits.json  características do jogador (traits): disponibilidade, conflitos, quem anula e efeito por fase
+data/role-guide.json     guia das funções (painel "Sobre a função"): resumo, tarefas, atributos-chave, combinações, riscos e dicas
 scripts/build.js         gera dist/fm23-viewer.html (tudo embutido)
 tests/engine.test.js     11 jogadores, validação, clamp, espelhamento, efeitos, colisão, inversa do modo edição
 ```

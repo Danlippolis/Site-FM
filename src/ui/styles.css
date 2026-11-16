@@ -110,7 +110,7 @@ select {
 
 /* lista de jogadores */
 .player-list { display: flex; flex-direction: column; gap: 6px; }
-.prow { display: grid; grid-template-columns: 22px 40px minmax(0, 1fr) 80px 38px; gap: 5px; align-items: center; }
+.prow { display: grid; grid-template-columns: 22px 40px minmax(0, 1fr) 80px 38px 26px; gap: 5px; align-items: center; }
 .prow .num {
   width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
   font-size: 11px; font-weight: 700; color: #fff;
@@ -132,6 +132,55 @@ select {
 .pi-box .check small { display: block; color: var(--muted); font-size: 11.5px; }
 .pi-group { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 6px 0 2px; }
 .pi-group:first-child { margin-top: 0; }
+.guide-btn {
+  border: 1px solid var(--border); background: var(--panel-2); border-radius: 50%; width: 24px; height: 24px; padding: 0;
+  font: italic 700 12px/1 Georgia, "Times New Roman", serif; color: var(--muted); cursor: pointer;
+}
+.guide-btn:hover, .guide-btn:focus-visible { color: var(--accent); border-color: var(--accent); }
+.link-btn {
+  border: 0; background: none; padding: 0; color: var(--accent); font-weight: 600; cursor: pointer; text-align: left;
+}
+.link-btn:hover { text-decoration: underline; }
+.info .link-btn { display: inline-block; margin-top: 4px; font-size: 12px; }
+
+/* guia das funções */
+dialog.guide {
+  width: min(640px, calc(100vw - 32px)); max-height: min(86vh, 900px); padding: 0;
+  border: 1px solid var(--border); border-radius: 14px; background: var(--panel); color: var(--text);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
+}
+dialog.guide[open] { display: flex; flex-direction: column; }
+dialog.guide::backdrop { background: rgba(10, 14, 12, .45); }
+.guide-head { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px 8px; }
+.guide-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.guide-title h2 { margin: 0; font-size: 18px; letter-spacing: -0.01em; }
+.guide-title select { max-width: 100%; font-size: 12.5px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel-2); }
+.guide-duties { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 10px; border-bottom: 1px solid var(--border); }
+.chip {
+  border: 1px solid var(--border); background: var(--panel-2); border-radius: 999px; padding: 3px 11px;
+  font-size: 12.5px; cursor: pointer; min-height: 28px;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.guide-body { overflow-y: auto; padding: 12px 16px 16px; }
+.guide-summary { margin: 0 0 4px; font-size: 14.5px; }
+.guide-note { margin: 0 0 8px; color: var(--muted); font-style: italic; }
+.guide-sec { margin-top: 14px; }
+.guide-sec h3 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 6px; }
+.guide-sec ul { margin: 0; padding-left: 18px; }
+.guide-sec li { margin: 3px 0; }
+.guide-duty-list { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; }
+.guide-duty-list dt { font-weight: 600; color: var(--muted); }
+.guide-duty-list dd { margin: 0; color: var(--muted); }
+.guide-duty-list .on { color: var(--text); }
+.attr-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.attr { background: var(--accent-soft); color: var(--text); border-radius: 6px; padding: 2px 8px; font-size: 12.5px; }
+.guide-combos .link-btn { font-size: inherit; }
+.guide-source { margin: 16px 0 0; font-size: 11.5px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 8px; }
+@media (max-width: 520px) {
+  dialog.guide { width: calc(100vw - 32px); max-height: calc(100vh - 32px); }
+  .guide-duty-list { grid-template-columns: minmax(0, 1fr); }
+  .guide-duty-list dd { margin-bottom: 4px; }
+}
 .card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
 .card-head h2 { margin: 0; }
 .card-head .btn.small { margin-top: 0; }
@@ -259,7 +308,7 @@ svg.pitch.editing { touch-action: none; }
   .brand p { display: none; }
 }
 @media (max-width: 400px) {
-  .prow { grid-template-columns: 22px 36px minmax(0, 1fr) 76px 36px; gap: 4px; }
+  .prow { grid-template-columns: 22px 34px minmax(0, 1fr) 70px 34px 24px; gap: 4px; }
   .tab { padding: 6px 7px; font-size: 12px; }
   .main-bar .btn { padding: 6px 9px; }
 }

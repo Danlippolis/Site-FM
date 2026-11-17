@@ -1335,11 +1335,21 @@ test('Comparador: frames contra os movimentos previstos rodam', () => {
 });
 
 test('Movimentos: Avançar mais num meia central é chegada à área; num meia aberto ou atacante, ruptura', () => {
-  const base = { x: 70, y: 70, band: 'AM', duty: 'S', role: 'advanced_playmaker', instructions: ['get_further_forward'], locked: [], traits: [] };
+  const base = { x: 70, y: 70, band: 'AM', duty: 'S', role: 'attacking_midfielder', instructions: ['get_further_forward'], locked: [], traits: [] };
   const central = E.movementList({ ...base, lane: 'CR', side: 'R' }, data.movements);
   assert.ok(central.some((m) => m.t === 'late_box' && m.src === 'pi:get_further_forward'));
   assert.ok(!central.some((m) => m.t === 'in_behind'), 'meia central não rompe às costas');
   assert.ok(E.movementList({ ...base, lane: 'R', side: 'R' }, data.movements).some((m) => m.t === 'in_behind'), 'meia aberto rompe');
   const st = E.movementList({ ...base, band: 'ST', lane: 'C', side: 'C', role: 'target_forward' }, data.movements);
   assert.ok(st.some((m) => m.t === 'in_behind'), 'atacante rompe');
+});
+
+test('FM23 medido: CJA (S) central chega à área de vez em quando (cruzamentos) e a origem diz que foi medido', () => {
+  const ap = { x: 60, y: 76, band: 'AM', lane: 'CR', side: 'R', duty: 'S', role: 'advanced_playmaker', instructions: [], locked: [], traits: [] };
+  const lb = E.movementOptions([ap], 'ataque', data)[0].find((m) => m.type === 'late_box');
+  assert.ok(lb && lb.freq === 1 && lb.src === 'fm23', JSON.stringify(lb));
+  // no jogo: (55,6, 82,2) e (50,4, 87,6); a seta vai para a entrada da área, mais central
+  assert.ok(lb.to.y >= 82 && lb.to.x < ap.x);
+  const wide = E.movementList({ ...ap, lane: 'R' }, data.movements);
+  assert.ok(!wide.some((m) => m.t === 'late_box'), 'aberto, o CJA corta para dentro; a chegada medida é do central');
 });

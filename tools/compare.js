@@ -38,18 +38,22 @@ function compare() {
     let model, p, tInterp = null;
     const withBall = E.isWithBall(data.formations, phase);
     const ballYs = ms.filter((m) => m.ball && typeof m.ball.y === 'number').map((m) => m.ball.y);
+    // lado da bola: o site tem Esq/Centro/Dir (x 20/50/80); usa o mais próximo da bola medida
+    const ballXs = ms.filter((m) => m.ball && typeof m.ball.x === 'number').map((m) => m.ball.x);
+    const bxm = ballXs.length ? ballXs.reduce((s, v) => s + v, 0) / ballXs.length : 50;
+    const ti = Object.assign({}, t.ti || {}, { ballSide: bxm < 35 ? 'L' : bxm > 65 ? 'R' : 'C' });
     if (withBall && ballYs.length === ms.length) {
       // com a bola e com a altura da bola informada: interpola o modelo entre a Saída e o Ataque
       // na mesma altura de bola (a Saída do site tem a bola com o goleiro; o frame pode ser mais adiante)
       const b0 = data.formations.phases.saindo.ball.y, b1 = data.formations.phases.ataque.ball.y;
       const by = ballYs.reduce((s, v) => s + v, 0) / ballYs.length;
       tInterp = Math.max(0, Math.min(1, (by - b0) / (b1 - b0)));
-      const A = E.computePhase(t.players, 'saindo', data, t.ti || {}).players.find((q) => q.slot === slot);
-      const B = E.computePhase(t.players, 'ataque', data, t.ti || {}).players.find((q) => q.slot === slot);
+      const A = E.computePhase(t.players, 'saindo', data, ti).players.find((q) => q.slot === slot);
+      const B = E.computePhase(t.players, 'ataque', data, ti).players.find((q) => q.slot === slot);
       if (!A || !B) { rows.push({ k, error: 'slot ausente na tática: ' + slot }); continue; }
       p = B; model = { x: +(A.x + (B.x - A.x) * tInterp).toFixed(1), y: +(A.y + (B.y - A.y) * tInterp).toFixed(1) };
     } else {
-      p = E.computePhase(t.players, phase, data, t.ti || {}).players.find((q) => q.slot === slot);
+      p = E.computePhase(t.players, phase, data, ti).players.find((q) => q.slot === slot);
       if (!p) { rows.push({ k, error: 'slot ausente na tática: ' + slot }); continue; }
       model = { x: p.x, y: p.y };
     }

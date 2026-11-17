@@ -1288,6 +1288,160 @@
    "y": 56.9,
    "kind": "instante",
    "source": "Nizza x Milan, x1:40 (relógio cortado na foto), 2D (foto da tela). Saída: o GR (Corvi) acabou de passar ao DC (Bueno Prieto), bola nos pés dele (x 50.7, y 20.6). Nice com 4 na primeira linha de pressão (y 35-39) e última linha a ~y 58-60. Cantos do campo detectados automaticamente."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-3157",
+   "ball": {
+    "x": 4.0,
+    "y": 92.9
+   },
+   "slot": "GK",
+   "x": 32.4,
+   "y": 22.5,
+   "kind": "instante",
+   "source": "Nizza x Milan, 31:57, 2D (foto da tela). Ataque: o Ala (S) Brandt com a bola junto à linha de fundo na esquerda (x 4.0, y 92.9), provavelmente a mesma posse do frame de saída x1:40. CJA (S) dentro da área, ao lado do AC; Nice com 6 na área. Cantos do campo detectados automaticamente."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-3157",
+   "ball": {
+    "x": 4.0,
+    "y": 92.9
+   },
+   "slot": "DC",
+   "x": 36.7,
+   "y": 61.2,
+   "kind": "instante",
+   "source": "Nizza x Milan, 31:57, 2D (foto da tela). Ataque: o Ala (S) Brandt com a bola junto à linha de fundo na esquerda (x 4.0, y 92.9), provavelmente a mesma posse do frame de saída x1:40. CJA (S) dentro da área, ao lado do AC; Nice com 6 na área. Cantos do campo detectados automaticamente."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-3157",
+   "ball": {
+    "x": 4.0,
+    "y": 92.9
+   },
+   "slot": "DCR",
+   "x": 63.5,
+   "y": 56.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 31:57, 2D (foto da tela). Ataque: o Ala (S) Brandt com a bola junto à linha de fundo na esquerda (x 4.0, y 92.9), provavelmente a mesma posse do frame de saída x1:40. CJA (S) dentro da área, ao lado do AC; Nice com 6 na área. Cantos do campo detectados automaticamente."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-3157",
+   "ball": {
+    "x": 4.0,
+    "y": 92.9
+   },
+   "slot": "DCL",
+   "x": 17.7,
+   "y": 67.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 31:57, 2D (foto da tela). Ataque: o Ala (S) Brandt com a bola junto à linha de fundo na esquerda (x 4.0, y 92.9), provavelmente a mesma posse do frame de saída x1:40. CJA (S) dentro da área, ao lado do AC; Nice com 6 na área. Cantos do campo detectados automaticamente."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-3157",
+   "ball": {
+    "x": 4.0,
+    "y": 92.9
+   },
+   "slot": "WBR",
+   "x": 72.2,
+   "y": 75.1,
+   "kind": "instante",
+   "source": "Nizza x Milan, 31:57, 2D (foto da tela). Ataque: o Ala (S) Brandt com a bola junto à linha de fundo na esquerda (x 4.0, y 92.9), provavelmente a mesma posse do frame de saída x1:40. CJA (S) dentro da área, ao lado do AC; Nice com 6 na área. Cantos do campo detectados automaticamente."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-3157",
+   "ball": {
+    "x": 4.0,
+    "y": 92.9
+   },
+   "slot": "WBL",
+   "x": 3.8,
+   "y": 92.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 31:57, 2D (foto da tela). Ataque: o Ala (S) Brandt com a bola junto à linha de fundo na esquerda (x 4.0, y 92.9), provavelmente a mesma posse do frame de saída x1:40. CJA (S) dentro da área, ao lado do AC; Nice com 6 na área. Cantos do campo detectados automaticamente."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-3157",
+   "ball": {
+    "x": 4.0,
+    "y": 92.9
+   },
+   "slot": "DMCR",
+   "x": 33.2,
+   "y": 78.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 31:57, 2D (foto da tela). Ataque: o Ala (S) Brandt com a bola junto à linha de fundo na esquerda (x 4.0, y 92.9), provavelmente a mesma posse do frame de saída x1:40. CJA (S) dentro da área, ao lado do AC; Nice com 6 na área. Cantos do campo detectados automaticamente."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-3157",
+   "ball": {
+    "x": 4.0,
+    "y": 92.9
+   },
+   "slot": "DMCL",
+   "x": 14.1,
+   "y": 77.6,
+   "kind": "instante",
+   "source": "Nizza x Milan, 31:57, 2D (foto da tela). Ataque: o Ala (S) Brandt com a bola junto à linha de fundo na esquerda (x 4.0, y 92.9), provavelmente a mesma posse do frame de saída x1:40. CJA (S) dentro da área, ao lado do AC; Nice com 6 na área. Cantos do campo detectados automaticamente."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-3157",
+   "ball": {
+    "x": 4.0,
+    "y": 92.9
+   },
+   "slot": "AMCR",
+   "x": 50.4,
+   "y": 87.6,
+   "kind": "instante",
+   "source": "Nizza x Milan, 31:57, 2D (foto da tela). Ataque: o Ala (S) Brandt com a bola junto à linha de fundo na esquerda (x 4.0, y 92.9), provavelmente a mesma posse do frame de saída x1:40. CJA (S) dentro da área, ao lado do AC; Nice com 6 na área. Cantos do campo detectados automaticamente."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-3157",
+   "ball": {
+    "x": 4.0,
+    "y": 92.9
+   },
+   "slot": "AMCL",
+   "x": 17.1,
+   "y": 84.9,
+   "kind": "instante",
+   "source": "Nizza x Milan, 31:57, 2D (foto da tela). Ataque: o Ala (S) Brandt com a bola junto à linha de fundo na esquerda (x 4.0, y 92.9), provavelmente a mesma posse do frame de saída x1:40. CJA (S) dentro da área, ao lado do AC; Nice com 6 na área. Cantos do campo detectados automaticamente."
+  },
+  {
+   "tactic": "milan-3421-expressivo",
+   "phase": "ataque",
+   "frame": "nizza-milan-3157",
+   "ball": {
+    "x": 4.0,
+    "y": 92.9
+   },
+   "slot": "STC",
+   "x": 47.0,
+   "y": 90.3,
+   "kind": "instante",
+   "source": "Nizza x Milan, 31:57, 2D (foto da tela). Ataque: o Ala (S) Brandt com a bola junto à linha de fundo na esquerda (x 4.0, y 92.9), provavelmente a mesma posse do frame de saída x1:40. CJA (S) dentro da área, ao lado do AC; Nice com 6 na área. Cantos do campo detectados automaticamente."
   }
  ],
  "averages": [

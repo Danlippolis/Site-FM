@@ -896,6 +896,7 @@
     var m = { t: head[0], f: head[1] ? Number(head[1]) : 1 };
     parts.slice(1).forEach(function (q) {
       if (q === 'wide' || q === 'central') m.lane = q;
+      else if (q === 'fm23') m.src = 'fm23'; // visto no jogo (medido), não está na descrição da função
       else if (q) m.bands = q.split(',');
     });
     return m;
@@ -912,7 +913,7 @@
       if (m.lane && (m.lane === 'wide') !== wide) return;
       if (m.bands && m.bands.indexOf(p.band) < 0) return;
       var cur = byType[m.t];
-      if (!cur || m.f > cur.f) byType[m.t] = { t: m.t, f: m.f, src: cur && cur.f >= m.f ? cur.src : src };
+      if (!cur || m.f > cur.f) byType[m.t] = { t: m.t, f: m.f, src: m.src || src };
     }
     (entry['*'] || []).concat(entry[duty] || []).forEach(function (s) { put(parseMove(s), 'role'); });
     // instruções individuais e características mudam o repertório (embutidas na função contam como função)

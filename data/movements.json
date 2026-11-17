@@ -14,7 +14,7 @@
     },
     "late_box": {
       "label": "Chega atrasado na área", "short": "chegada", "cat": "profundidade",
-      "phases": ["progressao", "ataque"], "kind": "box", "y": 84, "minDy": 8, "pull": 0.6
+      "phases": ["progressao", "ataque"], "kind": "box", "y": 84, "minDy": 6, "pull": 0.6
     },
     "overlap": {
       "label": "Sobe pelo corredor", "short": "subida", "cat": "profundidade",
@@ -101,7 +101,7 @@
     "segundo_volante": { "S": ["carry:1", "late_box:1"], "A": ["carry:2", "late_box:2"] },
     "central_midfielder": { "D": ["press_out:1"], "S": ["late_box:1"], "A": ["late_box:2"], "Au": ["late_box:1"] },
     "box_to_box": { "S": ["late_box:2", "carry:1"] },
-    "advanced_playmaker": { "S": ["drop_deep:1", "cut_inside:2|wide"], "A": ["carry:2", "late_box:1", "cut_inside:2|wide"] },
+    "advanced_playmaker": { "S": ["drop_deep:1", "cut_inside:2|wide", "late_box:1|central|fm23"], "A": ["carry:2", "late_box:1", "cut_inside:2|wide"] },
     "mezzala": { "S": ["channel:1", "late_box:1"], "A": ["channel:2", "late_box:2"] },
     "carrilero": { "S": ["shuttle:2"] },
     "wide_midfielder": { "D": ["track_back:1"] },
@@ -127,8 +127,8 @@
   "modifiers": {
     "hold_position": { "remove": ["in_behind", "late_box", "overlap", "byline", "carry", "step_up"] },
     "stays_back": { "remove": ["in_behind", "late_box", "overlap", "byline", "step_up", "counter_run"] },
-    "get_further_forward": { "add": ["late_box:1|DM,M|central", "overlap:1|D,DM|wide", "in_behind:1|AM,ST"] },
-    "gets_forward_whenever_possible": { "add": ["late_box:1|DM,M|central", "overlap:1|D,DM|wide", "in_behind:1|AM,ST"] },
+    "get_further_forward": { "add": ["late_box:1|DM,M,AM|central", "overlap:1|D,DM|wide", "in_behind:1|AM|wide", "in_behind:1|ST"] },
+    "gets_forward_whenever_possible": { "add": ["late_box:1|DM,M,AM|central", "overlap:1|D,DM|wide", "in_behind:1|AM|wide", "in_behind:1|ST"] },
     "gets_into_opposition_area": { "add": ["late_box:2|DM,M,AM|central", "in_behind:1|ST"] },
     "arrives_late": { "add": ["late_box:2"] },
     "makes_runs_in_behind": { "add": ["in_behind:2|M,AM,ST"] },

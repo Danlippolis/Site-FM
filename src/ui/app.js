@@ -670,6 +670,7 @@
 
   function moveSrcLabel(src) {
     if (src === 'role') return 'da função';
+    if (src === 'fm23') return 'visto no FM23 (medido nos lances), não na descrição da função';
     var k = src.split(':'), key = k.slice(1).join(':');
     if (k[0] === 'pi') return 'instrução ' + (piDefs()[key] ? piDefs()[key].label : key);
     if (k[0] === 'trait') return 'característica ' + (traitDefs()[key] ? traitDefs()[key].label : key);

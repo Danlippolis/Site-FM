@@ -1333,3 +1333,13 @@ test('Comparador: frames contra os movimentos previstos rodam', () => {
   assert.ok(rows.length > 0);
   rows.forEach((r) => assert.equal(typeof r.explained, 'boolean'));
 });
+
+test('Movimentos: Avançar mais num meia central é chegada à área; num meia aberto ou atacante, ruptura', () => {
+  const base = { x: 70, y: 70, band: 'AM', duty: 'S', role: 'advanced_playmaker', instructions: ['get_further_forward'], locked: [], traits: [] };
+  const central = E.movementList({ ...base, lane: 'CR', side: 'R' }, data.movements);
+  assert.ok(central.some((m) => m.t === 'late_box' && m.src === 'pi:get_further_forward'));
+  assert.ok(!central.some((m) => m.t === 'in_behind'), 'meia central não rompe às costas');
+  assert.ok(E.movementList({ ...base, lane: 'R', side: 'R' }, data.movements).some((m) => m.t === 'in_behind'), 'meia aberto rompe');
+  const st = E.movementList({ ...base, band: 'ST', lane: 'C', side: 'C', role: 'target_forward' }, data.movements);
+  assert.ok(st.some((m) => m.t === 'in_behind'), 'atacante rompe');
+});

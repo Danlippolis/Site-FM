@@ -127,8 +127,8 @@
   "modifiers": {
     "hold_position": { "remove": ["in_behind", "late_box", "overlap", "byline", "carry", "step_up"] },
     "stays_back": { "remove": ["in_behind", "late_box", "overlap", "byline", "step_up", "counter_run"] },
-    "get_further_forward": { "add": ["late_box:1|DM,M|central", "overlap:1|D,DM|wide", "in_behind:1|AM,ST"] },
-    "gets_forward_whenever_possible": { "add": ["late_box:1|DM,M|central", "overlap:1|D,DM|wide", "in_behind:1|AM,ST"] },
+    "get_further_forward": { "add": ["late_box:1|DM,M,AM|central", "overlap:1|D,DM|wide", "in_behind:1|AM|wide", "in_behind:1|ST"] },
+    "gets_forward_whenever_possible": { "add": ["late_box:1|DM,M,AM|central", "overlap:1|D,DM|wide", "in_behind:1|AM|wide", "in_behind:1|ST"] },
     "gets_into_opposition_area": { "add": ["late_box:2|DM,M,AM|central", "in_behind:1|ST"] },
     "arrives_late": { "add": ["late_box:2"] },
     "makes_runs_in_behind": { "add": ["in_behind:2|M,AM,ST"] },

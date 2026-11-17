@@ -2,11 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <meta name="fm23pv-version" content="9de0300e5e">
+  <meta name="fm23pv-version" content="e6d5526868">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FM23 Positioning Viewer</title>
   <meta name="description" content="Posição aproximada dos 11 jogadores em 3 fases (defendendo, saindo com a bola, no ataque) a partir da formação, funções e instruções de equipe do FM23.">
-  <link rel="stylesheet" href="src/ui/styles.css?v=9de0300e5e">
+  <link rel="stylesheet" href="src/ui/styles.css?v=e6d5526868">
 </head>
 <body>
   <header class="topbar">
@@ -54,6 +54,13 @@
       <section class="card">
         <h2>Visualização</h2>
         <label class="check"><input type="checkbox" id="optShape"> Mostrar linhas de estrutura e medidas</label>
+        <label class="row-label">Movimentos possíveis
+          <select id="optMoves" aria-label="Movimentos possíveis">
+            <option value="main">Só os principais</option>
+            <option value="all">Todos (principais e ocasionais)</option>
+            <option value="none">Só do jogador tocado</option>
+          </select>
+        </label>
         <label class="check"><input type="checkbox" id="optGhost"> Mostrar posição base (fantasma) e seta</label>
         <label class="check"><input type="checkbox" id="optEdit"> Modo editar regra (arrastar jogador grava override)</label>
       </section>
@@ -116,7 +123,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <!-- INLINE_DATA -->
-  <script src="src/engine/engine.js?v=9de0300e5e"></script>
-  <script src="src/ui/app.js?v=9de0300e5e"></script>
+  <script src="src/engine/engine.js?v=e6d5526868"></script>
+  <script src="src/ui/app.js?v=e6d5526868"></script>
 </body>
 </html>

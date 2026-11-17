@@ -16,7 +16,8 @@ const E = require(path.join(root, 'src/engine/engine.js'));
 const load = (f) => require(path.join(root, 'data', f));
 const data = {
   formations: load('formations.json'), roles: load('roles.json'), instructions: load('team-instructions.json'),
-  playerInstructions: load('player-instructions.json'), opponent: load('opponent.json'), playerTraits: load('player-traits.json')
+  playerInstructions: load('player-instructions.json'), opponent: load('opponent.json'), playerTraits: load('player-traits.json'),
+  movements: load('movements.json')
 };
 const M = load('measurements.json');
 
@@ -109,4 +110,63 @@ if (require.main === module) {
     for (const x of r.rows) console.log(`  ${x.slot.padEnd(5)} medido ${x.measured.x},${x.measured.y}  modelo ${x.model.x.toFixed(1)},${x.model.y.toFixed(1)}  dif ${x.dx.toFixed(1)},${x.dy.toFixed(1)}`);
   }
 }
-module.exports = { compare, compareAverages };
+/**
+ * Instantes (frames) contra os movimentos previstos: num frame o jogador raramente está na posição média.
+ * Para cada desvio grande (>= minDev) entre o frame e o modelo na mesma altura de bola, procura um movimento
+ * previsto da função na fase mais próxima que aponte para o mesmo lado (cosseno >= 0,7). Mede se o
+ * repertório de movimentos explica o que se vê no jogo, sem mexer nas posições.
+ */
+function compareMovements(minDev = 7) {
+  const b0 = data.formations.phases.saindo.ball.y, b1 = data.formations.phases.ataque.ball.y;
+  // 1) desvio bruto de cada jogador no frame; 2) tira o deslocamento do bloco inteiro (média do frame, sem o
+  // goleiro): o time todo deslizando para a bola ou subindo não é movimento individual
+  const raw = [];
+  for (const m of M.measurements) {
+    if (m.kind !== 'instante' || !m.ball || !E.isWithBall(data.formations, m.phase)) continue;
+    const t = M.tactics[m.tactic];
+    if (!t || !E.validate(t.players, data).ok) continue;
+    const tt = Math.max(0, Math.min(1, (m.ball.y - b0) / (b1 - b0)));
+    const A = E.computePhase(t.players, 'saindo', data, t.ti || {}).players, B = E.computePhase(t.players, 'ataque', data, t.ti || {}).players;
+    const i = A.findIndex((q) => q.slot === m.slot);
+    if (i < 0) continue;
+    const mx = A[i].x + (B[i].x - A[i].x) * tt, my = A[i].y + (B[i].y - A[i].y) * tt;
+    raw.push({ m, t, tt, A, i, rx: m.x - mx, ry: m.y - my });
+  }
+  const shift = {};
+  for (const q of raw) {
+    if (q.A[q.i].band === 'GK') continue;
+    const s = (shift[q.m.frame] = shift[q.m.frame] || { x: 0, y: 0, n: 0 });
+    s.x += q.rx; s.y += q.ry; s.n++;
+  }
+  const rows = [];
+  for (const { m, t, tt, A, i, rx: r0x, ry: r0y } of raw) {
+    if (A[i].band === 'GK') continue;
+    const s = shift[m.frame];
+    const rx = r0x - s.x / s.n, ry = r0y - s.y / s.n, r = Math.hypot(rx, ry);
+    if (r < minDev) continue;
+    const ph = tt < 0.25 ? 'saindo' : tt < 0.7 ? 'progressao' : 'ataque';
+    const ps = E.computePhase(t.players, ph, data, t.ti || {}).players;
+    const mv = E.movementOptions(ps, ph, data)[i];
+    let best = null;
+    for (const o of mv) {
+      const vx = o.to.x - ps[i].x, vy = o.to.y - ps[i].y;
+      const cos = (vx * rx + vy * ry) / (Math.hypot(vx, vy) * r);
+      if (!best || cos > best.cos) best = { cos, type: o.type, short: o.short };
+    }
+    rows.push({ frame: m.frame, phase: ph, slot: m.slot, role: A[i].role, duty: A[i].duty, dev: { x: rx, y: ry }, best, explained: !!best && best.cos >= 0.7 });
+  }
+  return rows;
+}
+
+if (require.main === module) {
+  const mrows = compareMovements();
+  if (mrows.length) {
+    const ok = mrows.filter((r) => r.explained);
+    console.log(`\nFrames x movimentos previstos (descontado o deslocamento do bloco): ${ok.length} de ${mrows.length} desvios individuais >= 7 apontam para um movimento da função`);
+    for (const r of mrows) {
+      console.log(`  ${r.frame} ${r.phase.padEnd(10)} ${r.slot.padEnd(5)} ${(r.role + '-' + r.duty).padEnd(28)} desvio ${r.dev.x.toFixed(1)},${r.dev.y.toFixed(1)}  ` +
+        (r.best ? `${r.explained ? 'explicado' : 'não explicado'} (mais próximo: ${r.best.short}, cos ${r.best.cos.toFixed(2)})` : 'não explicado (sem movimento previsto)'));
+    }
+  }
+}
+module.exports = { compare, compareAverages, compareMovements };

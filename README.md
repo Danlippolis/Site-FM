@@ -50,6 +50,25 @@ O seletor **Bola: Esq · Centro · Dir**, acima dos campos, põe a bola num dos 
 
 A bola desenhada vai junto. O adversário desliza para o mesmo lado do campo (para ele, a nossa esquerda é a direita dele). Fonte: Book of Roles, na seção do Carrilero ("a formação é sempre relativa à bola: com a bola na esquerda do campo adversário, o time todo desliza um pouco para a esquerda"); o resto é modelagem própria, com os números em `ballSide` no `formations.json`. O lado da bola é opção de visualização: fica salvo no navegador, não entra na tática exportada nem no índice de equilíbrio, que continua medido com a bola no centro.
 
+## Movimentos possíveis
+
+A posição de cada fase é a **média**: num lance, o jogador está quase sempre fora dela, atacando o espaço, recuando para receber ou caindo no corredor. As **setas coloridas** mostram para onde cada jogador costuma ir a partir da posição da fase:
+
+| Cor | Tipo | Exemplos |
+|---|---|---|
+| amarelo | atacar o espaço | ruptura às costas da defesa (Avançado, Matador, Atacante Interior A), chegada atrasada na área (Box-to-Box, Mezzala, MO A, Segundo Volante), subida pelo corredor e linha de fundo (laterais, alas, Extremo), ataque ao espaço na recuperação (Avançado, Raumdeuter) |
+| ciano | recuar / apoiar | recuo para buscar o jogo (Falso 9, Atacante Recuado, Trequartista, Construtor Avançado S), recuo para reciclar (Half-Back), recomposição (Ala Defensivo D, Médio Ala D) |
+| rosa | mudar de corredor | cair no corredor entre lateral e zagueiro (Mezzala, Atacante de Pressão A, Mover-se para os corredores), abrir pelos lados (Falso 9, Atacante Completo), cortar para dentro (Atacante Interior, Extremo Invertido, Construtor Aberto), cobrir o lado (Carrilero) |
+| branco | conduzir / subir | condução do zagueiro construtor (BPD), do Líbero e do Segundo Volante, subida do volante (S) |
+| vermelho | pressionar / cobrir | Stopper e Recuperador saindo da linha, Cobertura recuando, Goleiro-Líbero varrendo as costas da linha |
+
+- **Seta cheia** é o movimento **principal** da função (o que a define); **tracejada** é **ocasional**. Em *Visualização → Movimentos possíveis* dá para ver só os principais (padrão), todos, ou só os do jogador tocado. Passar o mouse ou tocar num jogador destaca as setas dele e lista os movimentos no detalhe, com a origem: a função, uma instrução individual ou uma característica.
+- **Instruções e características mudam o repertório:** *Avançar mais* acrescenta chegada/subida, *Recua para buscar a bola* acrescenta o recuo, *Mover-se para os corredores* acrescenta o corredor, *Manter posição* e *Fica sempre atrás* cortam as corridas para frente. As instruções **embutidas** na função só acrescentam (o BPD tem *Manter posição* embutido para não subir no ataque, mas sai conduzindo).
+- **Com o adversário na tela**, a ruptura vai até além da última linha dele e a pressão aponta para o adversário mais próximo ao alcance. Sem espaço (atacante já colado na linha de fundo), a ruptura não aparece.
+- **Quem ocupa o espaço:** quando um atacante ou meia recua como movimento principal, o detalhe dele lista quem ataca o espaço que ele deixa, ou avisa que ninguém ataca (o Book of Roles pede corredores de trás para o Falso 9 e o Atacante Recuado).
+
+Os movimentos **não mudam as posições** nem o índice de equilíbrio. A lista de cada função vem da descrição da função no FM23 e do *Book of Roles* (o resumo em `data/role-guide.json`); as **distâncias são estimativas** para desenhar. Os dados estão em `data/movements.json` (tipos, categorias, repertório por função e tarefa, e modificadores por instrução ou característica).
+
 ## Sobre a função
 
 O botão **i** ao lado de cada jogador (e o link **Sobre a função →** no detalhe do jogador no campo) abre um guia da função: resumo, o que cada tarefa muda, atributos-chave da tarefa, combinações (clicáveis), riscos e dicas. O seletor no topo do painel mostra qualquer outra função.
@@ -334,6 +353,7 @@ O site não reproduz o motor do jogo (que é fechado); os números são aproxima
 
    Visto mas não aplicado: com o adversário recuado (lance de 16:41), o bloco do Milan inteiro joga ~8–10 mais alto que o modelo; com o adversário mais alto (06:47), bate. A altura do bloco depende de onde o adversário defende, e o site ainda não modela isso.
 5. **Comparação:** `npm run compare` mostra, para cada medida, a posição do modelo na mesma tática e o erro, e resume o erro médio por função e por fase. As regras são ajustadas onde o erro for consistente entre medidas, e o teste de `measurements.json` garante que o arquivo continua válido.
+6. **Frames contra os movimentos:** o comparador também pega cada frame, tira o deslocamento do bloco inteiro (o time todo subindo ou deslizando para a bola) e, para cada desvio individual de 7 ou mais, procura um movimento previsto da função que aponte para o mesmo lado. Com os 7 frames do Nizza x Milan: 5 de 33 desvios são explicados (subida do Ala S, condução do BPD). Os outros são, na maioria, de **posição** e não de movimento, e se repetem nos lances: os dois BPDs da linha de 3 abrem mais e sobem mais na progressão, o Construtor Recuado (S) desliza para o lado da bola e o MO (A) fica mais baixo na progressão. Ficam anotados para calibrar quando outra tática confirmar.
 
 ## A confirmar no jogo
 

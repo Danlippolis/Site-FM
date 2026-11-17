@@ -1,0 +1,149 @@
+{
+  "note": "Movimentos que cada função+tarefa faz a partir da posição média da fase. Fontes da lista: descrição da função no FM23 e o Book of Roles (Daljit Singh), já resumidos em role-guide.json. As distâncias são estimativas para desenhar; a direção e a frequência vêm das fontes. f2 = principal (define a função), f1 = ocasional.",
+  "categories": {
+    "profundidade": { "label": "Atacar o espaço", "color": "#fbbf24" },
+    "apoio": { "label": "Recuar / apoiar", "color": "#67e8f9" },
+    "lateral": { "label": "Mudar de corredor", "color": "#f0abfc" },
+    "conducao": { "label": "Conduzir / subir", "color": "#ffffff" },
+    "defesa": { "label": "Pressionar / cobrir", "color": "#fca5a5" }
+  },
+  "types": {
+    "in_behind": {
+      "label": "Ataca o espaço às costas da defesa", "short": "ruptura", "cat": "profundidade",
+      "phases": ["saindo", "progressao", "ataque"], "kind": "forward", "dy": 14, "minDy": 6, "toLine": true, "cap": 94
+    },
+    "late_box": {
+      "label": "Chega atrasado na área", "short": "chegada", "cat": "profundidade",
+      "phases": ["progressao", "ataque"], "kind": "box", "y": 84, "minDy": 8, "pull": 0.6
+    },
+    "overlap": {
+      "label": "Sobe pelo corredor", "short": "subida", "cat": "profundidade",
+      "phases": ["progressao", "ataque"], "kind": "lane", "x": [6, 94], "dy": 18, "cap": 88
+    },
+    "byline": {
+      "label": "Vai à linha de fundo", "short": "linha de fundo", "cat": "profundidade",
+      "phases": ["progressao", "ataque"], "kind": "lane", "x": [5, 95], "dy": 12, "minY": 88, "cap": 92
+    },
+    "counter_run": {
+      "label": "Ataca o espaço na recuperação (contra-ataque)", "short": "contra-ataque", "cat": "profundidade",
+      "phases": ["defendendo", "bloco_baixo"], "kind": "forward", "dy": 18, "minDy": 10, "cap": 82
+    },
+    "drop_deep": {
+      "label": "Recua para buscar o jogo", "short": "recuo", "cat": "apoio",
+      "phases": ["saindo", "progressao", "ataque"], "kind": "back", "dyByBand": { "DM": -6, "M": -8, "AM": -10, "ST": -12 }
+    },
+    "recycle": {
+      "label": "Recua para reciclar a posse", "short": "recicla", "cat": "apoio",
+      "phases": ["progressao", "ataque"], "kind": "back", "dyByBand": { "DM": -8, "M": -8 }
+    },
+    "track_back": {
+      "label": "Volta para acompanhar quem passa por ele", "short": "recomposição", "cat": "apoio",
+      "phases": ["defendendo", "bloco_baixo"], "kind": "back", "dyByBand": { "M": -10, "AM": -12 }
+    },
+    "channel": {
+      "label": "Cai no corredor entre lateral e zagueiro", "short": "corredor", "cat": "lateral",
+      "phases": ["saindo", "progressao", "ataque"], "kind": "lane", "x": [28, 72], "dy": 4, "central": "both"
+    },
+    "drift_wide": {
+      "label": "Cai pelos lados", "short": "abre", "cat": "lateral",
+      "phases": ["progressao", "ataque"], "kind": "lane", "x": [12, 88], "dy": -2, "central": "both"
+    },
+    "cut_inside": {
+      "label": "Corta para dentro", "short": "diagonal", "cat": "lateral",
+      "phases": ["progressao", "ataque"], "kind": "lane", "x": [40, 60], "dy": 8, "wideOnly": true
+    },
+    "shuttle": {
+      "label": "Cobre o corredor do lado", "short": "cobertura lateral", "cat": "lateral",
+      "phases": ["saindo", "progressao", "ataque", "defendendo", "bloco_baixo"], "kind": "lane", "x": [20, 80], "dy": 0
+    },
+    "carry": {
+      "label": "Conduz a bola para frente", "short": "condução", "cat": "conducao",
+      "phases": ["saindo", "progressao"], "kind": "forward", "dy": 12, "minDy": 6, "cap": 70
+    },
+    "step_up": {
+      "label": "Sobe para a linha do meio para apoiar", "short": "sobe", "cat": "conducao",
+      "phases": ["progressao", "ataque"], "kind": "forward", "dy": 9, "minDy": 5, "cap": 78
+    },
+    "press_out": {
+      "label": "Sai da linha para pressionar o portador", "short": "pressão", "cat": "defesa",
+      "phases": ["defendendo", "pressao", "bloco_baixo"], "kind": "press", "dy": 8, "reach": 16
+    },
+    "cover_drop": {
+      "label": "Recua para cobrir as costas da linha", "short": "cobertura", "cat": "defesa",
+      "phases": ["defendendo", "pressao", "bloco_baixo"], "kind": "back", "dyByBand": { "D": -6 }
+    },
+    "sweep": {
+      "label": "Sai da área para varrer as bolas nas costas da defesa", "short": "varre", "cat": "defesa",
+      "phases": ["defendendo", "pressao"], "kind": "sweep", "gap": 4, "minGap": 8
+    }
+  },
+  "roles": {
+    "goalkeeper": {},
+    "sweeper_keeper": { "D": ["sweep:1"], "S": ["sweep:2"], "A": ["sweep:2"] },
+    "central_defender": { "St": ["press_out:2"], "Co": ["cover_drop:2"] },
+    "ball_playing_defender": { "*": ["carry:1"], "St": ["press_out:2"], "Co": ["cover_drop:2"] },
+    "no_nonsense_cb": { "St": ["press_out:2"], "Co": ["cover_drop:2"] },
+    "wide_centre_back": { "S": ["overlap:1"], "A": ["overlap:2"] },
+    "libero": { "*": ["cover_drop:2"], "S": ["carry:2"], "A": ["carry:2", "step_up:1"] },
+    "full_back": { "S": ["overlap:1"], "A": ["overlap:2"], "Au": ["overlap:1"] },
+    "inverted_full_back": {},
+    "wing_back": { "D": ["overlap:1"], "S": ["overlap:2"], "A": ["overlap:2", "byline:2"], "Au": ["overlap:2"] },
+    "complete_wing_back": { "S": ["overlap:2", "cut_inside:1"], "A": ["overlap:2", "byline:2", "cut_inside:1"] },
+    "inverted_wing_back": { "S": ["late_box:1"], "A": ["late_box:2"], "Au": ["late_box:1"] },
+    "no_nonsense_fb": {},
+    "defensive_midfielder": { "*": ["press_out:1"], "S": ["step_up:1"] },
+    "deep_lying_playmaker": {},
+    "anchor": {},
+    "half_back": { "D": ["recycle:1"] },
+    "ball_winning_midfielder": { "*": ["press_out:2"], "S": ["step_up:1"] },
+    "regista": { "S": ["drop_deep:2", "step_up:1"] },
+    "roaming_playmaker": { "S": ["carry:2", "late_box:1"] },
+    "segundo_volante": { "S": ["carry:1", "late_box:1"], "A": ["carry:2", "late_box:2"] },
+    "central_midfielder": { "D": ["press_out:1"], "S": ["late_box:1"], "A": ["late_box:2"], "Au": ["late_box:1"] },
+    "box_to_box": { "S": ["late_box:2", "carry:1"] },
+    "advanced_playmaker": { "S": ["drop_deep:1", "cut_inside:2|wide"], "A": ["carry:2", "late_box:1", "cut_inside:2|wide"] },
+    "mezzala": { "S": ["channel:1", "late_box:1"], "A": ["channel:2", "late_box:2"] },
+    "carrilero": { "S": ["shuttle:2"] },
+    "wide_midfielder": { "D": ["track_back:1"] },
+    "winger": { "S": ["byline:2"], "A": ["byline:2"] },
+    "wide_playmaker": { "S": ["cut_inside:2"], "A": ["cut_inside:2"] },
+    "defensive_winger": { "D": ["track_back:2"], "S": ["press_out:2", "byline:1", "cut_inside:1"] },
+    "inverted_winger": { "S": ["cut_inside:2"], "A": ["cut_inside:2", "late_box:1"] },
+    "attacking_midfielder": { "S": ["drop_deep:1"], "A": ["late_box:2"] },
+    "enganche": {},
+    "trequartista": { "A": ["drop_deep:2", "drift_wide:1", "late_box:1", "in_behind:1"] },
+    "shadow_striker": { "A": ["late_box:2", "drop_deep:1", "counter_run:1"] },
+    "inside_forward": { "S": ["cut_inside:2"], "A": ["cut_inside:2", "in_behind:2"] },
+    "raumdeuter": { "A": ["in_behind:2", "channel:1", "counter_run:2"] },
+    "wide_target_forward": {},
+    "advanced_forward": { "A": ["in_behind:2", "counter_run:2"] },
+    "complete_forward": { "S": ["drop_deep:2", "drift_wide:1", "in_behind:1"], "A": ["drop_deep:1", "drift_wide:1", "in_behind:2"] },
+    "deep_lying_forward": { "S": ["drop_deep:2", "in_behind:1"], "A": ["drop_deep:2", "in_behind:1"] },
+    "false_nine": { "S": ["drop_deep:2", "drift_wide:1"] },
+    "poacher": { "A": ["in_behind:2", "counter_run:1"] },
+    "pressing_forward": { "*": ["press_out:2"], "S": ["drop_deep:1"], "A": ["channel:2", "in_behind:1"] },
+    "target_forward": { "*": ["drop_deep:1"] }
+  },
+  "modifiers": {
+    "hold_position": { "remove": ["in_behind", "late_box", "overlap", "byline", "carry", "step_up"] },
+    "stays_back": { "remove": ["in_behind", "late_box", "overlap", "byline", "step_up", "counter_run"] },
+    "get_further_forward": { "add": ["late_box:1|DM,M|central", "overlap:1|D,DM|wide", "in_behind:1|AM,ST"] },
+    "gets_forward_whenever_possible": { "add": ["late_box:1|DM,M|central", "overlap:1|D,DM|wide", "in_behind:1|AM,ST"] },
+    "gets_into_opposition_area": { "add": ["late_box:2|DM,M,AM|central", "in_behind:1|ST"] },
+    "arrives_late": { "add": ["late_box:2"] },
+    "makes_runs_in_behind": { "add": ["in_behind:2|M,AM,ST"] },
+    "comes_deep": { "add": ["drop_deep:2|M,AM,ST"] },
+    "move_into_channels": { "add": ["channel:2|M,AM,ST"] },
+    "moves_into_channels": { "add": ["channel:2|M,AM,ST"] },
+    "does_not_move_into_channels": { "remove": ["channel"] },
+    "cut_inside": { "add": ["cut_inside:2"], "remove": ["byline"] },
+    "cuts_inside_both": { "add": ["cut_inside:2"] },
+    "cuts_inside_left": { "add": ["cut_inside:2"] },
+    "cuts_inside_right": { "add": ["cut_inside:2"] },
+    "run_wide": { "add": ["byline:1|D,DM,M,AM"], "remove": ["cut_inside"] },
+    "hugs_line": { "add": ["byline:1|D,DM,M,AM"], "remove": ["cut_inside"] },
+    "brings_ball_out_of_defence": { "add": ["carry:2|D,DM"] },
+    "close_down_more": { "add": ["press_out:1"] },
+    "close_down_less": { "remove": ["press_out"] }
+  }
+}

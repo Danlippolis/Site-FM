@@ -330,3 +330,19 @@ svg.pitch.editing { touch-action: none; }
   .tab { padding: 6px 7px; font-size: 12px; }
   .main-bar .btn { padding: 6px 9px; }
 }
+
+/* movimentos possíveis */
+.row-label { display: grid; gap: 3px; font-size: 12.5px; color: var(--muted); margin: 6px 0; }
+.row-label select { color: var(--text); }
+.pitch .mv { fill: none; stroke-width: .42; stroke-linecap: round; opacity: .92; pointer-events: stroke; transition: opacity .15s; }
+.pitch .mv.f1 { stroke-width: .32; stroke-dasharray: .9 .6; opacity: .8; display: none; }
+.pitch.mv-all .mv.f1 { display: inline; }
+.pitch.mv-none .mv { display: none; }
+.pitch .mv.sel, .pitch.mv-none .mv.sel { display: inline; opacity: 1; }
+.pitch.mv-focus .mv:not(.sel) { opacity: .12; }
+.info .mv-info { display: block; margin-top: 4px; color: var(--text); }
+.info .mv-item { display: block; padding-left: 2px; }
+.info .mv-item.main { font-weight: 600; }
+.info .mv-item.note { font-weight: 400; color: var(--muted); }
+.info .mv-item i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(0, 0, 0, .35); }
+.legend .mv-key i { border-radius: 2px; border: 1px solid rgba(0, 0, 0, .35); }

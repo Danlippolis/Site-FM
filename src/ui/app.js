@@ -15,7 +15,7 @@
 
   var data = null, baseRoles = null, lastComputed = null;
   var state = null;
-  var ui = { ghost: false, shapes: true, edit: false, tab: 'saindo', group: 'todas', collapsed: false, ballSide: 'C', selectedSlot: null, piOpen: null, info: {}, suggestion: null, undo: null };
+  var ui = { ghost: false, shapes: true, edit: false, tab: 'saindo', group: 'todas', collapsed: false, ballSide: 'C', moves: 'main', selectedSlot: null, piOpen: null, info: {}, suggestion: null, undo: null };
   var anim = { on: false, step: 0, timer: null };
   var drag = null;
 
@@ -79,7 +79,7 @@
   function loadData() {
     function inline(id) { var s = document.getElementById(id); return s ? JSON.parse(s.textContent) : null; }
     var f = inline('data-formations'), r = inline('data-roles'), t = inline('data-instructions'), pi = inline('data-player-instructions'), op = inline('data-opponent'), tr = inline('data-player-traits');
-    if (f && r && t && pi && op && tr) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi, opponent: op, playerTraits: tr, guide: inline('data-role-guide'), alerts: inline('data-alerts') });
+    if (f && r && t && pi && op && tr) return Promise.resolve({ formations: f, roles: r, instructions: t, playerInstructions: pi, opponent: op, playerTraits: tr, guide: inline('data-role-guide'), alerts: inline('data-alerts'), movements: inline('data-movements') });
     var urls = ['data/formations.json', 'data/roles.json', 'data/team-instructions.json', 'data/player-instructions.json', 'data/opponent.json', 'data/player-traits.json'];
     var vm = document.querySelector('meta[name="fm23pv-version"]');
     var v = vm ? '?v=' + vm.content : '';
@@ -90,9 +90,9 @@
       });
     }
     // o guia das funções é opcional: sem ele o site funciona, só não mostra o painel
-    var optional = ['data/role-guide.json', 'data/alerts.json'].map(function (u) { return get(u).catch(function () { return null; }); });
+    var optional = ['data/role-guide.json', 'data/alerts.json', 'data/movements.json'].map(function (u) { return get(u).catch(function () { return null; }); });
     return Promise.all(urls.map(get).concat(optional))
-      .then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3], opponent: a[4], playerTraits: a[5], guide: a[6], alerts: a[7] }; });
+      .then(function (a) { return { formations: a[0], roles: a[1], instructions: a[2], playerInstructions: a[3], opponent: a[4], playerTraits: a[5], guide: a[6], alerts: a[7], movements: a[8] }; });
   }
 
   function isRolesObj(o) {
@@ -193,7 +193,7 @@
     return p;
   }
 
-  function saveState() { lsSet(LS_STATE, state); lsSet(LS_UI, { ghost: ui.ghost, shapes: ui.shapes, tab: ui.tab, group: ui.group, collapsed: ui.collapsed, ballSide: ui.ballSide }); }
+  function saveState() { lsSet(LS_STATE, state); lsSet(LS_UI, { ghost: ui.ghost, shapes: ui.shapes, tab: ui.tab, group: ui.group, collapsed: ui.collapsed, ballSide: ui.ballSide, moves: ui.moves }); }
 
   /** Fases do grupo escolhido (desktop): sem a bola, com a bola ou todas. */
   function groupPhases() {
@@ -256,6 +256,16 @@
     legend.appendChild(el('span', null, '○ bola'));
     legend.appendChild(el('span', null, '• ponto branco = jogador com instruções individuais'));
     legend.appendChild(el('span', null, '◌ área sombreada = zona de deambulação'));
+    if (data.movements) {
+      var mc = data.movements.categories || {};
+      Object.keys(mc).forEach(function (k) {
+        var s = el('span', { class: 'mv-key' });
+        var i = el('i'); i.style.background = mc[k].color;
+        s.appendChild(i); s.appendChild(document.createTextNode('→ ' + mc[k].label));
+        legend.appendChild(s);
+      });
+      legend.appendChild(el('span', null, 'Seta cheia = movimento principal da função; tracejada = ocasional (toque no jogador para ver todos)'));
+    }
     legend.appendChild(el('span', null, '▢ quadrado claro = adversário (ataca para baixo)'));
     legend.appendChild(el('span', null, '— linhas brancas = linhas do time (estrutura); pontilhado = jogador da mesma linha, escalonado à frente ou atrás'));
     legend.appendChild(el('span', null, 'Linhas tracejadas = terços do campo'));
@@ -270,6 +280,8 @@
     });
     $('optShape').checked = ui.shapes;
     $('optShape').addEventListener('change', function (e) { ui.shapes = e.target.checked; renderFields(); saveState(); });
+    $('optMoves').value = ui.moves;
+    $('optMoves').addEventListener('change', function (e) { ui.moves = e.target.value; renderFields(); saveState(); });
     $('optGhost').checked = ui.ghost;
     $('optGhost').addEventListener('change', function (e) { ui.ghost = e.target.checked; renderFields(); saveState(); });
     $('optEdit').addEventListener('change', function (e) {
@@ -480,6 +492,11 @@
     var defs = svgEl('defs', {}, svg);
     var m = svgEl('marker', { id: 'ah-' + id, viewBox: '0 0 6 6', refX: '5', refY: '3', markerWidth: '4', markerHeight: '4', orient: 'auto-start-reverse' }, defs);
     svgEl('path', { d: 'M0,0 L6,3 L0,6 z', class: 'arrowhead' }, m);
+    var cats = (data.movements && data.movements.categories) || {};
+    Object.keys(cats).forEach(function (c) {
+      var mm = svgEl('marker', { id: 'mv-' + c + '-' + id, viewBox: '0 0 6 6', refX: '4.5', refY: '3', markerWidth: '3.6', markerHeight: '3.6', orient: 'auto' }, defs);
+      svgEl('path', { d: 'M0,0 L6,3 L0,6 z', fill: cats[c].color }, mm);
+    });
 
     svgEl('rect', { x: 0, y: 0, width: VW, height: VH, class: 'stripe-b' }, svg);
     for (var i = 0; i < 10; i++) {
@@ -507,6 +524,7 @@
 
     svgEl('g', { class: 'zones' }, svg);
     svgEl('g', { class: 'shapes' }, svg);
+    svgEl('g', { class: 'moves' }, svg);
     svgEl('g', { class: 'ghosts' }, svg);
     svgEl('g', { class: 'ball-layer' }, svg);
     svgEl('g', { class: 'opps' }, svg);
@@ -556,6 +574,8 @@
       z.style.stroke = 'var(--b-' + cp.band + ')';
       z.style.fill = 'var(--b-' + cp.band + ')';
     });
+
+    renderMoves(svg, result, opts.moves || 'none');
 
     ghosts.textContent = '';
     if (opts.ghost) {
@@ -613,6 +633,49 @@
     renderOpponent(svg, result.opponent);
   }
 
+  /** Movimentos possíveis: setas curvas coloridas por tipo, da posição da fase até onde o jogador costuma ir. */
+  function renderMoves(svg, result, mode) {
+    var layer = svg.querySelector('.moves');
+    if (!layer) return;
+    layer.textContent = '';
+    svg.classList.toggle('mv-all', mode === 'all');
+    svg.classList.toggle('mv-none', mode === 'none');
+    if (!data.movements) { result.moves = null; return; }
+    var moves = E.movementOptions(result.players, svg.dataset.phase, data, { opponent: result.opponent ? result.opponent.players : null });
+    result.moves = moves;
+    var cats = data.movements.categories || {};
+    result.players.forEach(function (cp, i) {
+      (moves[i] || []).forEach(function (mv, j) {
+        var a = toSvg(cp.x, cp.y), b = toSvg(mv.to.x, mv.to.y);
+        var vx = b[0] - a[0], vy = b[1] - a[1], d = Math.sqrt(vx * vx + vy * vy);
+        if (d < R * 1.5) return;
+        var ux = vx / d, uy = vy / d;
+        var s0 = [a[0] + ux * (R + 0.3), a[1] + uy * (R + 0.3)], s1 = [b[0] - ux * 0.6, b[1] - uy * 0.6];
+        // curva leve (para a direita de quem corre) para não confundir com a seta da posição base
+        var bend = Math.min(d * 0.14, 3), c = [(s0[0] + s1[0]) / 2 - uy * bend, (s0[1] + s1[1]) / 2 + ux * bend];
+        var path = svgEl('path', {
+          d: 'M' + s0[0].toFixed(2) + ',' + s0[1].toFixed(2) + ' Q' + c[0].toFixed(2) + ',' + c[1].toFixed(2) + ' ' + s1[0].toFixed(2) + ',' + s1[1].toFixed(2),
+          class: 'mv f' + mv.freq, 'data-i': i, 'marker-end': 'url(#mv-' + mv.cat + '-' + svg.id + ')'
+        }, layer);
+        path.style.stroke = (cats[mv.cat] || {}).color || '#fff';
+        svgEl('title', {}, path).textContent = cp.num + ' · ' + mv.label + (mv.freq >= 2 ? ' (principal)' : ' (ocasional)');
+      });
+    });
+  }
+
+  function focusMoves(svg, index) {
+    svg.classList.toggle('mv-focus', index != null);
+    svg.querySelectorAll('.moves .mv').forEach(function (m) { m.classList.toggle('sel', index != null && Number(m.dataset.i) === index); });
+  }
+
+  function moveSrcLabel(src) {
+    if (src === 'role') return 'da função';
+    var k = src.split(':'), key = k.slice(1).join(':');
+    if (k[0] === 'pi') return 'instrução ' + (piDefs()[key] ? piDefs()[key].label : key);
+    if (k[0] === 'trait') return 'característica ' + (traitDefs()[key] ? traitDefs()[key].label : key);
+    return src;
+  }
+
   function renderOpponent(svg, opp) {
     var layer = svg.querySelector('.opps');
     var list = opp ? opp.players : [];
@@ -668,6 +731,7 @@
     var g = e.currentTarget, svg = g.ownerSVGElement;
     svg.querySelectorAll('g.pl.hl').forEach(function (x) { x.classList.remove('hl'); });
     g.classList.add('hl');
+    focusMoves(svg, Number(g.dataset.i));
     showPlayerInfo(svg, Number(g.dataset.i));
   }
 
@@ -701,12 +765,48 @@
     if (cp.instructions.length) txt += ' · instruções: ' + piLabels(cp.instructions);
     if (cp.traits.length) txt += ' · características: ' + cp.traits.map(function (k) { return traitDefs()[k].label; }).join(', ');
     info.appendChild(document.createTextNode(txt));
+    renderMoveInfo(info, svg.dataset.phase, index);
     if (r && r.desc) info.appendChild(el('span', { class: 'desc' }, r.desc));
     if (r && data.guide) {
       var gl = el('button', { class: 'link-btn', type: 'button' }, 'Sobre a função →');
       gl.addEventListener('click', function () { openGuide(cp.role, cp.duty); });
       info.appendChild(gl);
     }
+  }
+
+  /** Lista os movimentos possíveis do jogador na fase e quem ataca o espaço que ele deixa ao recuar. */
+  function renderMoveInfo(info, ph, index) {
+    var res = lastComputed && lastComputed[ph];
+    if (!data.movements || !res || !res.moves) return;
+    var mv = res.moves[index] || [], cats = data.movements.categories || {};
+    var box = el('span', { class: 'mv-info' });
+    if (!mv.length) {
+      box.appendChild(document.createTextNode('Movimentos nesta fase: nenhum característico; fica na posição (só ajusta à bola).'));
+      info.appendChild(box);
+      return;
+    }
+    box.appendChild(el('b', null, 'Movimentos nesta fase: '));
+    var seen = {};
+    mv.forEach(function (m) {
+      if (seen[m.type]) return;
+      seen[m.type] = true;
+      var it = el('span', { class: 'mv-item' + (m.freq >= 2 ? ' main' : '') });
+      var i = el('i'); i.style.background = (cats[m.cat] || {}).color || '#fff';
+      it.appendChild(i);
+      it.appendChild(document.createTextNode(m.label + ' — ' + (m.freq >= 2 ? 'principal' : 'ocasional') + ', ' + moveSrcLabel(m.src)));
+      box.appendChild(it);
+    });
+    var links = E.movementLinks(res.players, res.moves)[index];
+    if (links) {
+      var names = links.fills.map(function (j) {
+        var q = res.players[j], rr = data.roles[q.role];
+        return q.num + ' ' + (rr ? rr.abbr : q.role) + '-' + q.duty;
+      });
+      box.appendChild(el('span', { class: 'mv-item note' }, names.length
+        ? 'Espaço que ele deixa ao recuar: atacado por ' + names.join(', ') + '.'
+        : 'Ninguém ataca o espaço que ele deixa ao recuar: o recuo tira o zagueiro da linha, mas ninguém aproveita.'));
+    }
+    info.appendChild(box);
   }
 
   // ---------- guia das funções (Book of Roles) ----------
@@ -890,7 +990,12 @@
     body.appendChild(el('p', { class: 'guide-source' },
       'Fonte: ' + src.title + ' (' + src.author + ', ' + src.game + ')' + (entry.page ? ', p. ' + entry.page : '') + '. ' + (src.note || '')));
   }
-  function onPlayerLeave(e) { e.currentTarget.classList.remove('hl'); }
+  function onPlayerLeave(e) {
+    // no toque o "leave" vem logo depois do toque: mantém o destaque e os movimentos do jogador tocado
+    if (e.pointerType === 'touch') return;
+    e.currentTarget.classList.remove('hl');
+    focusMoves(e.currentTarget.ownerSVGElement, null);
+  }
 
   // ---------- modo editar regra (arrastar) ----------
 
@@ -1301,7 +1406,7 @@
     E.PHASES.forEach(function (ph) {
       var svg = $('pitch-' + ph);
       svg.classList.toggle('editing', ui.edit);
-      renderPitch(svg, lastComputed[ph], { ghost: ui.ghost, shapes: ui.shapes });
+      renderPitch(svg, lastComputed[ph], { ghost: ui.ghost, shapes: ui.shapes, moves: ui.moves });
       var sl = $('shape-' + ph);
       if (sl) {
         var sh = E.teamShape(lastComputed[ph].players), m = sh.metrics;
@@ -1387,7 +1492,7 @@
     var phs = groupPhases(), ph = phs[anim.step % phs.length];
     var svg = $('animSvg');
     svg.dataset.phase = ph;
-    renderPitch(svg, lastComputed[ph], { ghost: false, shapes: ui.shapes });
+    renderPitch(svg, lastComputed[ph], { ghost: false, shapes: ui.shapes, moves: ui.moves });
     document.querySelectorAll('#animSteps span').forEach(function (s) {
       s.classList.toggle('on', s.dataset.phase === ph);
       s.hidden = phs.indexOf(s.dataset.phase) < 0;
@@ -1454,6 +1559,7 @@
       if (['sem', 'com', 'todas'].indexOf(savedUi.group) >= 0) ui.group = savedUi.group;
       if (savedUi.shapes === false) ui.shapes = false;
       if (['L', 'C', 'R'].indexOf(savedUi.ballSide) >= 0) ui.ballSide = savedUi.ballSide;
+      if (['none', 'main', 'all'].indexOf(savedUi.moves) >= 0) ui.moves = savedUi.moves;
 
       var saved = lsGet(LS_STATE);
       if (saved && Array.isArray(saved.players) && E.validate(saved.players, data).ok) {

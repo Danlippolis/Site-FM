@@ -10,7 +10,8 @@ const data = {
   playerInstructions: require('../data/player-instructions.json'),
   opponent: require('../data/opponent.json'),
   playerTraits: require('../data/player-traits.json'),
-  alerts: require('../data/alerts.json')
+  alerts: require('../data/alerts.json'),
+  movements: require('../data/movements.json')
 };
 const preset = (id) => data.formations.presets.find((p) => p.id === id).players;
 const byslot = (res, slot) => res.players.find((p) => p.slot === slot);
@@ -1229,4 +1230,106 @@ test('CJA (S) da meia só abre para o corredor na saída se não houver ninguém
   assert.ok(byslot(E.computePhase(empty, 'saindo', noCol, {}), 'AMCR').x >= 70, 'corredor vazio: abre');
   // o CJA (S) aberto (AML) continua aberto
   assert.ok(byslot(E.computePhase(sw(preset('4-2-3-1-dm-wide'), ['AML', 'advanced_playmaker', 'S']), 'saindo', noCol, {}), 'AML').x <= 10);
+});
+
+// ---------- movimentos possíveis ----------
+
+const mvPlayer = (o) => ({ x: 50, y: 50, band: 'ST', lane: 'C', side: 'C', duty: 'A', instructions: [], locked: [], traits: [], ...o });
+const swap433 = (changes) => preset('4-3-3-dm-wide').map((p) => (changes[p.slot] ? { ...p, ...changes[p.slot] } : p));
+
+test('movements.json: toda função tem repertório e todo tipo citado existe', () => {
+  const M = data.movements;
+  for (const role of Object.keys(data.roles)) assert.ok(M.roles[role], 'sem entrada: ' + role);
+  const used = [];
+  for (const entry of Object.values(M.roles)) for (const list of Object.values(entry)) used.push(...list);
+  for (const mod of Object.values(M.modifiers)) used.push(...(mod.add || []), ...(mod.remove || []));
+  for (const s of used) assert.ok(M.types[s.split(':')[0].split('|')[0]], 'tipo desconhecido: ' + s);
+  for (const t of Object.values(M.types)) {
+    assert.ok(M.categories[t.cat], 'categoria: ' + t.cat);
+    for (const ph of t.phases) assert.ok(E.PHASES.includes(ph), ph);
+  }
+  for (const k of Object.keys(M.modifiers)) assert.ok(data.playerInstructions.instructions[k] || data.playerTraits.traits[k], 'modificador sem instrução/característica: ' + k);
+});
+
+test('Movimentos: AF (A) ataca as costas no ataque; F9 recua para buscar; alvos dentro do campo', () => {
+  const r = E.computeAll(swap433({}), data, neutralTI);
+  for (const ph of E.PHASES) {
+    const mv = E.movementOptions(r[ph].players, ph, data);
+    mv.flat().forEach((m) => { assert.ok(m.to.x >= 3 && m.to.x <= 97 && m.to.y >= 3 && m.to.y <= 97, ph + ' ' + JSON.stringify(m)); });
+  }
+  const pg = r.progressao.players, i = pg.findIndex((p) => p.slot === 'STC');
+  const af = E.movementOptions(pg, 'progressao', data)[i].find((m) => m.type === 'in_behind');
+  assert.ok(af && af.freq === 2 && af.to.y > pg[i].y, 'AF ataca as costas');
+  // no ataque ele já está colado na última linha: sem espaço às costas, a ruptura some
+  const at = r.ataque.players;
+  if (at[i].y >= 90) assert.ok(!E.movementOptions(at, 'ataque', data)[i].some((m) => m.type === 'in_behind'));
+  const f9 = E.computeAll(swap433({ STC: { role: 'false_nine', duty: 'S' } }), data, neutralTI);
+  const drop = E.movementOptions(f9.saindo.players, 'saindo', data)[i].find((m) => m.type === 'drop_deep');
+  assert.ok(drop && drop.freq === 2 && drop.to.y < f9.saindo.players[i].y, 'F9 recua');
+});
+
+test('Movimentos: só os da fase (sem a bola não há ruptura de quem ataca; Stopper só pressiona sem a bola)', () => {
+  const st = mvPlayer({ role: 'central_defender', duty: 'St', band: 'D', lane: 'CL', side: 'L', y: 28 });
+  assert.equal(E.movementOptions([st], 'saindo', data)[0].length, 0);
+  assert.equal(E.movementOptions([st], 'defendendo', data)[0][0].type, 'press_out');
+  const af = mvPlayer({ role: 'advanced_forward', y: 70 });
+  assert.ok(!E.movementOptions([af], 'defendendo', data)[0].some((m) => m.type === 'in_behind'));
+  assert.ok(E.movementOptions([af], 'defendendo', data)[0].some((m) => m.type === 'counter_run'), 'AF fica pronto para o contra-ataque');
+});
+
+test('Movimentos: instrução escolhida remove (Manter posição), a embutida não (BPD conduz)', () => {
+  const ifa = mvPlayer({ role: 'inside_forward', band: 'AM', lane: 'L', side: 'L', x: 15, y: 75 });
+  assert.ok(E.movementList(ifa, data.movements).some((m) => m.t === 'in_behind'));
+  const held = E.movementList({ ...ifa, instructions: ['hold_position'] }, data.movements);
+  assert.ok(!held.some((m) => m.t === 'in_behind'), 'Manter posição corta a ruptura');
+  assert.ok(held.some((m) => m.t === 'cut_inside'), 'e mantém a diagonal');
+  const bpd = mvPlayer({ role: 'ball_playing_defender', duty: 'D', band: 'D', lane: 'CR', side: 'R', locked: ['hold_position'] });
+  assert.ok(E.movementList(bpd, data.movements).some((m) => m.t === 'carry'), 'BPD sai conduzindo apesar do Manter posição embutido');
+  const cd = mvPlayer({ role: 'central_defender', duty: 'D', band: 'D', lane: 'CR', side: 'R', traits: ['brings_ball_out_of_defence'] });
+  const carry = E.movementList(cd, data.movements).find((m) => m.t === 'carry');
+  assert.ok(carry && carry.src === 'trait:brings_ball_out_of_defence', 'característica acrescenta e é citada');
+});
+
+test('Movimentos: central cai nos dois corredores, simétrico; aberto espelhado tem alvo espelhado', () => {
+  const pf = mvPlayer({ role: 'pressing_forward', x: 50, y: 70 });
+  const ch = E.movementOptions([pf], 'ataque', data)[0].filter((m) => m.type === 'channel');
+  assert.equal(ch.length, 2);
+  assert.equal(ch[0].to.x + ch[1].to.x, 100);
+  const l = mvPlayer({ role: 'inverted_winger', duty: 'S', band: 'AM', lane: 'L', side: 'L', x: 12, y: 72 });
+  const r = { ...l, lane: 'R', side: 'R', x: 88 };
+  const ml = E.movementOptions([l], 'ataque', data)[0], mr = E.movementOptions([r], 'ataque', data)[0];
+  assert.equal(ml.length, mr.length);
+  ml.forEach((m, k) => { assert.equal(m.type, mr[k].type); assert.equal(m.to.x, 100 - mr[k].to.x); assert.equal(m.to.y, mr[k].to.y); });
+});
+
+test('Movimentos: com o adversário, a ruptura vai além da última linha dele e a pressão aponta para um adversário', () => {
+  const opp = { enabled: true, presetId: '4-4-2', players: preset('4-4-2'), styleId: data.opponent.defaultStyle };
+  const r = E.computeMatch(swap433({}), data, neutralTI, opp);
+  const at = r.progressao, i = at.players.findIndex((p) => p.slot === 'STC');
+  const line = Math.max(...at.opponent.players.filter((q) => q.band !== 'GK').map((q) => q.y));
+  const m = E.movementOptions(at.players, 'progressao', data, { opponent: at.opponent.players })[i].find((x) => x.type === 'in_behind');
+  assert.ok(m && m.to.y > line, `ruptura ${m && m.to.y} além da linha ${line}`);
+  const df = r.defendendo, j = df.players.findIndex((p) => p.slot === 'STC');
+  const pf = df.players.map((p, k) => (k === j ? { ...p, role: 'pressing_forward', duty: 'A' } : p));
+  const press = E.movementOptions(pf, 'defendendo', data, { opponent: df.opponent.players })[j].find((x) => x.type === 'press_out');
+  assert.ok(press, 'PF pressiona');
+  const near = Math.min(...df.opponent.players.map((q) => Math.hypot(q.x - press.to.x, q.y - press.to.y)));
+  assert.ok(near < 5, 'a pressão chega perto de um adversário: ' + near);
+});
+
+test('Movimentos: quem ataca o espaço do F9 que recua', () => {
+  const r = E.computeAll(swap433({ STC: { role: 'false_nine', duty: 'S' } }), data, neutralTI);
+  const ps = r.ataque.players, mv = E.movementOptions(ps, 'ataque', data);
+  const i = ps.findIndex((p) => p.slot === 'STC'), iff = ps.findIndex((p) => p.slot === 'AML');
+  assert.ok(E.movementLinks(ps, mv)[i].fills.includes(iff), 'o Atacante Interior (A) ataca o espaço');
+  const lone = ps.map((p, k) => (k === i ? p : { ...p, role: 'anchor', duty: 'D', effDuty: 'D', locked: [], instructions: [], traits: [] }));
+  const lmv = E.movementOptions(lone, 'ataque', data);
+  assert.deepEqual(E.movementLinks(lone, lmv)[i].fills, []);
+  assert.equal(E.movementLinks(ps, mv)[iff], null, 'quem não recua não tem nota');
+});
+
+test('Comparador: frames contra os movimentos previstos rodam', () => {
+  const rows = require('../tools/compare.js').compareMovements();
+  assert.ok(rows.length > 0);
+  rows.forEach((r) => assert.equal(typeof r.explained, 'boolean'));
 });

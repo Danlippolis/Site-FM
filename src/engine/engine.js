@@ -888,6 +888,156 @@
     return c;
   }
 
+  // ---------- movimentos possíveis (além da posição média) ----------
+
+  /** "in_behind:2|AM,ST" ou "cut_inside:2|wide" → { t, f, bands?, lane? } */
+  function parseMove(s) {
+    var parts = String(s).split('|'), head = parts[0].split(':');
+    var m = { t: head[0], f: head[1] ? Number(head[1]) : 1 };
+    parts.slice(1).forEach(function (q) {
+      if (q === 'wide' || q === 'central') m.lane = q;
+      else if (q) m.bands = q.split(',');
+    });
+    return m;
+  }
+
+  /** Lista de movimentos (tipo + frequência + origem) de um jogador calculado, antes da geometria. */
+  function movementList(p, M) {
+    var role = p.fallback || p.role;
+    var entry = (M.roles || {})[role] || {};
+    var duty = p.effDuty || p.duty;
+    var wide = p.lane === 'L' || p.lane === 'R';
+    var byType = {};
+    function put(m, src) {
+      if (m.lane && (m.lane === 'wide') !== wide) return;
+      if (m.bands && m.bands.indexOf(p.band) < 0) return;
+      var cur = byType[m.t];
+      if (!cur || m.f > cur.f) byType[m.t] = { t: m.t, f: m.f, src: cur && cur.f >= m.f ? cur.src : src };
+    }
+    (entry['*'] || []).concat(entry[duty] || []).forEach(function (s) { put(parseMove(s), 'role'); });
+    // instruções individuais e características mudam o repertório (embutidas na função contam como função)
+    var mods = M.modifiers || {};
+    var keys = [];
+    (p.locked || []).forEach(function (k) { keys.push([k, 'role']); });
+    (p.instructions || []).forEach(function (k) { keys.push([k, 'pi:' + k]); });
+    (p.traits || []).forEach(function (k) { keys.push([k, 'trait:' + k]); });
+    // as embutidas só acrescentam: o repertório da função já as considera (ex.: o BPD tem "Manter posição"
+    // embutido para não subir no ataque, mas sai conduzindo). Instruções e características escolhidas
+    // também removem, e uma remoção vence qualquer adição (ex.: Manter posição corta as corridas).
+    keys.forEach(function (kv) {
+      var mod = mods[kv[0]];
+      if (mod) (mod.add || []).forEach(function (s) { put(parseMove(s), kv[1]); });
+    });
+    keys.forEach(function (kv) {
+      var mod = mods[kv[0]];
+      if (mod && kv[1] !== 'role') (mod.remove || []).forEach(function (t) { delete byType[t]; });
+    });
+    // cair no corredor e abrir pelos lados apontam para o mesmo lado: fica só o corredor
+    if (byType.channel) delete byType.drift_wide;
+    // subir pelo corredor e ir à linha de fundo também: fica o mais frequente (empate: linha de fundo)
+    if (byType.overlap && byType.byline) delete byType[byType.overlap.f > byType.byline.f ? 'byline' : 'overlap'];
+    // aberto que vai à linha de fundo já está atacando a profundidade pelo lado: a ruptura seria a mesma seta
+    if (wide && byType.byline && byType.in_behind) delete byType.in_behind;
+    return Object.keys(byType).map(function (k) { return byType[k]; });
+  }
+
+  /**
+   * Movimentos possíveis de cada jogador numa fase calculada: para onde ele costuma ir a partir da posição
+   * média (atacar o espaço, recuar para receber, cair no corredor, pressionar...). Não muda a posição: é o
+   * repertório da função+tarefa (descrição do FM23 / Book of Roles), ajustado por instruções e características.
+   * players: jogadores já calculados da fase; opts.opponent: jogadores calculados do adversário (opcional).
+   * Retorna, por jogador, [{ type, label, short, cat, freq: 1|2, src, to: {x, y} }].
+   */
+  function movementOptions(players, phase, data, opts) {
+    var M = data.movements;
+    if (!M || !M.types) return players.map(function () { return []; });
+    var withBall = isWithBall(data.formations, phase);
+    var opp = ((opts && opts.opponent) || []).filter(function (q) { return q.band !== 'GK'; });
+    // última linha de quem defende contra nós (com a bola) e a nossa linha defensiva (sem a bola)
+    var oppLine = withBall && opp.length ? Math.max.apply(null, opp.map(function (q) { return q.y; })) : null;
+    var ourD = players.filter(function (q) { return q.band === 'D'; });
+    var ourLine = ourD.length ? Math.min.apply(null, ourD.map(function (q) { return q.y; })) : null;
+    function lim(v, hi) { return Math.round(clamp(v, 3, hi || 97) * 10) / 10; }
+
+    function targets(t, p) {
+      var out = [];
+      if (t.kind === 'forward') {
+        var y = p.y + (t.dy || 10);
+        if (t.toLine && oppLine != null) y = Math.max(p.y + (t.minDy || 4), oppLine + 4);
+        if (t.cap != null) y = Math.min(y, t.cap);
+        // já está no limite (ex.: atacante colado na linha de fundo): não há espaço para atacar
+        if (y - p.y >= (t.minDy || 4)) out.push({ x: p.x, y: y });
+      } else if (t.kind === 'back') {
+        var dy = (t.dyByBand || {})[p.band];
+        if (dy == null) dy = t.dy;
+        if (dy) out.push({ x: p.x, y: Math.max(p.y + dy, 4) });
+      } else if (t.kind === 'lane') {
+        var sides = p.side === 'C' ? (t.central === 'both' ? ['L', 'R'] : []) : [p.side];
+        if (t.wideOnly && !(p.lane === 'L' || p.lane === 'R')) sides = [];
+        sides.forEach(function (s) {
+          var tx = s === 'L' ? t.x[0] : t.x[1];
+          var ty = p.y + (t.dy || 0);
+          if (t.minY != null) ty = Math.max(ty, t.minY);
+          if (t.cap != null) ty = Math.min(ty, Math.max(t.cap, p.y));
+          // é um movimento de corredor: se ele já está nesse corredor, não há para onde ir
+          // (subir pelo corredor e ir à linha de fundo contam pela subida)
+          if (Math.abs(tx - p.x) < 6 && ty - p.y < 6) return;
+          out.push({ x: tx, y: ty });
+        });
+      } else if (t.kind === 'box') {
+        if (p.y < t.y - (t.minDy || 6)) out.push({ x: 50 + (p.x - 50) * (1 - (t.pull || 0.5)), y: t.y });
+      } else if (t.kind === 'press') {
+        // com o adversário na tela: vai no oponente mais próximo à frente, ao alcance; senão, sobe dy
+        var best = null, bd = Infinity;
+        opp.forEach(function (q) {
+          if (q.y <= p.y) return;
+          var d = dist(p, q);
+          if (d < bd && d <= (t.reach || 16)) { bd = d; best = q; }
+        });
+        if (best) {
+          var k = Math.max(0, (bd - 2.5) / bd);
+          out.push({ x: p.x + (best.x - p.x) * k, y: p.y + (best.y - p.y) * k });
+        } else if (!opp.length) out.push({ x: p.x, y: p.y + (t.dy || 8) });
+      } else if (t.kind === 'sweep') {
+        if (ourLine != null && ourLine - p.y >= (t.minGap || 8)) out.push({ x: 50 + (p.x - 50) * 0.5, y: ourLine - (t.gap || 4) });
+      }
+      return out;
+    }
+
+    return players.map(function (p) {
+      if (p.band === 'GK' && !(M.roles[p.fallback || p.role])) return [];
+      var res = [];
+      movementList(p, M).forEach(function (m) {
+        var t = M.types[m.t];
+        if (!t || (t.phases || []).indexOf(phase) < 0) return;
+        targets(t, p).forEach(function (to) {
+          to = { x: lim(to.x), y: lim(to.y, 95) };
+          if (Math.hypot(to.x - p.x, to.y - p.y) < 5) return;
+          res.push({ type: m.t, label: t.label, short: t.short || t.label, cat: t.cat, freq: m.f, src: m.src, to: to });
+        });
+      });
+      res.sort(function (a, b) { return b.freq - a.freq; });
+      return res;
+    });
+  }
+
+  /**
+   * Quem ocupa o espaço que um jogador deixa ao recuar: para cada atacante/meia que recua (principal),
+   * lista os colegas que atacam o espaço (ruptura ou chegada) na mesma fase. Book of Roles: F9/DLF/T pedem
+   * corredores de trás (SV, SS, Mezzala, Atacante Interior).
+   */
+  function movementLinks(players, moves) {
+    var runners = [];
+    players.forEach(function (p, i) {
+      if ((moves[i] || []).some(function (m) { return m.cat === 'profundidade'; })) runners.push(i);
+    });
+    return players.map(function (p, i) {
+      var drops = (moves[i] || []).some(function (m) { return m.type === 'drop_deep' && m.freq >= 2; });
+      if (!drops || (p.band !== 'ST' && p.band !== 'AM')) return null;
+      return { fills: runners.filter(function (j) { return j !== i; }) };
+    });
+  }
+
   // ---------- notas de estrutura (Guide to Football, "tactical theory") ----------
 
   function c01(v) { return Math.max(0, Math.min(1, v)); }
@@ -1373,7 +1523,7 @@
     overrideFromPosition: overrideFromPosition, applyOverride: applyOverride,
     deltaFromPosition: deltaFromPosition, teamShape: teamShape, isWithBall: isWithBall,
     evaluateBalance: evaluateBalance, suggestRoles: suggestRoles, opponentCache: opponentCache, tacticalAlerts: tacticalAlerts,
-    structureScores: structureScores,
+    structureScores: structureScores, movementOptions: movementOptions, movementList: movementList, movementLinks: movementLinks,
     OPP_PHASES: OPP_PHASES
   };
 });

@@ -12,6 +12,7 @@ Site de uma página que desenha a posição aproximada dos 11 jogadores em 3 fas
 | Versão de desenvolvimento (lê `data/*.json` em tempo real) | `npm run serve` → http://localhost:8000 |
 | Regerar o arquivo único depois de editar JSON/JS/CSS | `npm run build` |
 | Testes do motor | `npm test` |
+| Versão para Artifact do claude.ai, com o painel "Perguntar ao Claude" | `npm run build:artifact` → `dist/artifact/fm23-viewer-claude.html` |
 
 `index.html` aberto direto do disco (`file://`) não consegue ler os JSON (o navegador bloqueia `fetch` local) — use o servidor ou o `dist/`.
 
@@ -88,6 +89,15 @@ Com **Mostrar linhas de estrutura e medidas** (Visualização), cada campo liga 
 - com o adversário ligado, a forma e o comprimento dele.
 
 Na mesma linha, vizinhos com mais de 5 de diferença de altura são ligados por um traço pontilhado (jogador escalonado, mas contado na linha). As linhas partem da faixa do slot (defesa, volantes, meio, meia ofensivo, ataque), quebram onde houver um buraco de 8 ou mais em y e se juntam quando ficam a menos de 4 (máximo 5 linhas) — `teamShape` no motor. Por isso um volante que fica a 5 da defesa aparece como linha própria, e um lateral que sobe ao ataque entra na linha de cima.
+
+## Perguntar ao Claude (versão Artifact)
+
+`npm run build:artifact` gera `dist/artifact/fm23-viewer-claude.html`, a mesma página com um painel de chat para publicar como Artifact no claude.ai (capacidade `sample`). A cada pergunta o painel envia ao Claude o estado atual: formação, funções/tarefas com instruções embutidas, PIs, características, instruções de equipe, adversário, índice de equilíbrio com critérios, alertas, e posições, estrutura e notas das 6 fases, além do resumo do guia das funções em uso e da lista de funções válidas por slot. Duas ferramentas da página ficam disponíveis para o Claude:
+
+- **simular_tatica**: testa trocas (função, tarefa, PIs, características, slot, formação, instruções de equipe) sem mexer no site e devolve o antes/depois do equilíbrio, alertas e estrutura por fase;
+- **aplicar_tatica**: aplica as trocas no site, só quando o usuário pede, com botão **Desfazer** no chat.
+
+O código do painel fica em `src/claude/` e só entra nesse build; o `dist/fm23-viewer.html` e o `index.html` não mudam. O build injeta em `app.js` um gancho `window.__fm` (estado, dados e funções de render) e troca o `confirm()` (que o Artifact bloqueia) por "clique de novo para confirmar" no próprio botão. As perguntas usam a conta Claude de quem está vendo a página.
 
 ## Estrutura
 
